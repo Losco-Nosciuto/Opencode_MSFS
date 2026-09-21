@@ -4,12 +4,21 @@ mode: primary
 color: "#0e9f6e"
 steps: 40
 permissions:
-  # Writes: hard-deny everywhere; allow ONLY the cache workspace (incl. .cache_staging).
+  # Writes: hard-deny everywhere; allow ONLY the cache workspace.
+  # NOTE: OpenCode matches edit/write/patch resources as WORKTREE-RELATIVE
+  # paths — absolute patterns never match an internal file, so these allow
+  # rules are relative ON PURPOSE. They mirror the prompt's write zone exactly.
   - action: edit
     resource: "*"
     effect: deny
   - action: edit
-    resource: 'C:\Lavoro\Programming\Opencode_MSFS\*'
+    resource: ".cache_staging/*"
+    effect: allow
+  - action: edit
+    resource: "MSFS2024_informations.md"
+    effect: allow
+  - action: edit
+    resource: "MSFS2024_informations.md.bak"
     effect: allow
   # External dirs: cache workspace + local SDK pre-approved; everything else
   # falls through to a per-path approval prompt ("user hands me the path" gate).

@@ -60,6 +60,11 @@ Keep the trailing `\*` wildcards in the permission rules intact
 (e.g. `'C:\...\Opencode_MSFS\*'`). The SDK path `C:\MSFS 2024 SDK` also appears
 in the files — leave it if you have the SDK there, otherwise replace that too.
 
+> Note: the cache-updater's **write** rules (`edit` on `.cache_staging/*`,
+> `MSFS2024_informations.md`, `MSFS2024_informations.md.bak`) are deliberately
+> **relative** — OpenCode matches `edit` resources relative to the repo root, so
+> these need no editing and must not be converted to absolute paths.
+
 No other configuration is required: the project-level `opencode.jsonc` in this
 repo wires the `msfs2024-knowledge` reference **automatically** (relative path,
 resolved from the repo root) when OpenCode opens this directory. Nothing else

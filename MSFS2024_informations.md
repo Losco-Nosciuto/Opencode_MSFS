@@ -65,17 +65,17 @@ Kept current on every edition (maintained by the cache updater). Categories = al
 - **4. Blender Pipeline for Modeling and Animations** — 272
 - **5. Blender Third Parties (Addons / Plugins)** — 534
 - **6. Adobe 3D Painter Pipeline for Texturing** — 548
-- **7. Terrain Edition (Satellite and CGL)** — 554
-- **8. Projected Meshes** — 560
-- **9. RPN Schematics and Quirks** — 599
-- **10. DevMode - Texturing (Polygons and Aprons)** — 632
-- **11. DevMode - Workarounds** — 638
-- **12. DevMode - Runways** — 665
-- **13. DevMode - Various** — 671
-- **14. DevMode - Light Presets** — 678
-- **15. Open Questions (Unknowns)** — 684
-- **16. MSFS Programmability Gotchas** — 707
-- **17. Edition trail** — 771
+- **7. Terrain Edition (Satellite and CGL)** — 586
+- **8. Projected Meshes** — 592
+- **9. RPN Schematics and Quirks** — 631
+- **10. DevMode - Texturing (Polygons and Aprons)** — 664
+- **11. DevMode - Workarounds** — 670
+- **12. DevMode - Runways** — 697
+- **13. DevMode - Various** — 703
+- **14. DevMode - Light Presets** — 710
+- **15. Open Questions (Unknowns)** — 716
+- **16. MSFS Programmability Gotchas** — 739
+- **17. Edition trail** — 803
 
 ---
 
@@ -547,7 +547,39 @@ alongside the official exporter.)*
 
 ## 6. Adobe 3D Painter Pipeline for Texturing
 
-*(no entries yet — reserved for the Substance 3D Painter texturing pipeline.)*
+### MSFS 2024 material texture naming — `OcclusionRoughnessMetallicTex` (ORM), not "COMP"
+
+In MSFS 2024 the packed **occlusion + roughness + metallic** material map is
+officially named **`OcclusionRoughnessMetallicTex`** — that is the literal
+material property name in the 2024 SDK toolchain, with channel order
+**R = Occlusion (AO), G = Roughness, B = Metallic**:
+
+- `Tools\3dsMax\MSFS2024Package\scripts\msfs_max_py_2024\TextureTool2024\textureConfig.py:54-55`
+  — `if hasattr(mat, "OcclusionRoughnessMetallicTex"): metallicRoughnessTexture = mat.OcclusionRoughnessMetallicTex`
+- `Tools\3dsMax\MSFS2024Package\scripts\msfs_max_py_2024\BlenderBridge\msfs_2024\msfs_properties.py:270`
+  — `OMRTEXTURE … "OcclusionRoughnessMetallicTex"`
+- Channel-order label,
+  `Tools\Blender\addons\io_scene_gltf2_msfs_2024\blender\utils\msfs_material_utils.py:241`
+  — "Wear Occlusion (R), Roughness (G), Metallic (B), Intensity (A)".
+
+**"COMP" is not official** — it was community/authoring slang for the packed
+map; the documented concept is "Occlusion Metallic Roughness" / "Packed
+Channels". Browsing the **2024 SDK asset folders**, 2024-era shipped textures
+carry the long name where 2020-era packages used the short `_Comp_` suffix —
+e.g. `Panel_6050_OcclusionRoughnessMetallicTex` in the GroundVehicles folders
+(channel report, 21-22/10/2024). Related 2024 slot variants:
+`DetailOcclusionRoughnessMetallicTex`, `DirtOcclusionRoughnessMetallicTex`.
+
+**Practical consequence for the texturing pipeline:** when a texture-set
+exporter (Substance Painter preset, materialize, Gimp) asks for the "comp"/"ORM"
+map, it is this one slot — pack R=AO, G=Roughness, B=Metallic; nothing is
+renamed on export, only the authoring-tool label differs.
+
+**Status:** `fact (cited)` (local MSFS 2024 SDK file:line) + channel observation
+for the folder-naming comparison.
+**Source:** local SDK `C:\MSFS 2024 SDK` (paths/lines above); channel:
+ri-creativity / 3d_modeling_texturing dump (614nlv, mamu82; 21-22/10/2024).
+**Added:** 2026-09-21.
 
 ---
 
@@ -776,6 +808,7 @@ agent; rows are never removed. (Section numbers cited in rows before
 
 | Date | Summary |
 |---|---|
+| 2026-09-21 | Added §6 entry "MSFS 2024 material texture naming — `OcclusionRoughnessMetallicTex` (ORM), not \"COMP\"" (`fact (cited)`, source B → verified rung 1: local SDK `TextureTool2024\textureConfig.py:54-55`, `msfs_properties.py:270`, `msfs_material_utils.py:241`; channel observation for the `_Comp_`→long-name folder comparison). First entry in category 6 (reserved placeholder removed). Entry-level insert — no renumber. |
 | 2026-09-21 | Added §4 entry "Parallax Window material — fake behind-glass interiors (Blender workflow)" (`fact (cited)`, research request C: official MSFS2024 docs FlightSim Material Textures/Parameters + Parallax Windows page + local SDK addon source `msfs_material_parallax.py`/`msfs_material_utils.py`/`asobo_material_parallax_window.py` + glTF schema). Entry-level insert — no renumber. |
 | 2026-09-21 | Added §4 entry "Cascadeur animations — importing into Blender and the MSFS-compliant glTF export" (`fact (cited)`, research request C: SDK docs + SDK source + Cascadeur help). Entry-level insert — no renumber. |
 | 2026-09-21 | Added §4 entry "Mixamo FBX import — fix the location animation after applying the 0.01 scale" (`user-typed (authoritative)` + cited corroboration). Entry-level insert — no renumber. |
