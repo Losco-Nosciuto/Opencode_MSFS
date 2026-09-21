@@ -7,7 +7,7 @@ OpenCode agents plus a distilled, verified **MSFS 2024 development knowledge cac
 - The knowledge cache: [`MSFS2024_informations.md`](MSFS2024_informations.md)
 - The agents: [`custom agent/msfs-cache-updater.md`](custom%20agent/msfs-cache-updater.md) and [`custom agent/plan-msfs.md`](custom%20agent/plan-msfs.md)
 - The installer: [`utilities/install_agents.py`](utilities/install_agents.py)
-
+- The DeClogger for Discord Chats (import and filter whole discord channels): [`utilities/declog_chat.py`](utilities/declog_chat.py)
 ---
 
 ## Table of Contents
