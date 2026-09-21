@@ -21,7 +21,7 @@ OpenCode agents plus a distilled, verified **MSFS 2024 development knowledge cac
 
 ## Installation
 
-**Prerequisites:** [OpenCode](https://opencode.ai/v2/docs/) V2, and the [MSFS 2024 SDK](https://docs.flightsimulator.com/msfs2024) at `C:\MSFS 2024 SDK`.
+**Prerequisites:** [OpenCode](https://opencode.ai/v2/docs/) V2, and the [MSFS 2024 SDK](https://docs.flightsimulator.com/msfs2024) at `C:\MSFS 2024 SDK` — the root must also hold its `Documentation` and `Samples` folders (same root: agents read SDK sources + local docs + real samples, preferring local docs over online when the versions match).
 
 **Quick path (recommended):** run the [installer](utilities/install_agents.py) — it copies the agents into your global OpenCode config, re-points all hardcoded paths to this checkout (and your SDK), and backs up anything it overwrites:
 
@@ -45,7 +45,7 @@ python utilities/install_agents.py             # or --yes to skip prompts
 What it does:
 
 - **Three input contracts** — user-typed facts (taken as authoritative, always enriched with research), external files (Discord dumps / `.txt`, every claim verified), and on-demand research requests.
-- **Verification fallback chain** — cache first, then the local [MSFS 2024 SDK](https://docs.flightsimulator.com/msfs2024), then official docs ([docs.flightsimulator.com/msfs2024](https://docs.flightsimulator.com/msfs2024)), then community sources; everything labelled `fact (cited)` / `fact (memory)` / `empirical` / `inferred` / `unknown`.
+- **Verification fallback chain** — cache first, then the local [MSFS 2024 SDK](https://docs.flightsimulator.com/msfs2024) (sources **+ local `Documentation`** preferred over online when they match — version-gated — **+ real `Samples`**, incl. Wwise), then official docs ([docs.flightsimulator.com/msfs2024](https://docs.flightsimulator.com/msfs2024)), then community sources; everything labelled `fact (cited)` / `fact (memory)` / `empirical` / `inferred` / `unknown`.
 - **Anti-bloat, anti-loss, anti-search-loop rules** — canonical categories, one fact per entry, mandatory metadata, de-dup before insert, entryId-based cross-references, and a structural-edition protocol that never silently renumbers.
 - **One item per run** — ingests a single verified item per session turn via a live inventory (`<stem>_inventory.json` in `.cache_staging\`), then hands control back. No more overflowing sessions.
 - **Write-scoped** — edits only the cache workspace and `.cache_staging\` staging area; the raw-dump sanitizer lives in [`utilities/declog_chat.py`](utilities/declog_chat.py).

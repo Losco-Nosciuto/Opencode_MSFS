@@ -74,7 +74,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "--sdk",
         default=None,
         metavar="PATH",
-        help=f"your MSFS 2024 SDK path; replaces '{SDK_DEFAULT}' in the agents.",
+        help=(
+            f"your MSFS 2024 SDK root; replaces '{SDK_DEFAULT}' in the agents. "
+            "Documentation, Samples and the SDK itself must all be under this "
+            "single root.",
+        ),
     )
     p.add_argument(
         "--yes",
@@ -121,8 +125,13 @@ def ask_sdk_path(default_exists: bool) -> str | None:
     """Interactive prompt for an SDK location. Returns a path or None to keep default."""
     print()
     print(f"MSFS 2024 SDK not found at: {SDK_DEFAULT}")
+    print(
+        "IMPORTANT: the SDK root must also hold its Documentation and Samples "
+        "folders (the agents read all three; local docs are preferred over the "
+        "online docs when the versions match)."
+    )
     prompt = (
-        "Enter your SDK path, press Enter to keep the default, "
+        "Enter your SDK root path, press Enter to keep the default, "
         "or 'skip' to leave the agents unchanged here: "
     )
     answer = input(prompt).strip().strip('"').strip()
@@ -204,6 +213,15 @@ def main(argv: list[str] | None = None) -> int:
             sdk = ask_sdk_path(default_exists=False)
         elif not args.dry_run:
             print(f"note: SDK found at default location {SDK_DEFAULT} — leaving it as-is")
+
+    # Warn (non-fatal) when the effective SDK root lacks local docs/samples.
+    effective_sdk = sdk or SDK_DEFAULT
+    for sub in ("Documentation", "Samples"):
+        if not (Path(effective_sdk) / sub).is_dir():
+            print(
+                f"note: {effective_sdk}\\{sub} not found — agents will fall "
+                "back to the online docs / skip that sample set"
+            )
 
     if args.dry_run:
         print("\nDry run — nothing was written:")

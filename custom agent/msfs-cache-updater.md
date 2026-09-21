@@ -102,7 +102,8 @@ Permissions hard-block everything else; treat this list as the same law.
 Read-only companions (never write/edit/patch them):
 - `C:\Lavoro\Programming\Opencode_MSFS\utilities\MSFS2024_informations.guide.json` —
   the schema + rules manual.
-- The local SDK and everything else in `utilities\`.
+- The local SDK root (with its `Documentation` and `Samples` folders) and
+  everything else in `utilities\`.
 
 **Splitting/writing counts.** Splitting a big dump into extract files, or an
 edition into staging chunks, **is a write** — it is allowed, and it must land
@@ -149,9 +150,24 @@ supplies in the current conversation. Never proactively scan folders for dumps.
 
 0. **The cache itself** — master existing entries first; never re-litigate an
    entry that already carries a solid Status.
-1. **Local SDK** — `C:\MSFS 2024 SDK` (bundled add-on sources under
-   `Tools\Blender\addons\…`, `Schemas`, `ModelBehaviorDefs`, `SharedAssets`,
-   `WASM`); cite `file:line`. **Pre-approved for reads — no prompts.**
+1. **Local SDK** — `C:\MSFS 2024 SDK` (read-only, pre-approved — no prompts).
+   Three local grounds of truth live under this root:
+   - **SDK sources:** bundled add-on sources (`Tools\Blender\addons\…`),
+     `Schemas`, `ModelBehaviorDefs`, `SharedAssets`, `WASM`, `SimConnect SDK`.
+   - **Local documentation:** `Documentation\public` mirrors the online docs
+     for the same SDK version. Run the **version gate once per session** (one
+     consultation): read `C:\MSFS 2024 SDK\version.txt` (e.g. `1.7.3`) and
+     compare with the newest SDK version on the online release notes
+     (`docs.flightsimulator.com/msfs2024/retail/introduction/sdk-release-notes/`).
+     Equal → use the local docs (faster). Local newer → use local. **Online
+     newer → use online**, and tell the user they may want to update their
+     local SDK, Documentation and Samples.
+   - **Real-package samples:** `Samples\` (`DevmodeProjects`, `ModelBehavior`,
+     `VisualStudio`, and the `WWise` audio sample with its
+     `WwiseSampleProject` / `WwiseSampleProject_MFS2024` projects) — inspect on
+     demand to see how real packages and audio are wired; chunked reads
+     (≤ ~300 lines), snippet-only.
+   Cite sources as `file:line`.
 2. **Official remote** — `docs.flightsimulator.com/msfs2024` + DevSupport
    (`devsupport.flightsimulator.com`).
 3. **Community** — FSDeveloper (wiki + SDK DevMode forum), official MSFS

@@ -11,7 +11,10 @@ minutes and only requires changing **one path string**.
   `%USERPROFILE%\.config\opencode\agents\`)
 - Microsoft Flight Simulator **2024 SDK** installed at `C:\MSFS 2024 SDK`
   (the agents read it as a pre-approved reference — without it, change that
-  path in the agent files, see step 3)
+  path in the agent files, see step 3). The **SDK root must also hold its
+  `Documentation` and `Samples` folders** — all three live under the same root,
+  and the agents read all of them (local docs are preferred over online when
+  the versions match; the installer's SDK prompt reminds you of this).
 
 ## Step 1 — Clone
 
@@ -57,8 +60,12 @@ Replace: <your-absolute-repo-path>
 ```
 
 Keep the trailing `\*` wildcards in the permission rules intact
-(e.g. `'C:\...\Opencode_MSFS\*'`). The SDK path `C:\MSFS 2024 SDK` also appears
-in the files — leave it if you have the SDK there, otherwise replace that too.
+(e.g. `'C:\...\Opencode_MSFS\*'`). The SDK root `C:\MSFS 2024 SDK` also appears
+in the files (permission rules, the fallback chain, and the local
+docs/samples paths) — leave it if you have the SDK there, otherwise replace
+that too and keep `Documentation` + `Samples` under whichever root you choose.
+The installer (`--sdk`) rewrites it for you and reminds you about the
+same-root requirement.
 
 > Note: the cache-updater's **write** rules (`edit` on `.cache_staging/*`,
 > `MSFS2024_informations.json`, `MSFS2024_informations.json.bak`) are deliberately

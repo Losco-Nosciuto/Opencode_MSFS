@@ -63,8 +63,16 @@ Tier claims before researching:
      field semantics: consult `utilities\MSFS2024_informations.guide.json`.
   1. **Local SDK** (`C:\MSFS 2024 SDK`): any file related to the task —
      SDK-bundled add-on source (`Tools\Blender\addons\…`), `Schemas`,
-     `ModelBehaviorDefs`, `SharedAssets`, `WASM`, `SimConnect SDK`. Cite
-     `file:line`.
+     `ModelBehaviorDefs`, `SharedAssets`, `WASM`, `SimConnect SDK` — plus the
+     **local documentation** (`Documentation\public`, mirrors the online docs
+     for the same version) and **real-package samples** (`Samples\`:
+     `DevmodeProjects`, `ModelBehavior`, `VisualStudio`, `WWise`).
+     **Version gate (once per session):** compare `C:\MSFS 2024 SDK\version.txt`
+     (e.g. `1.7.3`) with the newest SDK version on the online release notes
+     (`docs.flightsimulator.com/msfs2024/retail/introduction/sdk-release-notes/`);
+     equal or local newer → use local docs; **online newer → use online** and
+     mention the user may want to update their local SDK/docs/samples. Samples
+     are inspected on demand, chunked, snippet-only. Cite `file:line`.
   2. **Remote official ground truth** — only if no local info: the official
      MSFS2024 docs (`docs.flightsimulator.com/msfs2024`) **and** the official
      SDK forum DevSupport (`devsupport.flightsimulator.com`).
@@ -116,6 +124,14 @@ Budget:
 4. **Deliver.** In-chat by default. If the user asks for a durable plan, write
    it to `~/.opencode/plan/` and give the path. Then summarize and tell the
    user to switch to Build mode.
+5. **Cache candidates — before handing off to Build.** If this task's research
+   surfaced facts worth caching that aren't already in the cache (check via
+   `msfs2024-knowledge` first), end your delivery with a short **Cache
+   candidates** block, one per new fact: entry title, 1–2-line claim, sources,
+   suggested status. Then propose switching to the **MSFS Cache Updater** to
+   add them before building. You never write the cache yourself (read-only);
+   the updater re-verifies every fact through its own chain (no fast-tracking).
+   If nothing new is worth caching, say so in one line and skip the block.
 
 ## Boundaries
 
