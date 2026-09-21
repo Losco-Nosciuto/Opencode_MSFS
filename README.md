@@ -4,10 +4,11 @@
 
 OpenCode agents plus a distilled, verified **MSFS 2024 development knowledge cache** — built to serve both you and the aviation-dev community. The workspace ships two [OpenCode](https://opencode.ai) agents and a growing reference cache, with install automation so a fresh machine is minutes away from running.
 
-- The knowledge cache: [`MSFS2024_informations.md`](MSFS2024_informations.md)
+- The knowledge cache: [`MSFS2024_informations.json`](MSFS2024_informations.json) (schema guide: [`utilities/MSFS2024_informations.guide.json`](utilities/MSFS2024_informations.guide.json); the old `.md` is history-only)
 - The agents: [`custom agent/msfs-cache-updater.md`](custom%20agent/msfs-cache-updater.md) and [`custom agent/plan-msfs.md`](custom%20agent/plan-msfs.md)
 - The installer: [`utilities/install_agents.py`](utilities/install_agents.py)
 - The DeClogger for Discord Chats (import and filter whole discord channels): [`utilities/declog_chat.py`](utilities/declog_chat.py)
+- The cache integrity gate + id helper: [`utilities/validate_cache.py`](utilities/validate_cache.py), [`utilities/get_entry_id.py`](utilities/get_entry_id.py)
 ---
 
 ## Table of Contents
@@ -31,7 +32,7 @@ python utilities/install_agents.py             # or --yes to skip prompts
 
 **Manual path:** copy [`custom agent/*.md`](custom%20agent/) into `~/.config/opencode/agents/`, then replace the single path prefix `C:\Lavoro\Programming\Opencode_MSFS` with your checkout path. The full step-by-step guide is in [`INSTALL.md`](INSTALL.md).
 
-**Knowledge reference:** this repo's [`opencode.jsonc`](opencode.jsonc) wires the [`msfs2024-knowledge`](MSFS2024_informations.md) reference automatically via a relative path — no further setup needed after cloning.
+**Knowledge reference:** this repo's [`opencode.jsonc`](opencode.jsonc) wires the [`msfs2024-knowledge`](MSFS2024_informations.json) reference automatically via a relative path — no further setup needed after cloning.
 
 [▲ Back to top](#top)
 
@@ -45,8 +46,8 @@ What it does:
 
 - **Three input contracts** — user-typed facts (taken as authoritative, always enriched with research), external files (Discord dumps / `.txt`, every claim verified), and on-demand research requests.
 - **Verification fallback chain** — cache first, then the local [MSFS 2024 SDK](https://docs.flightsimulator.com/msfs2024), then official docs ([docs.flightsimulator.com/msfs2024](https://docs.flightsimulator.com/msfs2024)), then community sources; everything labelled `fact (cited)` / `fact (memory)` / `empirical` / `inferred` / `unknown`.
-- **Anti-bloat, anti-loss, anti-search-loop rules** — canonical categories, one fact per entry, mandatory metadata, de-dup before insert, an INDEX that stays current, and a structural-edition protocol that never silently renumbers.
-- **One item per run** — ingests a single verified item per session turn via an inventory + todo board, then hands control back. No more overflowing sessions.
+- **Anti-bloat, anti-loss, anti-search-loop rules** — canonical categories, one fact per entry, mandatory metadata, de-dup before insert, entryId-based cross-references, and a structural-edition protocol that never silently renumbers.
+- **One item per run** — ingests a single verified item per session turn via a live inventory (`<stem>_inventory.json` in `.cache_staging\`), then hands control back. No more overflowing sessions.
 - **Write-scoped** — edits only the cache workspace and `.cache_staging\` staging area; the raw-dump sanitizer lives in [`utilities/declog_chat.py`](utilities/declog_chat.py).
 
 [▲ Back to top](#top)

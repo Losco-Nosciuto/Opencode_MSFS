@@ -2,8 +2,8 @@
   "$schema": "https://opencode.ai/config.json",
   "references": {
     "msfs2024-knowledge": {
-      "path": "./MSFS2024_informations.md",
-      "description": "Distilled, verified MSFS2024 knowledge cache. Consult BEFORE web research; entries carry Status (fact cited / fact memory / empirical / inferred / unknown / user-typed (authoritative)) + Source + date. Backed up externally."
+      "path": "./MSFS2024_informations.json",
+      "description": "Distilled, verified MSFS2024 knowledge cache (JSON). Consult BEFORE web research; entries carry statusValues (fact cited / fact memory / empirical / inferred / unknown / user-typed (authoritative)) + sources + dates. Backed up externally."
     }
   }
 }

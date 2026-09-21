@@ -1,0 +1,926 @@
+{
+  "formatVersion": 2,
+  "title": "MSFS2024 Knowledge Cache",
+  "description": "A distilled cache of verified MSFS2024 development knowledge, gathered from the official SDK & docs, DevSupport, the local SDK, and community sources. Consult this before searching the web again. Every entry carries a Status and a Source so you always know what to trust.\n\nThis file is exposed to sessions as the `msfs2024-knowledge` reference (project `.opencode/opencode.json` + global `~/.config/opencode/opencode.jsonc`) and backs up to an external drive.",
+  "created": "2026-09-20",
+  "usage": {
+    "title": "Using & contributing",
+    "rules": [
+      "For any MSFS2024-specific question, `/read` this file first. If it answers with a solid `Status`, stop — no web research needed.",
+      "Adding knowledge: verify first via the fallback chain (local SDK → official docs/DevSupport → community), then append a dated entry. Never bulk paste docs — keep entries atomic, snippet-sized.",
+      "User-typed claims (maintainer statements) are taken as true exactly as stated — status `user-typed (authoritative)`; additions from external files (dumps, pastes) go through the full verification chain first.",
+      "Every entry MUST carry `Status`, `Source`, `Added`. Status values:",
+      "Categories are the entries of the `categories` array, numbered via their `number` field (1–16); entries are objects in `category.entries`. An entry that fits more than one category lives once in its home category and is listed in each other relevant category's `crossReferences` array as `{title, entryId}` (title + entryId only). A category with no primary entries keeps a non-null `reserved` note so agents know the gap is deliberate, not missing."
+    ],
+    "statusLegend": [
+      {
+        "value": "fact (cited)",
+        "meaning": "official docs / SDK / shipped sim assets"
+      },
+      {
+        "value": "fact (memory)",
+        "meaning": "confident from recent use, not re-verified"
+      },
+      {
+        "value": "empirical",
+        "meaning": "community-tested in the sim, confirmed by multiple users"
+      },
+      {
+        "value": "inferred",
+        "meaning": "derived from cited facts, not directly confirmed"
+      },
+      {
+        "value": "unknown",
+        "meaning": "flagged, needs verification before building on it"
+      },
+      {
+        "value": "user-typed (authoritative)",
+        "meaning": "stated by the user, taken as true"
+      }
+    ]
+  },
+  "categories": [
+    {
+      "number": 1,
+      "title": "Scenery Objects",
+      "reserved": "no entries yet — reserved for static, non-simulated Scenery Editor objects.",
+      "entries": [],
+      "crossReferences": [
+        {
+          "title": "2024 animation parity note (scenery objects vs SimObjects)",
+          "entryId": "93545927-bcd0-58b0-a034-c7a5d61a0e97"
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "title": "Scenery SimObjects",
+      "reserved": null,
+      "entries": [
+        {
+          "id": "f4f0310c-1c8f-5465-ab77-d17ad5b085c9",
+          "title": "Scenery SimObjects read only global-scope variables — never the user aircraft's A: state",
+          "kind": "entry",
+          "claim": "Claim: RPN code on a scenery (non-aircraft) SimObject — animated hangar door, gate, windsock, character — cannot read the user aircraft's A: SimVars (`A:LIGHT LANDING`, `A:PLANE LATITUDE`, …). Aircraft-scoped A: variables have \"no effect at all\" there. What DOES evaluate:\n\n- L: — cross-object channel (an aircraft or WorldScript writes, the scenery SimObject reads).\n- E: — global environment/time vars (`E:LOCAL TIME`, `E:SIMULATION TIME`).\n- A: — but only own-object or global/environmental state: `A:AMBIENT WIND *`, `A:AMBIENT TEMPERATURE`, `A:SEA LEVEL PRESSURE`, `A:AMBIENT PRECIP STATE`, `A:ANIMATION DELTA TIME` (confirmed working); one poster found \"(A:SEA LEVEL PRESSURE…) is reading the pressure on the simobject, not on the aircraft\".\n\nConsequence: an \"interactable hangar door opened because my plane is near/parked\" can NOT condition directly on `(A:PLANE *)` inside the door's animation — the plane's state must be injected (see Pattern A / Pattern B below).",
+          "status": "`empirical` (multiple community posters, MSFS2020-confirmed, consistent with MSFS2024 behavior).",
+          "statusValues": [
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [
+            "FSDeveloper \"Visibility\" thread p.10 — https://www.fsdeveloper.com/forum/threads/visibility.449781/page-10"
+          ],
+          "user": null,
+          "added": "2026-09-20",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        },
+        {
+          "id": "5795f656-5908-5987-93f8-c1715bbc80c7",
+          "title": "Official corroboration — environment A: vars power SimObject animations",
+          "kind": "entry",
+          "claim": "The shipped Asobo behavior template (`Asobo/Misc/SimObjects`, windmill / windsock) animates from `(A:AMBIENT WIND VELOCITY,feet per second)` and `(A:AMBIENT WIND DIRECTION,degrees)` (+ `(A:ANIMATION DELTA TIME, seconds)`), and references `(A:PLANE HEADING DEGREES TRUE, degrees)` in the orientation formula — how that aircraft-var resolves in a world-SimObject's context is unverified (likely own-object/constant → wind relative to object; see the `A:PLANE HEADING DEGREES TRUE` open question in §15).",
+          "status": "`fact (cited)` (template exists as shipped).",
+          "statusValues": [
+            "fact (cited)"
+          ],
+          "confidence": null,
+          "sources": [
+            "official ModelBehaviors template source — https://docs.flightsimulator.com/msfs2024/html/5_Content_Configuration/Models/ModelBehaviors/TemplateExplorer/Asobo/Misc/SimObjects.html"
+          ],
+          "user": null,
+          "added": "2026-09-20",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        },
+        {
+          "id": "d20e0905-9d93-56ba-a0af-a8311bf31b89",
+          "title": "Multiplayer Near/Far SimVar propagation — aircraft ↔ aircraft only (RESOLVED 2026-09-20)",
+          "kind": "entry",
+          "claim": "Official wording (docs, Simulation Variables → \"Note On SimVars In Multiplayer\"):\n\n\"Microsoft Flight Simulator 2024 does not have the same concept of shared cockpit as previous versions, as such only a small number of variables are communicated between all aircraft … Near: these SimVars are transmitted to all aircraft within a 500m radius. Far: these SimVars are transmitted to all aircraft up to a maximum radius of 10,000m.\"\n\nResolution: the propagation is scoped to \"all aircraft\" — it exists so other aircraft instances can reproduce your lights/gear/surfaces. There is no official path for a scenery SimObject's RPN to read these (or any user-aircraft A:) values; the empirical record agrees (aircraft A: vars have \"no effect at all\" on scenery SimObjects — first entry). A scenery object that must react to the user plane has to use the Pattern A / Pattern B entries below (aircraft-written L: mirrors / WorldScript scenario trigger).\n\nNear list (≤500 m): `GEAR_ANIMATION_POSITION`, `GEAR_POSITION`, `GEAR_*_STEER_ANGLE`, control-surface PCTs, `SIM ON GROUND`, `GENERAL ENG STARTER ACTIVE`, prop/turbofan animation vars (`PROP ROTATION ANGLE`, `TURB_ENG_N1`, `TURB_ENG_AFTERBURNER*`, …). Far list (≤10 km): `LIGHT_*` (nav/taxi/landing/strobe/beacon/logo/wing/states), `GENERAL ENG RPM` / `COMBUSTION` (+ sound PCT), `GROUND_VELOCITY`, rotor/disk vars, `SIM ON GROUND`.",
+          "status": "`fact (cited)` (official wording) → resolution `inferred` (official scoping + empirical \"no effect\" record; the docs never mention scenery SimObjects explicitly, so treat as \"no\" with high, not absolute, confidence).",
+          "statusValues": [
+            "fact (cited)",
+            "inferred"
+          ],
+          "confidence": "high",
+          "sources": [
+            "MSFS2024 docs Simulation Variables index, \"Note On SimVars In Multiplayer\" — https://docs.flightsimulator.com/msfs2024/html/6_Programming_APIs/SimVars/Simulation_Variables.htm"
+          ],
+          "user": null,
+          "added": "2026-09-20",
+          "updated": null,
+          "resolved": "2026-09-20",
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        },
+        {
+          "id": "25274e73-125d-5f3e-bce2-819cb00e9df3",
+          "title": "Non-aircraft SimObjects are simulated and SimVar-controllable",
+          "kind": "entry",
+          "claim": "\"SimObjects are objects that are 'simulated' … can be controlled using SimVars, and usually have animations — contrary to the 'static' objects that can be created as Scenery Editor Objects.\" Non-aircraft kinds: boats, wildlife, humans, vehicles. Main file: `sim.cfg` or `container.cfg`.",
+          "status": "`fact (cited)`.",
+          "statusValues": [
+            "fact (cited)"
+          ],
+          "confidence": null,
+          "sources": [
+            "https://docs.flightsimulator.com/msfs2024/html/5_Content_Configuration/Modular_SimObjects/SimObjects/SimObjects.htm"
+          ],
+          "user": null,
+          "added": "2026-09-20",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        },
+        {
+          "id": "648c4c70-3fc2-5375-b50d-4e756c3863dd",
+          "title": "The `CATEGORY` SimVar — full sim.cfg category list",
+          "kind": "entry",
+          "claim": "`Airplane|Airship|Helicopter|HotAirBalloon` (aircraft.cfg) or, from sim.cfg: `AircraftPilot, Animal, Boat, CharacterSim, Container, ControlTower, FlyingAnimal, GroundVehicle, GroundVehiclePilot, Human, Liquid, Parachute, ProceduralCharacter, PylonSim, SimpleObject, SimpleObjectSim, StaticObject, Train, VDGS, Viewer, VR, Winch`.",
+          "status": "`fact (cited)`.",
+          "statusValues": [
+            "fact (cited)"
+          ],
+          "confidence": null,
+          "sources": [
+            "https://docs.flightsimulator.com/msfs2024/retail/programming-apis/simvars/miscellaneous-variables/"
+          ],
+          "user": null,
+          "added": "2026-09-20",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        },
+        {
+          "id": "5c37f0c6-4abc-5164-bb98-2af77ecfcfef",
+          "title": "SimObject package folders (2024)",
+          "kind": "entry",
+          "claim": "Main `sim.cfg` / `container.cfg`; allowed folders at same root: `animation > .xml`, `effects > .xml`, `interaction > <name>.loc` (2024 interaction system — semantics unverified, see the Open Questions entry in §15), `localization > <name>.loc`, `model > model.cfg/.xml`, `rtc > .xml`, `sound > sound.xml`, `soundai > soundai.xml`, `texture > texture.cfg/.xml`.",
+          "status": "`fact (cited)`.",
+          "statusValues": [
+            "fact (cited)"
+          ],
+          "confidence": null,
+          "sources": [
+            "same Non-Aircraft SimObjects page (above)."
+          ],
+          "user": null,
+          "added": "2026-09-20",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        },
+        {
+          "id": "e09c06fa-a6ce-5a03-a330-bc026ab86cd5",
+          "title": "2020 → 2024 SimObject conversion quirks",
+          "kind": "entry",
+          "claim": "Conversion-relevant differences (2024 docs, \"Using The SDK\" → SimObjects):\n\n- `.air` file removed: \"`.air` files (FSX flight model configuration files) have been removed in favor of exposing all flight model parameters in plain text `.cfg` files\" (`aircraft.cfg` / `sim.cfg` cover everything).\n- ModelBehaviors XML named after the glTF: \"this link is done through an `*.xml` file which is named after the name of its accompanying `*.gltf` file\" — `MODEL.gltf` ↔ `MODEL.xml`.\n- ≥1 asset group per package: \"Each package will require one or more asset group to be a valid package\"; an aircraft typically has several (SimObject + ModelLib + MaterialLib asset groups).\n- \"One SimObject per package\" (2020-era) superseded: 2024 packages can hold any content mix — \"a single project will have one or more independent packages… A package can contain any type of content supported by the simulation… defined by adding one or more Asset Groups\". (Docs never state the supersession explicitly — `inferred` from the cited structure.)",
+          "status": "`fact (cited)` (docs) for the first three; 2020-claim supersession `inferred` (derived from the cited 2024 package structure).",
+          "statusValues": [
+            "fact (cited)",
+            "inferred"
+          ],
+          "confidence": null,
+          "sources": [
+            "https://docs.flightsimulator.com/msfs2024/flighting/introduction/using-the-sdk/ (SimObjects → Structure / Model Behaviors; Creating Your First Package)"
+          ],
+          "user": null,
+          "added": "2026-09-20",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        },
+        {
+          "id": "53c5d037-1e0e-534c-b4aa-3b26dbc89a65",
+          "title": "Pattern A — Scenario proximity trigger (reacts to the user by design)",
+          "kind": "entry",
+          "claim": "WorldScript `SimMission.RectangleArea` + `ProximityTrigger` (`ObjectFilter>User`), `OnEnter`/`OnExit` → `PlayBlendTreeStateAction` driving the door blend-tree animation. This is the pattern Asobo shipped in the NZTL hangar (`NZTL_Hangar3Door.spb`).",
+          "status": "`empirical` (community-mined from shipped sim assets).",
+          "statusValues": [
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [
+            "FSDeveloper — https://www.fsdeveloper.com/forum/threads/triggering-hangar-door-animation-in-simobject-by-distance.451392/"
+          ],
+          "user": null,
+          "added": "2026-09-20",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        },
+        {
+          "id": "32fab0dd-8105-536b-b3d9-c0ddb63cd71d",
+          "title": "Pattern B — Aircraft writes `L:` mirrors",
+          "kind": "entry",
+          "claim": "The aircraft (WASM/ModelBehaviors) computes proximity or toggles and writes `L:` vars; the door animation reads them. Works because `L:` is the verified cross-object channel (see §2, first entry). Live example: parallel42 msfs-keyfob (aircraft WASM → global vars consumed by a scenery keyfob SimObject) — https://github.com/parallel42/msfs-keyfob",
+          "status": "`empirical` (shipped product).",
+          "statusValues": [
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [],
+          "user": null,
+          "added": "2026-09-20",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        }
+      ],
+      "crossReferences": []
+    },
+    {
+      "number": 3,
+      "title": "Aircraft Simobjects",
+      "reserved": "no entries yet — reserved for `aircraft.cfg` / aircraft SimObject specifics.",
+      "entries": [],
+      "crossReferences": [
+        {
+          "title": "The `CATEGORY` SimVar — full sim.cfg category list",
+          "entryId": "648c4c70-3fc2-5375-b50d-4e756c3863dd"
+        },
+        {
+          "title": "SimObject package folders (2024)",
+          "entryId": "5c37f0c6-4abc-5164-bb98-2af77ecfcfef"
+        },
+        {
+          "title": "2020 → 2024 SimObject conversion quirks",
+          "entryId": "e09c06fa-a6ce-5a03-a330-bc026ab86cd5"
+        },
+        {
+          "title": "Pattern B — Aircraft writes `L:` mirrors",
+          "entryId": "32fab0dd-8105-536b-b3d9-c0ddb63cd71d"
+        },
+        {
+          "title": "Multiplayer Near/Far SimVar propagation — aircraft ↔ aircraft only",
+          "entryId": "d20e0905-9d93-56ba-a0af-a8311bf31b89"
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "title": "Blender Pipeline for Modeling and Animations",
+      "reserved": null,
+      "entries": [
+        {
+          "id": "81cd568b-dc4b-575f-88a8-3d77e191c941",
+          "title": "Blender glTF exporter line-up (2020 → 2024)",
+          "kind": "entry",
+          "claim": "Official MSFS2020 Asobo exporter — `io_scene_gltf2_msfs_2020` — distributed on https://github.com/AsoboStudio/glTF-Blender-IO-MSFS. Supports Blender 3.3.x / 3.6.x / 4.2.x / 4.5.x LTS; requires the Khronos `io_scene_gltf2` add-on; cannot import package-built glTF; not compatible with the FSX legacy exporter.\n\nOfficial MSFS2024 exporter — `io_scene_gltf2_msfs_2024` — ships in the SDK under `Tools\\Blender\\addons\\` (local install) alongside `wipermask_generator_msfs_2024`; the same folder also carries `lod_tools_msfs_2024` and `max_bridge_msfs_2024`. Docs: \"The Blender Plugin\" / \"The Blender Exporter\" (Models And Textures → Plugins).\n\nThe 2020 and 2024 plugins can be installed side by side, but never enable both at the same time. The 2024 exporter has an \"Enable Auto LOD\" option in its Lod Group Settings: the export emits LOD0 only; the remaining LODs are generated at build time via Simplygon (see the AutoLOD entry).\n\nCommunity forks exist: Krajken / flybywiresim ports, KJA1582 `io_scene_gltf2_msfs_kh_2024`.",
+          "status": "`fact (cited)` — official repo README + SDK-bundled add-on source; fork list `empirical`.",
+          "statusValues": [
+            "fact (cited)",
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [
+            "https://github.com/AsoboStudio/glTF-Blender-IO-MSFS",
+            "local SDK `Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024`",
+            "https://docs.flightsimulator.com/msfs2024/html/3_Models_And_Textures/Plugins/Blender_Plugin/The_Blender_Plugin.htm"
+          ],
+          "user": null,
+          "added": "2026-09-20",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        },
+        {
+          "id": "ba53a7fe-c1a6-5f06-90ee-2f32fb82d797",
+          "title": "AutoLOD — Simplygon integrated LOD generation (2024)",
+          "kind": "entry",
+          "claim": "The 2024 build pipeline integrates the Simplygon SDK for automatic LOD generation (\"AutoLOD\"), applied per ModelLib asset group. Requirements and behavior:\n\n- Licensed Simplygon SDK installed under `C:\\Users\\<user>\\AppData\\Local\\Microsoft\\SimplygonSDK`; Asobo ships `LodProcessingPresets\\*.xmlod` preset files with the SDK (selectable in Simplygon Options → Preferences → General → Preset Directories).\n- Source files must be named `[MODEL]_LOD0.gltf` / `.bin`; the model XML declares `<LODS autoGenerate=\"true\"></LODS>` and must not contain `<LOD/>` entries (remove them all).\n- Build generates 7 LODs: LOD1 70% / LOD2 50% / LOD3 35% / LOD4 20% / LOD5 10% / LOD6 5% / LOD7 minSize ≤ 1%.\n- DevMode: \"Debug LODs\" window + \"Enable Force Active LOD\" to preview LODs.\n- Docs note manually authored LODs generally give better results — use AutoLOD as the convenience path (exporter-side: 2024 Blender exporter \"Enable Auto LOD\" exports LOD0 only — see exporter entry above).",
+          "status": "`fact (cited)` (official docs + SDK-bundled presets).",
+          "statusValues": [
+            "fact (cited)"
+          ],
+          "confidence": null,
+          "sources": [
+            "https://docs.flightsimulator.com/msfs2024/html/3_Models_And_Textures/Modeling/Landscape/Using_Simplygon_To_Generate_LODs.htm",
+            "local SDK `LodProcessingPresets\\`"
+          ],
+          "user": null,
+          "added": "2026-09-20",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        },
+        {
+          "id": "86a65df2-cac3-5b3c-9b17-77461e23831c",
+          "title": "KTX2 / KTX2P — marketplace vs community texture compile (2024)",
+          "kind": "entry",
+          "claim": "The Package Tool (in-sim build automation) compiles `*.gltf → *.glb`, `*.png → *.ktx2` and `*.xml → *.bgl` at build. Texture facts (official):\n\n- Marketplace-ingested builds produce non-standard KTX2: \"there are circumstances where these files are non-standard and use a propriety format … This happens when a project is built for ingestion into the Marketplace specifically\" — not editable/viewable like normal KTX2.\n- Community KTX2 are standard compliant (\"as they do not go through marketplace ingestion\"); ingested packages become standard compliant via the VFS Projector.\n- Pixel values are not directly comparable to the source PNG/JPG after build (\"pixel data is modified for consumption by the games shaders\") — for community and marketplace builds.\n- KTX2P is purely a streaming optimization: packs several related KTX2 files (e.g. albedo/norm/comp/emissive) so they stream in a single HTTP request; if absent, the sim falls back to the regular KTX2. If you modify KTX2 post-build but leave the KTX2P, the sim may use the old data — remove the KTX2P (post-build KTX2 edits are strongly discouraged).\n\nChannel observation (Feb 2025, fs-sdk, single poster): marketplace builds came out roughly 2× the size, textures left uncompressed for streaming — `empirical`, not doc-confirmed (docs attribute streaming to KTX2P instead).",
+          "status": "`fact (cited)` (official docs quotes) + `empirical` (channel size observation).",
+          "statusValues": [
+            "fact (cited)",
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [
+            "https://docs.flightsimulator.com/msfs2024/flighting/introduction/using-the-sdk/ (\"KTX2 And KTX2P Files\")",
+            "channel: fs-sdk dump (Feb 2025)."
+          ],
+          "user": null,
+          "added": "2026-09-20",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        },
+        {
+          "id": "6f8372a1-2b16-5cdf-a557-efbe5e44c043",
+          "title": "Alpha & transparency flicker — alphaMode=BLEND bug + glass-on-glass in 2024",
+          "kind": "entry",
+          "claim": "- DevSupport report (Jun 2024, exporter 3.3.1 on Blender 4.2): export always defaulted to `\"alphaMode\": \"BLEND\"` regardless of the shader setup (`gather_alpha_info` in `gltf2_blender_search_node_tree.py` falls through to BLEND) → flickering in the MSFS engine (materials blending with background textures). Same 3.3.1 exporter on Blender 3.6 LTS exports correct modes. Community temp fix: patch `gather_material_hook` in the exporter to force the MSFS alpha-mode setting into the glTF.\n- Channel report (fs-sdk, 20/03/2025, single poster): in MSFS 2024 alpha problems persist — notably glass-on-glass with certain light combinations, \"less than in 2020\" but still present. Workaround applied: textures without an alpha channel; transparency expressed via base-color alpha only.\n- 2020-era docs (Materials, 3ds Max plugin) document the underlying mechanic: overlapping transparent/Decal materials sort by mesh center, causing flicker; the Draw Order parameter offsets the render sorting distance.",
+          "status": "`empirical` (DevSupport bug-report thread + single-poster channel report) + `fact (cited)` (2020-era docs Draw Order paragraph, labeled).",
+          "statusValues": [
+            "empirical",
+            "fact (cited)"
+          ],
+          "confidence": null,
+          "sources": [
+            "https://devsupport.flightsimulator.com/t/blender-4-2-exporter-3-3-1-alphamode-blend-always/17564",
+            "channel: fs-sdk dump (20/03/2025)",
+            "https://docs.flightsimulator.com/html/Asset_Creation/3DS_Max_Plugin/Materials.htm (2020-era docs)"
+          ],
+          "user": null,
+          "added": "2026-09-20",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        },
+        {
+          "id": "d6de0337-a89f-53e9-9179-b55246a96f6f",
+          "title": "Mixamo FBX import — fix the location animation after applying the 0.01 scale",
+          "kind": "entry",
+          "claim": "Mixamo rigs import with the armature object scaled to `0.01` (Mixamo works in centimetres; the importer keeps the unit conversion on the object instead of rewriting bone/keyframe values). Applying Rotation & Scale to get an identity transform leaves the rotation keys correct but the location keys in the old units, so the hips (master) bone ends up ~100× out and the character drifts.\n\nProcedure (fix the location F-curves):\n\n1. Import the Mixamo rig / animation. Note the scale it comes in at — usually `0.01`, but always confirm (N-panel → Item → Scale).\n2. Apply rotation and scale (`Ctrl+A` → Apply → Rotation & Scale).\n3. Open the Graph Editor. Set the 2D cursor to frame 0, and the pivot to 2D Cursor Relative (top-right of the Graph Editor — the same control as the 3D View pivot menu).\n4. Pose Mode → select all bones; in the Graph Editor filter box type `Location`.\n5. Scale the location keys on the Y axis (in the Graph Editor, Y = the value axis), confirm, then set the operator's Y value to the original scale you noted (e.g. `0.01`) and confirm. (Keyboard path: `S`, `Y`, `0.01`, `Enter`, pointer over the Graph Editor.)\n\nFor FK-only rigs like Mixamo only the hips/master bone location curves actually matter (the rest are rotation-driven), so \"select all + filter Location\" is safe.\n\nNotes (`fact (cited)` unless marked otherwise):\n\n- Root cause: applying the object scale changes the skeleton↔unit ratio by 100× without touching the stored location values (Blender SE Q309202).\n- Alternative: don't apply the scale at all — leave the armature at `0.01` (engines handle it); only bake it in if you do it consistently to every armature in the file, else clips \"fly\" 100× (Cinevva 2026).\n- Some authors set the scene to Metric / Unit Scale `0.01` / Length `cm` before importing from Mixamo to avoid the mismatch (dev.btro.jp, 2025-07-09).\n- Mixamo bones import in Quaternion rotation mode (Blender defaults to XYZ Euler) — relevant when hand-keying on top of a clip (jMonkeyEngine wiki).\n- MSFS relevance: fix the location curves before the glTF export, or the exported clip carries the wrong translation and drifts in-sim. (inferred)",
+          "status": "`user-typed (authoritative)` (procedure stated by the maintainer); the Notes are cited corroboration.",
+          "statusValues": [
+            "user-typed (authoritative)"
+          ],
+          "confidence": null,
+          "sources": [
+            "maintainer (user-typed), 2026-09-21",
+            "Blender StackExchange Q309202 (https://blender.stackexchange.com/questions/309202/) and Q268280 (https://blender.stackexchange.com/questions/268280/)",
+            "Cinevva \"Mixamo to Blender 2026\" — https://app.cinevva.com/guides/mixamo-to-blender-2026",
+            "https://dev.btro.jp/2025/07/09/blender-mixamo-import-to-blender-scale-fix"
+          ],
+          "user": null,
+          "added": "2026-09-21",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        },
+        {
+          "id": "84b783d0-1c0a-50df-acc4-095d041a3aae",
+          "title": "Cascadeur animations — importing into Blender and the MSFS-compliant glTF export",
+          "kind": "entry",
+          "claim": "Import (Cascadeur → Blender). Cascadeur cannot emit glTF; export FBX (`File → Export → Export FBX/DAE`, preset Scene = model+animation or Animation = motion+skeleton only), with `Type fbx ascii` = Binary. In Blender use `File → Import → FBX` with defaults, but do NOT enable \"Automatic Bone Orientation\" (it corrupts the joints' rotations → broken animation). Collada is deprecated since Blender 4.5. Cascadeur uses centimetres, Blender metres (a Blender scale-1 model arrives at 100 in Cascadeur); Cascadeur's own advice to avoid scale/rotation drift is `Blender → target engine → Cascadeur → target engine`. If bones ignore the animation after applying the action, check each bone's Rotation mode in Pose Mode (Euler vs Quaternion). Cascadeur stores data on every frame, so curves arrive already dense/baked.\n\nMSFS compliance (export from Blender). MSFS 2024 stores animations as glTF (`.gltf`, not `.glb`-with-embedded-textures); use the SDK Multi-Exporter `io_scene_gltf2_msfs_2024` — supported only on Blender 3.3 / 3.6 / 4.2 / 4.5 LTS. Key rules + the options that enforce them:\n\n- Negative keyframes are rejected — the sim does not support them and the plugin errors on export; set `Negative Frames = Slide` or `Crop`.\n- Bake constraints/drivers/IK with `Bake All Objects Animations`.\n- `Always Sample Animations` (default on) + `Sampling Rate` (1–120).\n- One clip per action (Blender 4.5, advised) or per NLA track (≤4.2) — each becomes a named glTF animation referenced by the ModelBehaviors XML.\n- `Reset pose bones between actions` (default on) when clips do not key every bone; `Set all glTF Animation starting at 0` for loops.\n- For SimObjects also: `Use Asobo Unique ID Extension` + `Remove LOD Prefix`\n+ `Generate TextureLib` + `Optimise Animation Size`.",
+          "status": "`fact (cited)` (SDK docs + SDK source + Cascadeur help).",
+          "statusValues": [
+            "fact (cited)"
+          ],
+          "confidence": null,
+          "sources": [
+            "MSFS SDK — The Blender Exporter / The Blender Plugins / Model Exporting (docs.flightsimulator.com/msfs2024)",
+            "SDK source `Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\io\\exp\\export_settings.py` (animation options, lines 745-853)",
+            "Cascadeur help — Export to Blender / Import from Blender (cascadeur.com/help)."
+          ],
+          "user": null,
+          "added": "2026-09-21",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "d6de0337-a89f-53e9-9179-b55246a96f6f",
+              "note": "same \"foreign clip → Blender → MSFS\" shape."
+            }
+          ],
+          "tags": [],
+          "_notes": null
+        },
+        {
+          "id": "6a81feda-b55b-5507-9e8e-f98f069bb9f6",
+          "title": "Parallax Window material — fake \"behind glass\" interiors (Blender workflow)",
+          "kind": "entry",
+          "claim": "The Parallax Window FlightSim material renders a fake interior behind window geometry with a parallax shader + a special texture layout — no interior geometry needed. In MSFS 2024 it's a dedicated material type (Blender panel material type `msfs_parallax_window`; glTF extension `ASOBO_material_parallax_window`) and the successor of the older 2020-era parallax tricks. It can be applied to any surface (building / airport / porthole windows).\n\nHow it works: the shader tiles the fake rooms using the second UV set (`UVMap2` in Blender, `UV2` in 3ds Max); Room Scale X/Y act on that UV set, so the fake-room layout is only as good as the UVMap2.\n\nTexture slots (ParallaxWindow set, in order): Base Color (Front Glass Color) · Occlusion(R) Roughness(G) Metallic(B) · Normal (Front Glass Normal) · Emissive Ins Window (RGB) offset Time (A) · Behind Glass Color (RGB) Alpha (A) · Occlusion (UV2).\n\nRoom-grid rule (critical): Emissive Ins Window and Behind Glass Color must each be subdivided into a grid matching Room Count, each cell holding one room image sized relative to the cell's UV as: vertically floor 1/4, roof 1/2, walls 1/4; horizontally left wall 1/4, back wall 1/2, right wall 1/4. \"Behind Glass Color (RGB) A\" = interior albedo, \"Emissive Ins Window (RGB) A\" = interior emissive — both respect the same grid.\n\nParallax parameters (Blender panel):\n\n- Room Scale X / Y — multiplier on the UVMap2 size of the fake room (horizontal / vertical); Room Scale Z — depth multiplier of the fake rooms.\n- Room Count — number of rooms available on the two grid textures.\n- Corridor — toggle: left/right walls are not rendered → rooms connect on the horizontal axis → corridor look from an angle.\n\nBlender addon specifics (SDK source): Alpha mode forced to `MASK` (`msfs_material_parallax.py:87-89`); defaults Room Scale X/Y/Z = 0.5/0.5/0.5, Room Count = 5, Corridor = off (`blender\\utils\\msfs_material_utils.py:157-162`); material type `msfs_parallax_window` (`io\\com\\extensions\\material\\asobo_material_common.py:358`); extension/export `ASOBO_material_parallax_window` (`asobo_material_parallax_window.py`); glTF schema: `parallaxScale`, `roomSizeXScale`, `roomSizeYScale`, `roomNumberXY`, `behindWindowMapTexture` (`Schemas\\ASOBO_material_parallax_window\\gltf.ASOBO_material_parallax_window.schema.json`). Shader techs: `Tech_Parallax` / `Tech_Parallax_TwoSide` (`Fx\\MSFS2024Material_ParallaxWindow.fx`). Parallax Window excluded from detail-map slots (no detail maps, 3ds Max UI).\n\nPorthole material (same trick, aircraft): albedo alpha encodes depth — glass 0.8–1, frame 0.5–0.75, invisible 0; normals only on the frame exterior, never the interior (else applied to the glass); emissive = interior projection, tileable horizontally, opposing windows at alpha 0 (becomes transparent and receives global lighting); mesh normals must be oriented horizontally (e.g. Edit Normals); the effect degrades at extreme angles — keep albedo alpha consistent and set occlusion (R) white on the exterior side of the window.",
+          "status": "`fact (cited)` — official MSFS2024 SDK docs + SDK addon source + schema.",
+          "statusValues": [
+            "fact (cited)"
+          ],
+          "confidence": null,
+          "sources": [
+            "docs.flightsimulator.com/msfs2024 — FlightSim Material Textures (§ParallaxWindow), FlightSim Material Parameters (§Parallax Parameters), Parallax Windows (models-and-textures/modeling/aircraft/airframe/parallax-windows/)",
+            "SDK source `Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\blender\\material\\msfs_material_parallax.py` + `blender\\utils\\msfs_material_utils.py` + `io\\com\\extensions\\material\\asobo_material_parallax_window.py`",
+            "`Schemas\\ASOBO_material_parallax_window\\gltf.ASOBO_material_parallax_window.schema.json`."
+          ],
+          "user": null,
+          "added": "2026-09-21",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "6f8372a1-2b16-5cdf-a557-efbe5e44c043",
+              "note": "window/glass materials share the alphaMode pitfalls."
+            }
+          ],
+          "tags": [],
+          "_notes": null
+        }
+      ],
+      "crossReferences": []
+    },
+    {
+      "number": 5,
+      "title": "Blender Third Parties (Addons / Plugins)",
+      "reserved": "no entries yet — reserved for third-party Blender add-ons / plugins used alongside the official exporter.",
+      "entries": [],
+      "crossReferences": [
+        {
+          "title": "Blender glTF exporter line-up (2020 → 2024)",
+          "entryId": "81cd568b-dc4b-575f-88a8-3d77e191c941"
+        },
+        {
+          "title": "AutoLOD — Simplygon integrated LOD generation (2024)",
+          "entryId": "ba53a7fe-c1a6-5f06-90ee-2f32fb82d797"
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "title": "Adobe 3D Painter Pipeline for Texturing",
+      "reserved": null,
+      "entries": [
+        {
+          "id": "8cf8364f-9f46-5c46-ab7c-9f8a50da91bf",
+          "title": "MSFS 2024 material texture naming — `OcclusionRoughnessMetallicTex` (ORM), not \"COMP\"",
+          "kind": "entry",
+          "claim": "In MSFS 2024 the packed occlusion + roughness + metallic material map is officially named `OcclusionRoughnessMetallicTex` — that is the literal material property name in the 2024 SDK toolchain, with channel order R = Occlusion (AO), G = Roughness, B = Metallic:\n\n- `Tools\\3dsMax\\MSFS2024Package\\scripts\\msfs_max_py_2024\\TextureTool2024\\textureConfig.py:54-55` — `if hasattr(mat, \"OcclusionRoughnessMetallicTex\"): metallicRoughnessTexture = mat.OcclusionRoughnessMetallicTex`\n- `Tools\\3dsMax\\MSFS2024Package\\scripts\\msfs_max_py_2024\\BlenderBridge\\msfs_2024\\msfs_properties.py:270` — `OMRTEXTURE … \"OcclusionRoughnessMetallicTex\"`\n- Channel-order label, `Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\blender\\utils\\msfs_material_utils.py:241` — \"Wear Occlusion (R), Roughness (G), Metallic (B), Intensity (A)\".\n\n\"COMP\" is not official — it was community/authoring slang for the packed map; the documented concept is \"Occlusion Metallic Roughness\" / \"Packed Channels\". Browsing the 2024 SDK asset folders, 2024-era shipped textures carry the long name where 2020-era packages used the short `_Comp_` suffix — e.g. `Panel_6050_OcclusionRoughnessMetallicTex` in the GroundVehicles folders (channel report, 21-22/10/2024). Related 2024 slot variants: `DetailOcclusionRoughnessMetallicTex`, `DirtOcclusionRoughnessMetallicTex`.\n\nPractical consequence for the texturing pipeline: when a texture-set exporter (Substance Painter preset, materialize, Gimp) asks for the \"comp\"/\"ORM\" map, it is this one slot — pack R=AO, G=Roughness, B=Metallic; nothing is renamed on export, only the authoring-tool label differs.",
+          "status": "`fact (cited)` (local MSFS 2024 SDK file:line) + channel observation for the folder-naming comparison.",
+          "statusValues": [
+            "fact (cited)"
+          ],
+          "confidence": null,
+          "sources": [
+            "local SDK `C:\\MSFS 2024 SDK` (paths/lines above)",
+            "channel: ri-creativity / 3d_modeling_texturing dump (614nlv, mamu82; 21-22/10/2024)."
+          ],
+          "user": "614nlv, mamu82",
+          "added": "2026-09-21",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        }
+      ],
+      "crossReferences": []
+    },
+    {
+      "number": 7,
+      "title": "Terrain Edition (Satellite and CGL)",
+      "reserved": "no entries yet — reserved for satellite imagery and CGL terrain editing.",
+      "entries": [],
+      "crossReferences": []
+    },
+    {
+      "number": 8,
+      "title": "Projected Meshes",
+      "reserved": null,
+      "entries": [
+        {
+          "id": "03dad8d5-f8f4-5f23-a258-4515e5400dcb",
+          "title": "Projected Mesh objects — independent placement outside airports",
+          "kind": "entry",
+          "claim": "A Projected Mesh renders a scenery model projected flat onto terrain (2D) instead of in 3D — used in airports to add terrain detail.\n\n- Independent placement (2024): \"By default, Projected Mesh objects require one or more Airport Objects to be present in the scene… If no airport is present and you still require a Projected Mesh, then you should check the box labelled Independent Object before adding it to the scene\" — the group is then created in the scenery root instead of inside an airport group. (This confirms the community technique for non-airport areas; fs-sdk channel, mamu82, 15/05/2024.)\n- Overlap & draw order: overlapping meshes must have different priorities (higher = rendered over lower; same-priority order is not guaranteed). Draw Before slots the mesh into the render hierarchy (e.g. before MARKINGS → over aprons/taxiways/runways, under markings/marking text). Placed outside the airport Object Test Radius → not rendered.\n- Rendering: meshes are baked into the terrain textures (polycount savings, terraformable) — quality capped by terrain resolution (~4mm/px at the equator; best LODs reserved for airports; increases with the \"Terrain level of detail\" setting). The source object itself is not required in the final package (baked into the glTF).\n- Authoring constraints: export models without translation/rotation/ scale (transforms are dropped — use the Scenery Editor Gizmo instead); only albedo, metal-rough-AO, normal maps + detail counterparts are allowed — metal and AO components are not used. Ground Merging blends terrain with the material textures; Surface Type has no visual effect (choose it for correct VFX/audio); snow coverage is automatic (darker areas less snow; asphalt/cement/paint materials and roads reduce it).",
+          "status": "`fact (cited)` (2024 docs; channel report corroborated).",
+          "statusValues": [
+            "fact (cited)"
+          ],
+          "confidence": null,
+          "sources": [
+            "https://docs.flightsimulator.com/msfs2024/flighting/devmode/editors/scenery-editor/objects/projectedmesh-objects/",
+            "channel: fs-sdk dump (mamu82, 15/05/2024)."
+          ],
+          "user": "mamu82",
+          "added": "2026-09-20",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        }
+      ],
+      "crossReferences": []
+    },
+    {
+      "number": 9,
+      "title": "RPN Schematics and Quirks",
+      "reserved": null,
+      "entries": [
+        {
+          "id": "d1451c78-5b98-519c-951c-187a4defbfaa",
+          "title": "Variable types reference — RPN variable prefixes (A: L: E: Z: O: P: H: K: B:)",
+          "kind": "entry",
+          "claim": "Prefix | Meaning | Scope / notes\n`A:` | SimVar — sim state read/write | Scenery context: own-object + global-sim/env only; user-aircraft state readable only from the aircraft itself\n`L:` | Custom variable | Per-SimObject, but the reliable cross-object channel in practice; saved with flight\n`E:` | Environment variable (time, …) | Global\n`Z:` | Script-scope temporary | Community-observed in RPN scripts; formally unverified\n`O:` | ModelBehaviors runtime scratch (`O:XMLVAR_*` — jetway hoods, etc.) | Used in official templates; formal scope unverified\n`P:` | FSX-era panel/param vars; Asobo gauge code seen using `P:LOCAL TIME` | Legacy context; not needed for scenery work\n`H:` / `K:` | Key / input events | Client-side input events, not read-back variables\n`B:` | B-events (custom events) | Not readable as variables (MobiFlight wiki, SU9-era)\n\nA:/L:/E: = confirmed; Z:/O:/P:/H:/K:/B: = empirical/legacy, marked per cell.",
+          "status": "`user-typed (authoritative)` (maintainer-marked 2026-09-21; per-prefix confidence still noted per row).",
+          "statusValues": [
+            "user-typed (authoritative)"
+          ],
+          "confidence": null,
+          "sources": [
+            "maintainer (user-typed), 2026-09-21."
+          ],
+          "user": null,
+          "added": "2026-09-20",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        }
+      ],
+      "crossReferences": [
+        {
+          "title": "Scenery SimObjects read only global-scope variables — never the user aircraft's A: state",
+          "entryId": "f4f0310c-1c8f-5465-ab77-d17ad5b085c9"
+        },
+        {
+          "title": "Pattern A — Scenario proximity trigger (reacts to the user by design)",
+          "entryId": "53c5d037-1e0e-534c-b4aa-3b26dbc89a65"
+        },
+        {
+          "title": "Pattern B — Aircraft writes `L:` mirrors",
+          "entryId": "32fab0dd-8105-536b-b3d9-c0ddb63cd71d"
+        },
+        {
+          "title": "ModelBehaviors `Update` components unreliable on Landmark SimObjects in 2024",
+          "entryId": "b17fb0a4-cb15-5454-9bdb-2d22b5be3cd4"
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "title": "DevMode - Texturing (Polygons and Aprons)",
+      "reserved": "no entries yet — reserved for DevMode polygon/apron texturing.",
+      "entries": [],
+      "crossReferences": []
+    },
+    {
+      "number": 11,
+      "title": "DevMode - Workarounds",
+      "reserved": null,
+      "entries": [
+        {
+          "id": "90ca5472-4a58-5a9f-9fef-3d68d3a452d4",
+          "title": "SU1-beta asset-display bug — project opens, assets invisible (single report)",
+          "kind": "entry",
+          "claim": "Channel report (fs-sdk, salvuz, 13/02/2025, single poster, 1 👍): on the SU1 Beta (1.3.x line), opening a project works but no assets are displayed in the editors — scenery objects, SimObjects and projected meshes all missing. Building still succeeds with no errors; the same project reopened on the current stable has no problem. The project was originally 2020-era, worked on in 2024 pre-SU1, all assets re-exported with the 2024 Blender exporter at the time.\n\nWorkaround (confirmed same day by the poster): create a new project and use the Import function — assets re-import in one pass and everything works.\n\nNo DevSupport thread corroborating this exact SU1-beta symptom was found during verification (adjacent threads exist: 2020-SimObject auto-convert prompts, generic \"assets not loading\") → low confidence, single-user record.",
+          "status": "`empirical` (single-user report + same-day fix; low confidence).",
+          "statusValues": [
+            "empirical"
+          ],
+          "confidence": "low",
+          "sources": [
+            "fs-sdk dump (salvuz, 13/02/2025, declog 83153-83180)."
+          ],
+          "user": "salvuz",
+          "added": "2026-09-20",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        }
+      ],
+      "crossReferences": []
+    },
+    {
+      "number": 12,
+      "title": "DevMode - Runways",
+      "reserved": "no entries yet — reserved for DevMode runway editing.",
+      "entries": [],
+      "crossReferences": []
+    },
+    {
+      "number": 13,
+      "title": "DevMode - Various",
+      "reserved": "no entries yet — reserved for DevMode topics not covered by the other DevMode categories: ILS, custom frequencies, etc.",
+      "entries": [],
+      "crossReferences": []
+    },
+    {
+      "number": 14,
+      "title": "DevMode - Light Presets",
+      "reserved": "no entries yet — reserved for DevMode light presets.",
+      "entries": [],
+      "crossReferences": []
+    },
+    {
+      "number": 15,
+      "title": "Open Questions (Unknowns)",
+      "reserved": null,
+      "entries": [
+        {
+          "id": "b9748d81-6a57-538b-9162-2c2a4950de0f",
+          "title": "Near/Far propagated aircraft vars vs scenery SimObject RPN — RESOLVED 2026-09-20:",
+          "kind": "openQuestion",
+          "claim": "official \"Note On SimVars In Multiplayer\" scopes propagation to \"all aircraft\" (Near ≤500 m / Far ≤10 km — full lists in §2); no scenery-SimObject read path documented, empirical record consistent. Confidence: high, not absolute (docs never mention scenery objects). → Multiplayer Near/Far SimVar propagation (§2).",
+          "status": null,
+          "statusValues": [],
+          "confidence": null,
+          "sources": [],
+          "user": null,
+          "added": null,
+          "updated": null,
+          "resolved": "2026-09-20",
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "d20e0905-9d93-56ba-a0af-a8311bf31b89",
+              "note": ""
+            }
+          ],
+          "tags": [],
+          "_notes": null
+        },
+        {
+          "id": "019eec22-ec04-5b52-b5b5-10e9ea2c722e",
+          "title": "`A:PLANE HEADING DEGREES TRUE` inside the official windmill template:",
+          "kind": "openQuestion",
+          "claim": "does it resolve the user plane or the SimObject itself? (affects the orientation formula's meaning). → Official corroboration — environment A: vars power SimObject animations (§2).",
+          "status": null,
+          "statusValues": [],
+          "confidence": null,
+          "sources": [],
+          "user": null,
+          "added": null,
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "5795f656-5908-5987-93f8-c1715bbc80c7",
+              "note": ""
+            }
+          ],
+          "tags": [],
+          "_notes": null
+        },
+        {
+          "id": "22dfbc83-3dd0-5795-8f22-a6e9fd240a68",
+          "title": "`interaction/<name>.loc` package folder:",
+          "kind": "openQuestion",
+          "claim": "candidate for the 2024 player/aircraft interaction system (the \"interact with your plane\" door idea) — structure and semantics not yet documented here. → SimObject package folders (2024) (§2).",
+          "status": null,
+          "statusValues": [],
+          "confidence": null,
+          "sources": [],
+          "user": null,
+          "added": null,
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "5c37f0c6-4abc-5164-bb98-2af77ecfcfef",
+              "note": ""
+            }
+          ],
+          "tags": [],
+          "_notes": null
+        },
+        {
+          "id": "d6fe89a0-3038-5a0a-b6d4-d7ea90f81030",
+          "title": "L: var cross-aircraft reading in MSFS2024:",
+          "kind": "openQuestion",
+          "claim": "community is split on whether a scenery SimObject reads any aircraft's L:vars or only globals; keyfob proves at least the aircraft→scenery direction. → Pattern B — Aircraft writes `L:` mirrors (§2).",
+          "status": null,
+          "statusValues": [],
+          "confidence": null,
+          "sources": [],
+          "user": null,
+          "added": null,
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "32fab0dd-8105-536b-b3d9-c0ddb63cd71d",
+              "note": ""
+            }
+          ],
+          "tags": [],
+          "_notes": null
+        }
+      ],
+      "crossReferences": []
+    },
+    {
+      "number": 16,
+      "title": "MSFS Programmability Gotchas",
+      "reserved": null,
+      "entries": [
+        {
+          "id": "b17fb0a4-cb15-5454-9bdb-2d22b5be3cd4",
+          "title": "ModelBehaviors `Update` components unreliable on Landmark SimObjects in 2024",
+          "kind": "entry",
+          "claim": "DevSupport report: `ASOBO_GT_Update` / `Asobo_Update_Template` on a Landmark SimObject did not run — an L:var it was meant to write stayed `0` (checked in DevMode Behaviors tool). Verified fix: drive the object from a WorldScript `SimMission.Calculator` that computes and writes `L:` vars, consumed by `animations.xml` / `soundai.xml`. Example (resolved thread):\n\n(E:TIME OF DAY, Enum) 2 <= (A:AMBIENT PRECIP STATE, mask) 2 ==\nand d (L:ESD_DawnDuskNoWX) != if{ (>L:ESD_DawnDuskNoWX) }",
+          "status": "`empirical` (user-confirmed failure + fix).",
+          "statusValues": [
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [
+            "https://devsupport.flightsimulator.com/t/using-the-update-component-in-a-non-aircraft-simobject-trigger-sound-using-lvar/16902"
+          ],
+          "user": null,
+          "added": "2026-09-20",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        },
+        {
+          "id": "93545927-bcd0-58b0-a034-c7a5d61a0e97",
+          "title": "2024 animation parity note (scenery objects vs SimObjects)",
+          "kind": "entry",
+          "claim": "At 2024 launch, MSFS2020 scenery-object animations regressed (runway people t-pose, flags not animating) while the same setups as SimObjects worked. Rule of thumb: use the SimObject animation path for reliable animation in 2024.",
+          "status": "`empirical` (DevSupport bug-report thread).",
+          "statusValues": [
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [
+            "https://devsupport.flightsimulator.com/t/animation-problem/10323"
+          ],
+          "user": null,
+          "added": "2026-09-20",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        },
+        {
+          "id": "7b35b7cd-2371-5e3e-8e37-2151324003fe",
+          "title": "Jetway IK constraints — `<IKConstraint>` in model XML (2020-era; 2024 applicability unknown)",
+          "kind": "entry",
+          "claim": "- Channel tip (fs-sdk, mamu82, 20/03/2025 23:20): when a jetway won't extend/move correctly at its parking position, the jetway model XML can carry an IK constraint block:\n\n      <IKConstraint>\n      <Node>Empty01</Node>\n      <X min=\"0.54\" max=\"15.5\"/>\n      </IKConstraint>\n\n— raise `max` / lower `min` (X only) to widen the allowed extension.\n- 2024 SDK check (local grep, `C:\\MSFS 2024 SDK`): `IKConstraint` matches zero files. The 2024 `ModelBehaviorDefs\\Asobo\\Misc\\SimObjects.xml` ships only `ASOBO_Jetway_Hood_Left/Right_Bend/Deployment`, `ASOBO_Jetway_Hood_Top_Horizontal/Vertical`, `ASOBO_Jetway_Wheel_Roll` and `ASOBO_Jetway_Wheel_Orientation` templates (lines 77–186) — no IK element.\n- 2020-era docs (Jetway sample page, labeled): \"…by seeing the `<IKChain>` and `<IKConstraint>` sections of the [model].xml file\" — the element is documented for the 2020 SDK. Whether 2024 jetway models still honor it is unknown (SDK silent, no counter-evidence).",
+          "status": "`empirical` (channel tip on 2020-style jetway XML) + `unknown` (2024 applicability — 2024 SDK contains no `IKConstraint`).",
+          "statusValues": [
+            "empirical",
+            "unknown"
+          ],
+          "confidence": null,
+          "sources": [
+            "fs-sdk dump (mamu82, 20/03/2025, declog 83334-83341)",
+            "local SDK `ModelBehaviorDefs\\Asobo\\Misc\\SimObjects.xml`",
+            "https://docs.flightsimulator.com/html/Samples_And_Tutorials/Samples/SimObjects_Other/Jetway.htm (2020-era docs)"
+          ],
+          "user": "mamu82",
+          "added": "2026-09-20",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [],
+          "_notes": null
+        }
+      ],
+      "crossReferences": [
+        {
+          "title": "SU1-beta asset-display bug — project opens, assets invisible (single report)",
+          "entryId": "90ca5472-4a58-5a9f-9fef-3d68d3a452d4"
+        }
+      ]
+    }
+  ],
+  "editionTrail": {
+    "number": 17,
+    "title": "Edition trail",
+    "intro": "One row per edition, newest first. Recorded by the **MSFS Cache Updater** agent; rows are never removed. (Section numbers cited in rows before 2026-09-21 refer to the pre-reorg layout.)",
+    "rows": [
+      {
+        "date": "2026-09-21",
+        "summary": "Added §6 entry \"MSFS 2024 material texture naming — `OcclusionRoughnessMetallicTex` (ORM), not \\\"COMP\\\"\" (`fact (cited)`, source B → verified rung 1: local SDK `TextureTool2024\\textureConfig.py:54-55`, `msfs_properties.py:270`, `msfs_material_utils.py:241`; channel observation for the `_Comp_`→long-name folder comparison). First entry in category 6 (reserved placeholder removed). Entry-level insert — no renumber."
+      },
+      {
+        "date": "2026-09-21",
+        "summary": "Added §4 entry \"Parallax Window material — fake behind-glass interiors (Blender workflow)\" (`fact (cited)`, research request C: official MSFS2024 docs FlightSim Material Textures/Parameters + Parallax Windows page + local SDK addon source `msfs_material_parallax.py`/`msfs_material_utils.py`/`asobo_material_parallax_window.py` + glTF schema). Entry-level insert — no renumber."
+      },
+      {
+        "date": "2026-09-21",
+        "summary": "Added §4 entry \"Cascadeur animations — importing into Blender and the MSFS-compliant glTF export\" (`fact (cited)`, research request C: SDK docs + SDK source + Cascadeur help). Entry-level insert — no renumber."
+      },
+      {
+        "date": "2026-09-21",
+        "summary": "Added §4 entry \"Mixamo FBX import — fix the location animation after applying the 0.01 scale\" (`user-typed (authoritative)` + cited corroboration). Entry-level insert — no renumber."
+      },
+      {
+        "date": "2026-09-21",
+        "summary": "Spec-alignment edition: §9 RPN variable-prefix table marked `user-typed (authoritative)` (adds mandatory Status/Source/Added); cross-reference blocks demoted from `###` to `####` so the inventory gate's `^### ` scan sees entries only; every bare `§N` in entry bodies/cross-refs converted to anchor links; the dated snapshot `MSFS2024_informations_2026-09-21_pre_category_reorg.md` removed (only `.bak` kept). Companion: `custom agent\\msfs-cache-updater.md` updated (canonical 16-category list, cross-reference/reserved rules, structural-edition protocol, anchor link-check, INDEX bullet set, open-questions lifecycle, grep clarification)."
+      },
+      {
+        "date": "2026-09-21",
+        "summary": "Structural reorg: 10 topic sections → 16 categories (1 Scenery Objects, 2 Scenery SimObjects, 3 Aircraft Simobjects, 4 Blender Pipeline for Modeling and Animations, 5 Blender Third Parties, 6 Adobe 3D Painter Pipeline for Texturing, 7 Terrain Edition (Satellite and CGL), 8 Projected Meshes, 9 RPN Schematics and Quirks, 10 DevMode - Texturing (Polygons and Aprons), 11 DevMode - Workarounds, 12 DevMode - Runways, 13 DevMode - Various, 14 DevMode - Light Presets, 15 Open Questions (Unknowns), 16 MSFS Programmability Gotchas). Every entry preserved; multi-category entries now cross-referenced by anchor; empty categories marked reserved. Moves: old §5 Variable types → new §9 RPN; old §7 KTX2/KTX2P + Alpha flicker → §4 Blender Pipeline; old §8 Projected Mesh → §8 Projected Meshes; old §3 SU1-beta → §11 DevMode - Workarounds. Internal `§` refs remapped to new numbering; Contents + INDEX refreshed. Backups: `MSFS2024_informations.md.bak` + `MSFS2024_informations_2026-09-21_pre_category_reorg.md`."
+      },
+      {
+        "date": "2026-09-20",
+        "summary": "Ingest 8/8 (fs-sdk dump): §3 SU1-beta asset-display bug entry (single-user report salvuz 13/02/2025; workaround new project + Import; no DevSupport corroboration → `empirical`, low confidence). Dump ingestion complete."
+      },
+      {
+        "date": "2026-09-20",
+        "summary": "Ingest 7/8 (fs-sdk dump): §3 Jetway IK constraint entry (`<IKConstraint><Node>…</Node><X min max/>` — channel tip `empirical`; 2024 SDK grep: zero matches → 2024 applicability `unknown`)."
+      },
+      {
+        "date": "2026-09-20",
+        "summary": "Ingest 6/8 (fs-sdk dump): §2 2020→2024 SimObject conversion quirks (.air removed → .cfg; behavior XML named after .gltf; ≥1 asset group; one-SimObject-per-package superseded) (`fact (cited)` + `inferred`)."
+      },
+      {
+        "date": "2026-09-20",
+        "summary": "Ingest 5/8 (fs-sdk dump): §8 Projected Mesh entry — Independent Object placement, bake-to-terrain, priorities/Draw Before, authoring constraints (`fact (cited)`)."
+      },
+      {
+        "date": "2026-09-20",
+        "summary": "Ingest 4/8 (fs-sdk dump): §7 Alpha & transparency flicker entry (`empirical` DevSupport + channel; `fact (cited)` 2020-era docs note)."
+      },
+      {
+        "date": "2026-09-20",
+        "summary": "Ingest 3/8 (fs-sdk dump): §7 KTX2/KTX2P texture-compile entry (`fact (cited)` + channel `empirical` note)."
+      },
+      {
+        "date": "2026-09-20",
+        "summary": "Indexed the cache: new `INDEX — categories → starting line` block (after Contents) listing all `## N. Topic` headings + starting line numbers (verified exact post-insert). Future editions must keep it current."
+      },
+      {
+        "date": "2026-09-20",
+        "summary": "Ingest 2/8 (fs-sdk dump): §6 AutoLOD/Simplygon entry (`fact (cited)`)."
+      },
+      {
+        "date": "2026-09-20",
+        "summary": "Ingest 1/8 (fs-sdk dump): §6 Blender exporter lineage entry (`fact (cited)`). Structural: added §6 Blender pipeline: exporters & LODs, §7 Textures & materials (2024), §8 Scenery Editor object types → Open questions §9, Edition trail §10; Contents updated. Backup: `MSFS2024_informations.md.bak`."
+      },
+      {
+        "date": "2026-09-20",
+        "summary": "Scaffold: added the `user-typed (authoritative)` status, §7 Edition trail, and wired the global `msfs2024-knowledge` reference (global `opencode.jsonc`)."
+      }
+    ]
+  },
+  "omittedMetaSections": [
+    "Contents",
+    "INDEX — categories → starting line"
+  ],
+  "footer": "Cache created 2026-09-20. Seed content = facts verified in the plan-msfs research session on SimVars / SimObject variable scope. Kept at the project's fallback-chain \"rung 0\" (consult before web research). Maintained by `msfs-cache-updater` (global agent); staging workspace: `.cache_staging\\`."
+}

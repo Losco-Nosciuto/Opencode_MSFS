@@ -191,9 +191,9 @@ def main(argv: list[str] | None = None) -> int:
     if missing:
         for name in missing:
             print(f"warning: {name} not found in {src_dir} — skipped")
-    if not (repo_root / "MSFS2024_informations.md").is_file():
+    if not (repo_root / "MSFS2024_informations.json").is_file():
         print(
-            f"warning: {repo_root / 'MSFS2024_informations.md'} not found — "
+            f"warning: {repo_root / 'MSFS2024_informations.json'} not found — "
             "the knowledge cache is referenced by the project opencode.jsonc"
         )
 

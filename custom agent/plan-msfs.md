@@ -46,15 +46,21 @@ Tier claims before researching:
   the **ground-truth fallback chain** — move to the next rung only when the
   current rung has no answer for the task:
   0. **Knowledge cache — always first** (`msfs2024-knowledge` reference →
-     `C:\Lavoro\Programming\Opencode_MSFS\MSFS2024_informations.md`): distilled
-     verified knowledge. If an entry answers the claim with a solid `Status`,
-     stop there; re-verify against the SDK only when the entry is
-     `inferred`/`unknown` or the decision is critical.
-     **Search it by category, not by scrolling.** Read the `INDEX` block at the
-     top of the cache (every `## N. Topic` heading + starting line; or run
-     `grep '^## '` for fresh numbers), pick the relevant category, then `read`
-     only that section from its starting line. A subject that spans categories
-     → check the plausible ones. Never read the whole cache for one question.
+     `C:\Lavoro\Programming\Opencode_MSFS\MSFS2024_informations.json`): distilled
+     verified knowledge. If an entry answers the claim with a solid Status
+     (its `statusValues`), stop there; re-verify against the SDK only when the
+     entry is `inferred`/`unknown` or the decision is critical.
+     **Search it by category, not by scrolling.** The cache is a JSON document:
+     `categories[0..15]` hold the 16 canonical topics (1 Scenery Objects …
+     16 MSFS Programmability Gotchas); the `editionTrail` is meta (#17). Pick
+     the plausible category, `read`/`grep` only that category's slice of
+     `entries`, and follow `related` ids only when the entry needs context
+     (multi-topic facts live once; other categories list them as
+     `crossReferences` by title + entryId). A subject that spans categories →
+     check the plausible ones. Cite entries as `category N — <entry title>`.
+     Never read the whole cache for one question; `unknown` = unverified.
+     `MSFS2024_informations.md` is history-only — never quote it. Schema or
+     field semantics: consult `utilities\MSFS2024_informations.guide.json`.
   1. **Local SDK** (`C:\MSFS 2024 SDK`): any file related to the task —
      SDK-bundled add-on source (`Tools\Blender\addons\…`), `Schemas`,
      `ModelBehaviorDefs`, `SharedAssets`, `WASM`, `SimConnect SDK`. Cite

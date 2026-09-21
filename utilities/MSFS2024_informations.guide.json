@@ -1,0 +1,234 @@
+{
+  "formatVersion": 2,
+  "purpose": "Field catalog + maintenance manual for MSFS2024_informations.json. Teach the updater agent from this file: the schema, what every field is FOR, how to use it, and the cache rules.",
+  "companion": "MSFS2024_informations.json",
+  "source": "MSFS2024_informations.md",
+  "statusLadder": [
+    "unknown",
+    "inferred",
+    "empirical",
+    "fact (memory)",
+    "fact (cited)"
+  ],
+  "statusLegend": [
+    {
+      "value": "fact (cited)",
+      "meaning": "official docs / SDK / shipped sim assets"
+    },
+    {
+      "value": "fact (memory)",
+      "meaning": "confident from recent use, not re-verified"
+    },
+    {
+      "value": "empirical",
+      "meaning": "community-tested in the sim, confirmed by multiple users"
+    },
+    {
+      "value": "inferred",
+      "meaning": "derived from cited facts, not directly confirmed"
+    },
+    {
+      "value": "unknown",
+      "meaning": "flagged, needs verification before building on it"
+    },
+    {
+      "value": "user-typed (authoritative)",
+      "meaning": "stated by the user, taken as true"
+    }
+  ],
+  "kinds": [
+    "entry",
+    "openQuestion"
+  ],
+  "fields": [
+    {
+      "name": "id",
+      "type": "string (UUIDv5)",
+      "required": true,
+      "values": null,
+      "purpose": "Stable, unique identifier for the entry.",
+      "usage": "Never change it. `related`, `crossReferences` and open questions point at it. Deterministic UUIDv5 of the verbatim title over the canonical namespace `7c4f6e2a-9d61-4f31-b2c8-3e5a9d0f1c35` (the same one `utilities/md_to_cache_json.py` uses) — generate any new id with `python utilities/get_entry_id.py \"<verbatim title>\"`. Ids are immutable; two legacy ids (the Scenery-SimObjects variable-scope entry and the Pattern A entry) came from earlier title wording and do not reproduce — they stay exactly as they are."
+    },
+    {
+      "name": "title",
+      "type": "string",
+      "required": true,
+      "values": null,
+      "purpose": "Verbatim heading of the entry.",
+      "usage": "Copy the `###` heading word-for-word. Changing a title changes the id -> treat as a structural edition."
+    },
+    {
+      "name": "kind",
+      "type": "enum",
+      "required": true,
+      "values": [
+        "entry",
+        "openQuestion"
+      ],
+      "purpose": "Subtype of the entry.",
+      "usage": "openQuestion is used only for category-15 unknowns that are still unresolved. Everything else is entry. Once answered, an open question stays put and gains status + sources + resolved (it does not change kind on its own)."
+    },
+    {
+      "name": "claim",
+      "type": "string",
+      "required": true,
+      "values": null,
+      "purpose": "THE ENTRY BODY. The main part presented to the user on retrieval.",
+      "usage": "Always present; words verbatim; never paraphrase. Layout: paragraphs on one line each, blank line between blocks, bullets on their own '- ' lines, code/table rows on their own lines, inline code kept in backticks. Stored without bold/italic markers."
+    },
+    {
+      "name": "status",
+      "type": "string|null",
+      "required": true,
+      "values": null,
+      "purpose": "Veracity of the entry.",
+      "usage": "One or more ladder values, verbatim text in backticks. May be compound: `fact (cited)` + `inferred`, `empirical` + `unknown`, etc. The first value is the leading one."
+    },
+    {
+      "name": "statusValues",
+      "type": "array<enum>",
+      "required": true,
+      "values": [
+        "fact (cited)",
+        "fact (memory)",
+        "empirical",
+        "inferred",
+        "unknown",
+        "user-typed (authoritative)"
+      ],
+      "purpose": "Normalized status list for filtering.",
+      "usage": "Automatically extracted from status; keep in sync when status changes."
+    },
+    {
+      "name": "confidence",
+      "type": "enum|null",
+      "required": true,
+      "values": [
+        "low",
+        "high"
+      ],
+      "purpose": "Certainty as stated by the source.",
+      "usage": "Set ONLY when the source states it explicitly: 'low confidence' or 'single-user' -> low; 'high, not absolute' -> high. Otherwise null. Never invent it."
+    },
+    {
+      "name": "sources",
+      "type": "array<string>",
+      "required": true,
+      "values": null,
+      "purpose": "Where the fact comes from.",
+      "usage": "Verbatim Source text, one string per source (split on top-level ';' only). Keep URLs, doc names, SDK file:line, Discord channels and timestamps."
+    },
+    {
+      "name": "user",
+      "type": "string|null",
+      "required": true,
+      "values": null,
+      "purpose": "Author attribution for facts extracted from Discord chats / chat dumps.",
+      "usage": "One or more poster handles, comma-separated (e.g. \"614nlv, mamu82\"), when the fact came from a chat dump that credits them; null for every other source type. Always present so every entry conforms. On future updates the agent extracts the handle(s) from the dump text itself."
+    },
+    {
+      "name": "added",
+      "type": "date|null",
+      "required": true,
+      "values": null,
+      "purpose": "Creation date of the entry.",
+      "usage": "Always set on real entries (YYYY-MM-DD). Mandatory."
+    },
+    {
+      "name": "updated",
+      "type": "object|null",
+      "required": true,
+      "values": null,
+      "purpose": "Last in-place edit of an existing entry (same fact clarified/corrected).",
+      "usage": "Shape: {\"date\": \"YYYY-MM-DD\", \"note\": \"one-sentence what changed\"}. Set only when an entry is edited after it was added; full history belongs in the edition trail. Only the latest update is kept here."
+    },
+    {
+      "name": "resolved",
+      "type": "date|null",
+      "required": true,
+      "values": null,
+      "purpose": "Marks an entry that was BORN from an open question or an `unknown` and has since been answered.",
+      "usage": "Set ONLY when the reason we researched this was an open question or an unknown entry. Once resolved the entry carries a real status + sources (no longer open/unknown), plus this date. Provenance stays checkable: open questions live in category 15; unknowns have 'unknown' in statusValues."
+    },
+    {
+      "name": "supersedes",
+      "type": "array<id>",
+      "required": true,
+      "values": null,
+      "purpose": "Entry ids (UUIDs) this entry renders obsolete after new verification.",
+      "usage": "The superseded entries are NOT deleted — kept on file for history; this field marks the link. Rarely used; only for verified-change replacements."
+    },
+    {
+      "name": "related",
+      "type": "array<{entryId, note}>",
+      "required": true,
+      "values": null,
+      "purpose": "Neighbour entries sharing the same mechanism / shape / fix-family.",
+      "usage": "Each item: entryId (UUID) + note saying why they are related. Not for cross-category placement - that is crossReferences."
+    },
+    {
+      "name": "tags",
+      "type": "array<string>",
+      "required": true,
+      "values": null,
+      "purpose": "Global, cross-category keywords.",
+      "usage": "Short lowercase keywords that help retrieval across categories (e.g. blender, gltf, rpn, simvar, ktx, workaround, devmode, parallax). Categories are the home; tags are the global index. Add only when they genuinely help retrieval."
+    },
+    {
+      "name": "_notes",
+      "type": "string|null",
+      "required": true,
+      "values": null,
+      "purpose": "Maintainer-only caveats.",
+      "usage": "Free text NOT shown in normal retrieval: next verification step, flagged conflicts, doubts, open sub-questions. Keep null unless needed."
+    }
+  ],
+  "rules": [
+    "One field = one purpose. Add a new field ONLY if its content cannot fit into an existing one.",
+    "claim is the entry body - the main text shown to the user on retrieval. Verbatim, never paraphrased.",
+    "crossReferences is used ONLY when one entry fits more than one category. It is placed in SECONDARY categories and stores ONLY title + entryId (UUID of the home-category entry). If a cross-reference exists, store nothing else there — the short note the .md may carry after the link (e.g. \"the aircraft-side half of the cross-object pattern\") is intentionally dropped from the JSON.",
+    "An entry lives once, in its home category. Categories are the home; tags are the global cross-cutting index.",
+    "One fact, one entry. Never merge distinct facts; never split one fact.",
+    "Verify through the fallback chain before writing a factual status: local SDK -> official docs/DevSupport -> community. Never fabricate a source, channel, date, or doc.",
+    "Never delete an entry. Correct in place: set updated {date, note} (or supersedes for verified replacements) and log it in the edition trail.",
+    "status escalates with evidence: unknown -> inferred -> empirical -> fact (cited / memory). Never downgrade without a dated rationale.",
+    "resolved applies ONLY to entries born from an open question or an unknown (now answered). Fresh research entries never use it.",
+    "added is mandatory; ids are immutable; the JSON file IS the canonical cache — `MSFS2024_informations.md` is kept for history only and is never edited or quoted as authoritative."
+  ],
+  "templateEntry": {
+    "_example": true,
+    "id": "3f2b8b4a-0000-0000-0000-000000000000",
+    "title": "Example entry — verbatim title",
+    "kind": "entry",
+    "claim": "First paragraph of the claim, folded to one line.\n\n- L: — a bullet inside the claim, own line.\n\nA code block, on its own lines:\n\n    (E:TIME OF DAY, Enum) 2 <=",
+    "status": "`fact (cited)` + `inferred` (…)",
+    "statusValues": [
+      "fact (cited)",
+      "inferred"
+    ],
+    "confidence": "high",
+    "sources": [
+      "official docs — https://…",
+      "local SDK `C:\\MSFS 2024 SDK\\…\\file.py:54`"
+    ],
+    "user": "mamu82",
+    "added": "2026-09-21",
+    "updated": {
+      "date": "2026-09-22",
+      "note": "Clarified the Near/Far radius wording."
+    },
+    "resolved": "2026-09-22",
+    "supersedes": [],
+    "related": [
+      {
+        "entryId": "00000000-0000-0000-0000-000000000001",
+        "note": "same export path"
+      }
+    ],
+    "tags": [
+      "blender",
+      "gltf"
+    ],
+    "_notes": "Not yet checked against SU2."
+  }
+}
