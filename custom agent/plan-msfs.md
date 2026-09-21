@@ -46,7 +46,7 @@ Tier claims before researching:
   the **ground-truth fallback chain** — move to the next rung only when the
   current rung has no answer for the task:
   0. **Knowledge cache — always first** (`msfs2024-knowledge` reference →
-     `C:\Lavoro\MSFS 2024\Opencode_MSFS\MSFS2024_informations.md`): distilled
+     `C:\Lavoro\Programming\Opencode_MSFS\MSFS2024_informations.md`): distilled
      verified knowledge. If an entry answers the claim with a solid `Status`,
      stop there; re-verify against the SDK only when the entry is
      `inferred`/`unknown` or the decision is critical.
