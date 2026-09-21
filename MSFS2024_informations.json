@@ -49,6 +49,10 @@
         {
           "title": "2024 animation parity note (scenery objects vs SimObjects)",
           "entryId": "93545927-bcd0-58b0-a034-c7a5d61a0e97"
+        },
+        {
+          "title": "MSFS 2024 rain on materials: `Receive Rain` opt-in — Windshield / Clearcoat only (standard and glass stay dry)",
+          "entryId": "86dc37c8-b3f3-5fe7-8d51-8ae37fc3da48"
         }
       ]
     },
@@ -387,6 +391,49 @@
           "related": [],
           "tags": [],
           "_notes": null
+        },
+        {
+          "id": "86dc37c8-b3f3-5fe7-8d51-8ae37fc3da48",
+          "title": "MSFS 2024 rain on materials: `Receive Rain` opt-in — Windshield / Clearcoat only (standard and glass stay dry)",
+          "kind": "entry",
+          "claim": "Rain droplets in MSFS 2024 are opt-in per material: a surface only shows rain when its material has `Receive Rain` enabled (`msfs_receive_rain`, default OFF in the Blender addon) — with it off, no rain renders at all.\n\n- Material-panel scope (2024 Blender addon, local SDK): the `Receive Rain` + `Rain Drop Tiling` UI is exposed only on the **Windshield** and **Clearcoat** material panels (`blender\\material\\msfs_material_windshield.py` line 237, `blender\\material\\msfs_material_clearcoat.py` line 377 — `draw_receive_rain_prop` is called there only). The exporter emits the glTF extension `ASOBO_material_rain_options` only when `msfs_receive_rain` is on (`io\\com\\extensions\\material\\asobo_material_rain_options.py`); schema: \"This extension is used to add Rain on the surface material\" with `rainDropScale` and `rainDropSide` (\"For WindShield only\", default false = front face).\n- Official docs (Rain Effects — Windshield And Windows page): \"Unlike previous versions of the simulation, in Microsoft Flight Simulator 2024 you do not need to set up specific UV's to handle the rain, as it is now all handled by a shader in the simulation automatically. However you still need to enable this shader using the Receive Rain parameter in the Windshield material options.\" Cockpit/cabin glass additionally needs **Rain On Backface** (\"will invert the vertex position in the shader for spawning the rain\"); a DevMode → Options debug \"Windshield Rain\" toggle exists to test the effect in-sim.\n- Channel test on **scenery** (ri-creativity, 21-22/01/2025): no droplets on the MSFS **standard** material nor on the **glass** material of scenery objects; only a surface using a **Windshield**-type material showed them — and the effect is subtle: droplets visible only very close to the surface even at ultra settings (614nlv; losconosciuto: \"solo il windshield fa le goccioline. Il glass nope\").\n- Community corroboration (avsim, Nov 2024): default-aircraft rain/wipers look weak; Fenix A32X dev FNX_Dave — the 2024 wiper system is \"simply the one described in the SDK\" (implemented in ~15-20 min; at launch only the AS350 used it among defaults).",
+          "status": "`fact (cited)` (SDK schema + Blender addon source + official MSFS2024 docs) + `empirical` (channel test on scenery objects, Jan 2025).",
+          "statusValues": [
+            "fact (cited)",
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [
+            "official docs — https://docs.flightsimulator.com/msfs2024/html/3_Models_And_Textures/Modeling/Aircraft/Airframe/Windshield_And_Windows.htm (Rain Effects / Receive Rain / Rain On Backface)",
+            "local SDK `C:\\MSFS 2024 SDK\\Schemas\\ASOBO_material_rain_options\\ASOBO_material_rain_options.schema.json`",
+            "local SDK `C:\\MSFS 2024 SDK\\Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\io\\com\\extensions\\material\\asobo_material_rain_options.py:66-101` (extension emitted only when `msfs_receive_rain` on)",
+            "local SDK `C:\\MSFS 2024 SDK\\Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\blender\\material\\msfs_material_windshield.py:237` / `msfs_material_clearcoat.py:377` + `blender\\utils\\msfs_material_utils.py:139-142` (Receive Rain UI on Windshield + Clearcoat only)",
+            "channel — H.O.T. Multigaming #ri-creativity 3d_modeling_texturing, 614nlv + losconosciuto, 21-22/01/2025 (scenery test: standard/glass dry, windshield shows droplets)",
+            "avsim.com forum thread \"Raindrops...\" (Nov 2024; FNX_Dave/Fenix, Sethos)"
+          ],
+          "user": "614nlv, losconosciuto",
+          "added": "2026-09-21",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "6f8372a1-2b16-5cdf-a557-efbe5e44c043",
+              "note": "same 2024 transparent-glass render-behavior family (alpha flicker / glass-on-glass)"
+            }
+          ],
+          "tags": [
+            "rain",
+            "windshield",
+            "clearcoat",
+            "glass",
+            "material",
+            "scenery",
+            "receive-rain",
+            "blender",
+            "msfs2024"
+          ],
+          "_notes": "Clearcoat Receive Rain on scenery objects untested in the channel (tested: standard, glass, windshield). DevSupport thread 'SU3 1.5.9 rain direction' (topic 14652) unreachable during this run — follow up during inv-2; the docs' 'no specific UVs needed in 2024' statement conflicts with the UV-V-direction advice in inv-2 (2020-era) — to reconcile there."
         },
         {
           "id": "d6de0337-a89f-53e9-9179-b55246a96f6f",
@@ -852,6 +899,10 @@
     "title": "Edition trail",
     "intro": "One row per edition, newest first. Recorded by the **MSFS Cache Updater** agent; rows are never removed. (Section numbers cited in rows before 2026-09-21 refer to the pre-reorg layout.)",
     "rows": [
+      {
+        "date": "2026-09-21",
+        "summary": "Added category 4 (Blender Pipeline for Modeling and Animations) entry \"MSFS 2024 rain on materials: `Receive Rain` opt-in — Windshield / Clearcoat only (standard and glass stay dry)\" (`fact (cited)` + `empirical`; source B → rung 1 local SDK `ASOBO_material_rain_options` schema + Blender addon panels/exporter source, rung 2 official docs Windshield And Windows Rain Effects, rung 3 avsim; channel empirical test on scenery objects, 21-22/01/2025). Entry-level insert — no renumber. Cross-reference added in category 1 (Scenery Objects)."
+      },
       {
         "date": "2026-09-21",
         "summary": "Added §6 entry \"MSFS 2024 material texture naming — `OcclusionRoughnessMetallicTex` (ORM), not \\\"COMP\\\"\" (`fact (cited)`, source B → verified rung 1: local SDK `TextureTool2024\\textureConfig.py:54-55`, `msfs_properties.py:270`, `msfs_material_utils.py:241`; channel observation for the `_Comp_`→long-name folder comparison). First entry in category 6 (reserved placeholder removed). Entry-level insert — no renumber."

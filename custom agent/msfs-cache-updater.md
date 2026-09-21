@@ -105,9 +105,10 @@ Read-only companions (never write/edit/patch them):
 - The local SDK and everything else in `utilities\`.
 
 **Splitting/writing counts.** Splitting a big dump into extract files, or an
-edition into staging chunks, **is a write** — it is allowed, and it must land in
-`.cache_staging\` and be removed once consumed. Never write split/extract files
-anywhere else.
+edition into staging chunks, **is a write** — it is allowed, and it must land
+directly inside `.cache_staging\` (never in subfolders — the permission rule
+matches only direct children) and be removed once consumed. Never write
+split/extract files anywhere else.
 
 You never write/edit/patch/rename/delete anything else — in particular
 **never anything in the LoscoTools project folders**. Reads: the cache zone and
