@@ -55,7 +55,7 @@ What it does:
 
 ## What's the Planner Agent in Short
 
-**The [plan-msfs agent](custom%20agent/plan-msfs.md)** is the read-only planning partner for MSFS 2024 + Blender add-on development (LoscoTools): risk-tiered research and build-ready plans, never implementation.
+**The [plan-msfs agent](custom%20agent/plan-msfs.md)** is a read-only planning partner for MSFS 2024 + Blender add-on development. It was originally built for the LoscoTools project, but it proved reliable in production and has been expanded to ship to whoever needs it — for planning Blender add-ons and MSFS / MSFS 2024 development-related tasks: risk-tiered research and build-ready plans, never implementation.
 
 What it does:
 
