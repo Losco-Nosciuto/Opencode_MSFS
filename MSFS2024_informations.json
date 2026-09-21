@@ -43,8 +43,58 @@
     {
       "number": 1,
       "title": "Scenery Objects",
-      "reserved": "no entries yet — reserved for static, non-simulated Scenery Editor objects.",
-      "entries": [],
+      "reserved": null,
+      "entries": [
+        {
+          "id": "9580789a-649e-59d7-821c-17423d1dcfe0",
+          "title": "Custom vegetation assets for MSFS 2024 — addon Vegetation material (Foliage Mask slot); legacy Tree/Vegetation materials + Foliage Mask R/G/B (Mask/Translucency/WindMask) marked 'not currently used'; no wind/seasons for custom trees; community path: Speedtree + plane-atlas foliage; fs-base ships pines",
+          "kind": "entry",
+          "claim": "Deep-dive research (source C) on **creating custom vegetation assets for MSFS 2024** — the official docs are a dead end for wind/season-reactive custom trees (legacy paths all marked not-currently-used), which explains why this topic is hard to find:\n\n**1. The addon ships a dedicated Vegetation material (fact cited, SDK).** `MSFS2024_Vegetation` (`blender/material/msfs_material_vegetation.py`): attributes = Base Color (+ texture), Emissive color/scale + day/night multipliers (+ texture), Alpha Mode (**defaults to OPAQUE**), Render Parameters (Draw Order Offset, No Cast Shadow, Double Sided, Flip Backface Normal, Disable Motion Blur, Roughness/Occlusion/Normal scale, Detail UV/Normal scale, Detail Blend Threshold), UV offset/tiling/rotation + clamp, Collision Material / Road Collision Material flags; textures = Base Color, OMR, Normal, Emissive, Detail Color/OMR/Normal, Blend Mask, **Foliage Mask**, Occlusion UV2. Registered as material type `msfs_vegetation` (`blender/utils/msfs_material_utils.py:42`); exported with material code `Vegetation` (`io/com/extensions/material/asobo_material_code.py:27,53`).\n\n**2. The 2020-era wind/translucency channels are OFF in 2024 (fact cited, official docs).** The FlightSim Materials / Textures / Parameters reference pages mark the entire legacy family as *\"not currently used in the simulation\"*: Tree material (no params), Vegetation material (only **Translucency** param — *not currently used*), Windflex (Move Detail Normal — *not currently used*), and the **Foliage Mask(R) Translucency(G) WindMask(B)** texture (Tree, Vegetation block, alongside Base Color / OMR / Normal / Emissive / Detail x3 / Blend Mask / Occlusion UV2) — the wind-mask channel exists in the spec but is documented as inactive. Consequence: **no documented engine hook makes custom trees react to wind/seasons in 2024**.\n\n**3. Community reality (empirical).** DevSupport 17494: custom (vegetation-polygon) trees **don't move / don't react to seasons** while sim trees do — \"break the immersion tremendously\". DevSupport 17365: vegetation rendering issues through buildings + unpopulated vegetation polygons. Working community pipeline (FSDeveloper 456116): **trees built in Speedtree, textured/exported through Blender, foliage as simple planes with an atlas texture**. Alpha/glass-era tricks: FakeTerrain material + Mask mode for tree alpha (FSDeveloper 454079, 2020-era). Known artifacts on foliage planes: sun/light reflection (FSDeveloper 457547), cross-plane shading (455131).\n\n**4. Sourcing — native assets are good (empirical, channel).** Channel (25/04/2024 — losconosciuto + mamu82): \"nella fs-base ci sono dei pini decenti\" — **fs-base ships decent pines** (pines/larches fit alpine/taiga scenery); reusing native fs-base trees beats building every tree.\n\n**5. Controlling native vegetation around your custom trees (empirical).** Native trees are placed procedurally; clearing them at a location uses the project's **vegetation override** (DevSupport 18406 snippet — 'vegetation override… turn off flightsim'); FSDeveloper 460420 shows 2024 exclude/override polygons not always removing third-party-scenery trees.\n\n**Negative evidence (inferred):** no Asobo ModelBehaviorDefs template exists for vegetation wind (scan of AircraftTypes/Misc found only aircraft wind vars + wind turbine) — 2024 vegetation wind/seasons are engine-internal for native trees, not an XML/behavior hook custom assets can subscribe to. Native 2024 tree tech (procedural species) remains engine-side.", 
+          "status": "`fact (cited)` (SDK addon msfs_material_vegetation.py + material code registration; official docs pages fetched — Tree/Vegetation/Windflex materials, Foliage Mask texture, Vegetation & Windflex parameters all marked 'not currently used') + `empirical` (DevSupport 17494/17365/18406 snippets; FSDeveloper 456116/454079/457547/455131; channel fs-base pines 25/04/2024) + `inferred` (negative ModelBehaviorDefs scan → engine/material-driven wind, no documented custom-tree hook).",
+          "statusValues": [
+            "fact (cited)",
+            "empirical",
+            "inferred"
+          ],
+          "confidence": null,
+          "sources": [
+            "SDK source — `Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\blender\\material\\msfs_material_vegetation.py` (class attributes + textures incl. Foliage Mask; alphaMode defaults OPAQUE); `blender\\utils\\msfs_material_utils.py:42` (VEGETATION material type); `io\\com\\extensions\\material\\asobo_material_code.py:27,53` (export code 'Vegetation')",
+            "official docs — FlightSim Materials (Tree / Vegetation / Windflex: 'not currently used in MSFS 2024'), FlightSim Material Textures (Tree, Vegetation block: Foliage Mask(R) Translucency(G) WindMask(B) — not currently used), FlightSim Material Parameters (Vegetation: Translucency — not currently used; Windflex: Move Detail Normal — not currently used) — docs.flightsimulator.com/msfs2024",
+            "DevSupport snippets — 17494 'Custom Vegetation Polygon Trees Moving' (custom trees don't react to wind/seasons), 17365 'Vegetation appear through buildings/objects', 18406 'Removing trees 2024/2020' (vegetation override)",
+            "FSDeveloper — 456116 'Custom Vegetation Draw Distance' (Speedtree → Blender, foliage = planes + atlas), 454079 'Glass blending with Trees (SOLVED)' (FakeTerrain + Mask for tree alpha), 457547 'problem sun/light reflection on custom vegetation (Planes)', 455131 'MSFS20 - Cross-plane shading', 460420 'MSFS24 - Remove vegetation from 3rd party scenery'",
+            "channel — H.O.T. Multigaming 3d_modeling_texturing, losconosciuto + mamu82, 25/04/2024 (fs-base has decent pines/larches for alpine/taiga scenery)",
+            "SDK negative scan — `ModelBehaviorDefs\\Asobo` (no vegetation/wind-tree template found)"
+          ],
+          "user": "losconosciuto, mamu82",
+          "added": "2026-09-21",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "dd4a7cc4-5dbe-55e1-a9fa-547afaed1703",
+              "note": "optimization umbrella — foliage geometry (planes/atlas) and material count drive draw calls; last-LOD ≈ 1 material applies to tree LODs"
+            }
+          ],
+          "tags": [
+            "vegetation",
+            "trees",
+            "tree",
+            "foliage",
+            "wind",
+            "foliage mask",
+            "windmask",
+            "translucency",
+            "vegetation material",
+            "fs-base",
+            "speedtree",
+            "scenery",
+            "custom assets",
+            "msfs2024"
+          ],
+          "_notes": "inv-19 redirected by maintainer into a full research item (source C) on custom vegetation creation. Why the topic is 'impossible to find': the 2024 docs mark every legacy vegetation hook (Tree/Vegetation/Windflex materials, Foliage Mask R/G/B, Vegetation Translucency) 'not currently used' — there is no official 2024 custom-vegetation wind guide yet; the addon's Vegetation material is the SDK-side surface, the Speedtree+atlas plane pipeline is the community answer, and DevSupport 17494 documents the missing wind/seasons reactivity. fs-base pines (channel) = native sourcing path. Cat 1 reserved placeholder filled (reserved -> null)."
+        }
+      ],
       "crossReferences": [
         {
           "title": "2024 animation parity note (scenery objects vs SimObjects)",
@@ -258,6 +308,52 @@
           "related": [],
           "tags": [],
           "_notes": null
+        },
+        {
+          "id": "15f9fb5a-7969-5a0d-908e-a96f5cf65c3d",
+          "title": "Scenery collision boxes — don't Apply transforms, keep colliders outside the scaled hierarchy; 2024 colliders are children of the object auto-fitted to its bounding box; large world scale breaks collision detection",
+          "kind": "entry",
+          "claim": "Channel rule (29/05/2024 — losconosciuto asks: \"le collision box funzionano bene? Non sclera non applicando la scala?\" — do collision boxes work well, doesn't it scale wrong if you don't apply the scale? → mamu82: \"Sì, solo non Applica le transform a tutto, loro le devi tenere fuori\" — **yes, just don't Apply transforms to everything — keep the collision boxes outside [the scaled hierarchy]**). losconosciuto: \"Perfetto!\". Practical workflow for scenery with colliders:\n\n**don't Apply transforms (Ctrl+A) to the whole hierarchy** — the MSFS colliders are auto-fitted children whose local transform must stay clean; and **keep collision boxes outside the scaled object chain**.\n\n**Mechanic, official (fact cited):** MSFS 2024 colliders are added via the Add menu (Shift+A); when an object is active, the collision is **added as a child of the active object and automatically scaled to match its bounding box**; the docs stress \"**IMPORTANT! Collisions are added as children of the active object. This is required for correct export**\" (Blender Plugin Properties — Simple Shape Collisions). Simple-shape collisions are **curve objects with a dedicated Geometry Nodes modifier** that defines the collision export properties; the addon ships the asset-library node groups `.MSFS_2024_Collision` (Collision Type: Road Collider / Ground Collider) and `.MSFS_2024_Bounding_Volume` (`datafiles/asset_library.py:11-24`).\n\n**Why scale breaks collisions (docs, fact cited):** the engine supports **box, sphere and cylinder colliders** (recommended over mesh/material collisions, esp. for scenery elements and airports); mesh collisions have a 65K-triangle limit (warning past 4096) and — the key line — \"**Collisions will not be properly detected if the vertices are too far from each other, in particular when the object has been scaled by a large amount in the world**, or its geometry hasn't got enough subdivisions\" (Collision Handling). Large scaling is the *documented* failure vector — the channel rule sidesteps it by keeping colliders out of scaled chains.\n\n**Exporter side (fact cited):** multi-export merges meshes and **reparents non-mesh objects (lights, collisions …)** (`io/exp/multi_export.py:739`) — colliders travel as independent objects with their own transform contract; baking parent transforms (Ctrl+A applies to hierarchical descendants) or scaling the parent chain distorts that clean transform.\n\n**Scope + version notes:** only **static (Scenery) objects detect collisions with the user aircraft** (docs); the Collision Handling page is legacy large-scale landscape guidance, superseded for large-scale modelling by **SimProp Containers** (2024). Community corroboration that collision export is exporter-version-sensitive: DevSupport 17794 — simple collisions failed in SU5 exporter v6.4.7 on Blender 3.6.",
+          "status": "`fact (cited)` (official docs — Blender Plugin Properties: child-of-object auto-fit + GN modifier colliders; Collision Handling: shape recommendation, 65K limit, large-scale breakage, static-only, SimPropContainer supersession; SDK addon: asset_library collision node groups + multi_export reparenting) + `empirical` (channel-tested workflow rule, 29/05/2024).",
+          "statusValues": [
+            "fact (cited)",
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [
+            "channel — H.O.T. Multigaming 3d_modeling_texturing, losconosciuto + mamu82, 29/05/2024 (don't Apply transforms to everything; keep collision boxes outside the scaled hierarchy)",
+            "official docs — Blender Plugin Properties (collisions via Add menu; Automatic Collision Fit: added to active object, scaled to bounding box; 'children of the active object… required for correct export'; Simple Shape Collisions = curve + Geometry Nodes modifier) — https://docs.flightsimulator.com/msfs2024/html/3_Models_And_Textures/Plugins/Blender_Plugin/Blender_Plugin_Properties.htm",
+            "official docs — Collision Handling (box/sphere/cylinder colliders recommended over mesh collisions; 65K-triangle limit, warning past 4096; 'Collisions will not be properly detected if the vertices are too far from each other, in particular when the object has been scaled by a large amount in the world'; only static Scenery objects detect collisions; legacy page superseded by SimProp Containers) — https://docs.flightsimulator.com/msfs2024/html/3_Models_And_Textures/Modeling/Landscape/Collision_Handling.htm",
+            "SDK source — `Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\datafiles\\asset_library.py:11-24` (.MSFS_2024_Collision node group, Collision Type Road/Ground Collider; .MSFS_2024_Bounding_Volume)",
+            "SDK source — `Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\io\\exp\\multi_export.py:739` (merge meshes, reparent non-mesh objects: lights, collisions)",
+            "DevSupport 17794 — SU5 exporter v6.4.7 (Blender 3.6) simple-collisions export error (version sensitivity)"
+          ],
+          "user": "losconosciuto, mamu82",
+          "added": "2026-09-21",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "dd4a7cc4-5dbe-55e1-a9fa-547afaed1703",
+              "note": "optimization umbrella — collision vertex/face counts are an official minimize-metric; SimProp Containers supersede the legacy large-scale collision approach referenced in this entry"
+            }
+          ],
+          "tags": [
+            "collision",
+            "collision box",
+            "collider",
+            "scenery",
+            "simobject",
+            "scale",
+            "apply transforms",
+            "bounding box",
+            "geometry nodes",
+            "asset library",
+            "simprop containers",
+            "msfs2024"
+          ],
+          "_notes": "Channel rule (29/05/2024) + full-chain verification (SDK addon asset_library/multi_export, official Blender Plugin Properties + Collision Handling pages fetched in full, DevSupport 17794). The 'keep colliders outside the scaled hierarchy' rule combines the docs' child-object auto-fit mechanic with the documented large-scale collision breakage. Community search surfaced no dedicated thread on the apply-transforms/collider interaction; DevSupport 458197 (floatplane 'climbing' colliders) is tangential, not cited."
         }
       ],
       "crossReferences": []
@@ -1334,6 +1430,14 @@
     "title": "Edition trail",
     "intro": "One row per edition, newest first. Recorded by the **MSFS Cache Updater** agent; rows are never removed. (Section numbers cited in rows before 2026-09-21 refer to the pre-reorg layout.)",
     "rows": [
+      {
+        "date": "2026-09-21",
+        "summary": "Added category 1 (Scenery Objects) FIRST entry — \"Custom vegetation assets for MSFS 2024\" (`fact (cited)` + `empirical` + `inferred`; source C research per maintainer, inv-19 redirect; full chain: SDK addon Vegetation material msfs_material_vegetation.py — attributes + Foliage Mask slot + OPAQUE default + export code 'Vegetation'; official docs — Tree/Vegetation/Windflex materials, Foliage Mask(R) Translucency(G) WindMask(B) texture and Vegetation Translucency param all 'not currently used in the simulation'; community — DevSupport 17494 custom trees lack wind/seasons, 17365, 18406 vegetation override; FSDeveloper 456116 Speedtree + plane-atlas pipeline, 454079 FakeTerrain+Mask alpha, 457547/455131 foliage artifacts, 460420 override fail; channel fs-base pines 25/04/2024; negative ModelBehaviorDefs scan = engine/material-driven wind). Category 1 reserved placeholder filled (reserved -> null); related to optimization umbrella."
+      },
+      {
+        "date": "2026-09-21",
+        "summary": "Added category 2 (Scenery SimObjects) entry \"Scenery collision boxes — don't Apply transforms, keep colliders outside the scaled hierarchy\" (`fact (cited)` + `empirical`; source B inv-17, full chain: official Blender Plugin Properties — colliders added as children of the active object, auto-scaled to bounding box, GN-modifier simple-shape collisions, .MSFS_2024_Collision / .MSFS_2024_Bounding_Volume asset groups; Collision Handling — box/sphere/cylinder recommended, 65K-triangle limit, documented large-scale collision breakage, static-scenery-only, SimProp Containers supersession; multi_export.py:739 reparents non-mesh objects incl. collisions; DevSupport 17794 exporter-version sensitivity). Channel rule 29/05/2024 (mamu82): don't Apply transforms to everything, keep colliders outside the scaled hierarchy. Related to the optimization guidelines entry (SimProp Containers / collision-count metrics). Appended to category tail — no renumber."
+      },
       {
         "date": "2026-09-21",
         "summary": "Added category 4 (Blender Pipeline) entry \"Alpha Cutoff / clip threshold — an MSFS2024 addon material property, not a shader node\" (`fact (cited)` + `empirical`; source B inv-13, thorough investigation: SDK — msfs_alpha_cutoff is a material FloatProperty (default 0.5) exported as JSON alphaCutoff, ignored unless Alpha Mode = MASK (asobo_material_common.py 502-511/179-183/328-330; draw MASK-only in msfs_material_utils.py 688-705; Alpha Group input-4 flag; Blend Alpha Map = in-tree 'Detail alpha operator'), docs — 2024 FlightSim Material Parameters list no cutoff for Standard (Pearl only), 2020-era 'Cutoff Threshold' explains the remembered 0-1 node; channel 12-13/05/2024 symptom + Blend-Alpha-Map workaround; no-op link to the alphaMode=BLEND-always bug (entry 6f8372a1) labeled inferred). Inserted after the Alpha & transparency flicker entry (related) — no renumber."
