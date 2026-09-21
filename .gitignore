@@ -1,0 +1,6 @@
+# Ship the .cache_staging folder itself, but not its contents
+.cache_staging/*
+!.cache_staging/.gitkeep
+
+MSFS2024_informations.md.bak
+utilities/sample_dump_declog.txt

@@ -1,0 +1,120 @@
+[17/08/2020 19:42] losconosciuto (pinned)
+se vi va piano il download, su impostazioni -> windows update -> ottimizzazione recapito e avanzate
+
+se lo fate poi pero levatelo, perchè influisce anche su windows update e quando vi scarica gli aggiornamenti vi ammazza la banda
+
+https://cdn.discordapp.com/attachments/744969811930513478/744973509113151528/Desktop_Screenshot_2020.08.17_-_19.38.34.76.png
+
+{Embed}
+https://cdn.discordapp.com/attachments/744969811930513478/744973509113151528/Desktop_Screenshot_2020.08.17_-_19.38.34.76.png
+https://media.discordapp.net/attachments/744969811930513478/744973509113151528/Desktop_Screenshot_2020.08.17_-_19.38.34.76.png?ex=6ab0c2e5&is=6aaf7165&hm=daa9f10acf10c6fb7e15608ba770bbefa38fb59694b44cfd68a355c73766f0fa&
+
+
+[17/08/2020 19:42] losconosciuto
+Pinned a message.
+
+
+[22/08/2020 15:31] losconosciuto (pinned)
+https://youtu.be/smUGma9M4nA?t=111
+
+Tutorial su come trovare la cartella "Community" per installare le mod in FS2020
+
+{Embed}
+Squirrel
+https://www.youtube.com/watch?v=smUGma9M4nA&start=111
+Airbus A320neo Liveries - Microsoft Flight Simulator
+Taking a look at a freeware livery pack for the Airbus A320neo in Microsoft Flight Simulator. 
+https://images-ext-1.discordapp.net/external/9VjnccUM4VMUlGpg4tFLizwDIq82oA-5_pwAggzzgAs/https/i.ytimg.com/vi/smUGma9M4nA/maxresdefault.jpg
+
+
+[26/08/2020 14:30] losconosciuto (pinned)
+Se volete mettere mano all'SDK, corso "base"
+https://docs.google.com/document/d/1QvAZCrUkt7dIRlsh-j6KFiAz7pTHRY1vAnGyN4lHqAo/edit?fbclid=IwAR3l7d2Y8z0BYeG-IN8AHK4GwdxWNDPwhuf9wb1nFc25oBz69CG1ZMTr7bg#heading=h.agq0fhthu71c
+
+{Embed}
+https://docs.google.com/document/d/1QvAZCrUkt7dIRlsh-j6KFiAz7pTHRY1vAnGyN4lHqAo/edit?fbclid=IwAR3l7d2Y8z0BYeG-IN8AHK4GwdxWNDPwhuf9wb1nFc25oBz69CG1ZMTr7bg
+Introduction to MSFS SDK (scenery)
+Introduction to MSFS SDK
+How to edit & create your own airports  Authors: Seb Brown & Dragoljub Blagojevic Contact: drago@flightsimsweden.se Revision: 22 august, 2020
+https://images-ext-1.discordapp.net/external/kPplxo3YAGPMO9XDMvEUrg9wE0ou49AjF4L_LtUVDz0/https/lh4.googleusercontent.com/YUmuvNyEtRbgElRDcH2DhUYuftql0Ua9LTgmVE7BV-PLCEYZyVz8iYTTzF9QAgsCWxf0SDtUNw%3Dw1200-h630-p
+
+
+[04/02/2021 16:58] 614nlv
+https://dmucuvup86jiue7vghwovq-on.drv.tw/Documentation/
+
+
+[04/02/2021 16:59] 614nlv
+
+
+{Attachments}
+https://cdn.discordapp.com/attachments/744973644299632640/806916733389635584/Screenshot_20210204-165822_Chrome.jpg?ex=6ab0ab85&is=6aaf5a05&hm=016215f14279877478ed0bddf7a2146ff9b437026165615de8289ac6b654b9f5&
+
+
+[03/06/2021 13:18] 614nlv
+https://youtu.be/ohru5jw5hOo
+
+{Embed}
+alex marko
+https://www.youtube.com/watch?v=ohru5jw5hOo
+MSFS effects editor tutorial - basic ribbon smoke
+Very first steps to create your custom aerobatics smoke effect. Only simple modifiers used to make process simpler.
+
+
+Project files:
+https://drive.google.com/file/d/1yTvIVMZv1J7N6P5AR8TilqpeTr4muVwh/view?usp=sharing
+
+
+0:16 Model edits
+0:49 New effects project
+3:28 Effect editor
+16:18 Installing into Community
+17:20 Aircraft configuration
+https://images-ext-1.discordapp.net/external/bWsHaW1zT_SOy-iwn_bVtLZL5v6a3Cbk_mA60SHMzeo/https/i.ytimg.com/vi/ohru5jw5hOo/maxresdefault.jpg
+
+
+[03/08/2021 12:32] 614nlv
+https://www.youtube.com/watch?v=Ixztgc3mkCA
+
+{Embed}
+Flightdeck Magazin
+https://www.youtube.com/watch?v=Ixztgc3mkCA
+Jetway Tutorial Part 01: IK-Chains
+Free PDF Download Link: https://www.flightdeckmagazin.com
+https://images-ext-1.discordapp.net/external/CpQbDYphTmK6K9-iReQ2XYpZdWqXIkD3WP-9JHX0Yhs/https/i.ytimg.com/vi/Ixztgc3mkCA/hqdefault.jpg
+
+
+[04/03/2021 14:30] 614nlv (pinned)
+https://flightsim.to/file/9340/visual-reference-guide-airport-container-construction-scenery-part-1-a-f
+
+{Attachments}
+https://cdn.discordapp.com/attachments/744973644299632640/817026167357046804/9fclsGqo.png?ex=6ab088a9&is=6aaf3729&hm=dec58827014755eaaef701c240b593f49ac2e54f0d672732d2546fd80716cfc2&
+
+{Embed}
+https://flightsim.to/file/9340/visual-reference-guide-airport-container-construction-scenery-part-1-a-f
+Visual Reference Guide - Airport, Container & Construction Scenery ...
+✓ Visual Reference Guide - Airport, Container & Construction Scenery Part 1: A-F is a Microsoft Flight Simulator 2020 mod created by FlyBoyRez1. Download for free to enhance your experience in MSFS 2020.
+https://images-ext-1.discordapp.net/external/0alwS7yPNgCA6gcuQwOmMRV3Tss9GdfK1HBpYlkAb4s/%3Fwidth%3D1400%26auto_optimize%3Dmedium/https/cdn.flightsim.to/images/09/YodFw9pj.jpg
+
+
+[31/01/2023 10:53] k_i_r_a_
+che raggio conviene usare per far inserire gli aerei? lo cambiate di volta in volta a seconda del volo, e altra cosa, gli slider in game nel menu di ftsl funzionano, si puo cambiare live da li?
+
+{Attachments}
+https://cdn.discordapp.com/attachments/744973644299632640/1069918305793617971/Cattura.PNG?ex=6ab0fe92&is=6aafad12&hm=c4509312993cbc7860dd3012faf0a5397743a0bd590c9435bd8c4963496a6786&
+
+
+[31/01/2023 10:55] losconosciuto
+ah io lascio sempre lo stesso xD
+
+
+[31/01/2023 10:55] losconosciuto
+per gli slider non saprei sai?
+
+
+[31/01/2023 11:04] k_i_r_a_
+non mi ha mai fuzionato niente di esterno in quel cazzo di menu xd
+
+
+==============================================================
+Exported 13 message(s)
+==============================================================
