@@ -368,6 +368,111 @@
           "_notes": null
         },
         {
+          "id": "841214c7-92dd-5e12-b404-e0e13c09a430",
+          "title": "LOD workflow & policy — 2020-era per-collection export loop (SU5 textureless last LOD) vs strict 2024 rules (max 7 LODs, screen-size vertex budgets, ≤50% per step)",
+          "kind": "entry",
+          "claim": "Channel workflow (ri-creativity, 31/01/2022, MSFS2020-SU5 era — losconosciuto): manual LOD export loop with the 2020 exporter — **Selected Only always on**; export everything together, then per LOD: show only that LOD's collection (`1`, `2`… on the numpad), press Q (export operator), **export glTF overwriting with the Generate XML and Generate LODs flags unchecked** — settings persist between LODs, so each subsequent LOD only needs the collection switch + Q. On the last LOD, **enable Vertex coloring** — because after Sim Update 5 the platform stopped allowing textures on the final LOD (\"da dopo il sim update 5, hanno cambiato le politiche\" — \"sul LOD più basso le texture non te le lasciano più usare\"). Poster also announced per-LOD textures halving resolution each step, expecting LOD triangle-count policing to arrive.\n\n**Strict 2024 policy (official docs — LOD Technical Information + SDK lod_limits):**\n- **Never exceed 7 LODs** (LOD0–LOD6), a hard cap. Recommended counts: **2** (traffic-cone class) to **5** (light aircraft), 7 only for very large/complex (airliner). If you think you need more, optimize better or split: SimProp Containers (scenery) / Sim Attachments (aircraft).\n- **Step ratio: each next LOD will be at least 50% the polycount of the previous LOD** — i.e. ≥50% reduction per step, commonly down to 30%–40% retained.\n- **Vertex budget by screen size** (SDK `lod_tools_msfs_2024/lod_limits.py` — ModelLodLimits): max 1 000 verts below 1% screen-size ratio, 2 500 at 1%, 250 000 at 100%, linear 0.01→1.0 and parabolic 1.0→100; `Default_LastLod_MinScreenSizeRatio = 0.001`, `Default_SecondToLastLod_MinScreenSizeRatio = 0.01`. Docs reference the same limits as \"Vertex Count Limits\" (LOD Selection System) — with the explicit warning that **hitting the limits is a trap**: optimize until no more vertices can be removed without losing shape, polycount will then always be under budget.\n- **Recommended creation flow**: start from a fully optimized LOD0 → make the *most simplified* version as LOD1 (the engine removes objects below ~150 vertices by distance — \"which is the minimum number of vertices an object can have before it will be removed by the engine from display\") → package with minSize LOD0=1 / LOD1=0 → test where the swap happens → insert intermediate LODs only where transitions are visible.\n- **Textures on far LODs**: reduce the material/texture count when moving to lower LODs and *re-use textures across LODs* — the 2024 docs do **not** carry the 2020-SU5 \"no textures on the last LOD\" hard rule (inferred: 2024 allows textures there, reduced/reused). Vertex-colored lowest LOD remains a valid community technique.\n- Interiors (cockpits/holds/building interiors) need far fewer LODs; usually just LOD0 + the simplified last LOD. Remove geometry rather than simplify; automatic decimation tools \"are *never* going to be as efficient, nor give the best results, as manual optimization\" — consistent with the AutoLOD entry's note that manually authored LODs generally beat generated ones.\n\n**2024 tooling (SDK addon)**: the manual overwrite-collection loop is replaced by the exporter's **LOD Groups** system (`ui/exp/lod_groups_panel.py`, `lod_groups_ops.py`, `io/exp/lod_groups.py` — `MultiExporterLODGroup`/`MultiExporterLOD`, `LOD_NAME_PATTERN` `_LOD{index}` naming, per-export-mode LOD assignment); the SDK also ships the companion addon **`lod_tools_msfs_2024`** (LOD viewer node groups/collections, active-LOD camera preview — `lod_viewer*.py`, `active_lod_viewer.py`, `lod_camera.py`, `lod_group_infos.py`, plus the `lod_limits.py` budget constants above). In-sim: DevMode → Debug LODs (LOD Screen Size / LOD Face Count) for testing swaps.",
+          "status": "`fact (cited)` (official 2024 docs LOD Technical Information + SDK lod_limits.py / LOD Groups sources) + `empirical` (channel 2022 workflow; SU5-no-textures contrast inferred from docs silence in 2024).",
+          "statusValues": [
+            "fact (cited)",
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [
+            "channel — H.O.T. Multigaming #ri-creativity 3d_modeling_texturing, losconosciuto (+ robychiarta), 31/01/2022 (per-collection Selected-Only overwrite export loop; SU5 last-LOD texture policy; vertex-colored last LOD; per-LOD texture halving)",
+            "docs.flightsimulator.com/msfs2024 — LOD Technical Information (html/3_Models_And_Textures/Modeling/LODs/LOD_Technical_Information.htm): max 7 LODs, 2-5 typical, ≥50% per step, LOD1-simplified-first flow, ~150 vtx floor, 'hitting limits is a trap', texture reduction/reuse, interiors rule",
+            "SDK source `Tools\\Blender\\addons\\lod_tools_msfs_2024\\lod_limits.py` (ModelLodLimits: 1000/2500/250000 verts, screen-size curve, last/second-to-last LOD min ratios 0.001/0.01)",
+            "SDK source `Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\ui\\exp\\lod_groups_panel.py` + `io\\exp\\lod_groups.py` (LOD Groups system, LOD_NAME_PATTERN) and `Tools\\Blender\\addons\\lod_tools_msfs_2024\\` (lod_viewer / active_lod_viewer / lod_camera companion addon)"
+          ],
+          "user": "losconosciuto",
+          "added": "2026-09-21",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "ba53a7fe-c1a6-5f06-90ee-2f32fb82d797",
+              "note": "sibling fact — the 2024 automatic LOD path (Simplygon AutoLOD, 7 generated LODs) that replaces/augments the manual loop; docs' 'manual LODs generally better' corroborated here"
+            }
+          ],
+          "tags": [
+            "lod",
+            "lod groups",
+            "export workflow",
+            "vertex budget",
+            "screen size",
+            "simplygon",
+            "scenery",
+            "blender",
+            "msfs2024",
+            "su5"
+          ],
+          "_notes": "The 2022 channel loop targets the 2020 exporter dialog; in 2024 its role is historical/context (and 2020-package conversion). 'SU5 no-textures-last-LOD vs 2024 docs silence' is an inferred contrast, labeled as such — the docs only say 'reduce' and 're-use'. LOD_Selection_System.htm (Vertex Count Limits table) and Scenery LODs (Landscape/LODs.htm) not fetched (consultation cap); the SDK lod_limits constants carry the numbers independently. AutoLOD entry has its own Simplygon details."
+        },
+        {
+          "id": "dd4a7cc4-5dbe-55e1-a9fa-547afaed1703",
+          "title": "Model optimization guidelines for MSFS — draw calls, texture budget, vertex economy and LOD practice",
+          "kind": "entry",
+          "claim": "Umbrella optimization guidelines for MSFS 2024 models (official 2024 docs + channel practice). Goal (docs — Modeling Technical Information): *reduce CPU/GPU costs, execution time and memory, while retaining visual quality*.\n\n**Official performance metrics (docs, minimize all):** Texel Count (combined texture pixels; the compiled KTX2 size = GPU-memory size), Material Count, Mesh Object Count, Vertex Count, Face Count, skinned vertex/face counts, Texture Count, Node Count, Bone Count, collision vertex/face counts. **Draw-call rule (official):** draw calls are roughly *material count × meshes using them* — *\"mesh instances with the same material are grouped in one draw call\"*. Fewer materials → fewer draw calls; the last LOD should be **one draw call** (docs Scenery LODs: last LOD ≈ 150 triangles, 1 material, ideally shared textures; small emissive/metallic needs → tiny texture rather than a second material).\n\n**Instancing (official):** placing the same model N times batches all instances into **one draw call** — non-skinned meshes only; skinned meshes never instance (a model mixing both still instances its non-skinned parts). Keep object structure so instances can merge.\n\n**Channel workflow (ri-creativity, 17/12/2024 — mamu82):** in Blender use **one material per object** (e.g. a shed: wooden posts + corrugated roof share a single material; material separation done with **layer masks inside Substance Painter**, not Blender materials). Each Blender material = one texture set, and **more texture sets = more draw calls** (\"Però aumenti le drawcalls\"). Trade-off flagged by the same poster: one material/texture-set per object caps the resolution you can reach per part — \"non necessariamente un materiale unico per ogni oggetto, dipende da che risultato vuoi ottenere in termini di risoluzione\". Community resource shared in the thread: **FSDeveloper \"Substance Painter export presets for MSFS\"** (four SP export presets for MSFS 2020-aligned texture sets; usable as the base for 2024). Community priority rule of thumb (FSDeveloper 455936): minimize **draw calls > texture vertices > polygons**.\n\n**Trim-sheet practice (channel, 19/12/2024 — salvuz, professional big-scale scenery developer, maintainer-confirmed @ INI Builds):** the standard practice for large scenery is **trim sheets** — several materials grouped onto **one texture arranged in rows, seamless in the horizontal direction so it can tile** (\"raggruppo vari materiali in un'unica texture, disposta su righe e quindi seamless in orizzontale e posso fare tiling\"); the sheet is then **shared across many models** (\"posso condividere le texture su più modelli\"), with **unique textures only for small/detailed hero objects**; **decals** are used for dirt and to break up / hide the tiling pattern when visible (\"uso i decal per lo sporco e nascondere i pattern creati dal tiling se necessario\"). Approach is mixed per building size (\"dipende dalla grandezza dell'edificio\") — e.g. four textures merged into one sheet. Community footprint: tiling textures as the package-size remedy (FSDeveloper 458792) and dirt decals over repeating textures (FSDeveloper 456437) corroborate the technique family.\n\n**Texture budget (official Scenery LODs):** share textures between models/LODs; **remove textures not needed at distance** (e.g. the normal map) — and prefer *removing* over creating smaller-resolution variants (extra small textures increase total memory); use per-material appropriate resolutions (not all the same); prefer metallic/roughness **material parameters** over textures when possible; UV data is stored as **2-byte floats** post-compile → keep UV values 0–1 to preserve precision (tiled UVs: shift to a negative range, e.g. 0–10 → −5..5).\n\n**Vertex economy (official):** model only what is visible at the typical viewing distance (scenery props are not aircraft); weld/merge (Blender Weld Modifier) before the end; remove never-visible polygons; beware **decal geometry** (duplicated + cut meshes inflate vertex counts and fight the LOD selection system — simplify decals heavily); each LOD should halve vertices at least and reduce texture memory + draw calls. **LODs:** at least 4 LODs, 2–3 only for tiny/simple props; tweak LODs in the in-sim **\"high\"** quality setting (neutral LOD selection; 50% minSize switches at 50% screen size). Numeric 2024 LOD policy (max 7 LODs, screen-size vertex budgets, ≥50% per-step) is **not duplicated here** — see the related LOD-workflow entry. 2024 scenery: prefer **SimProp Containers** (many small parts with their own LODs) over merging everything into one giant model.\n\n**Incidental official rules (same docs, quick list):** animation bone affect limit = **4**; minimize skinned meshes (heavy CPU/memory), remove them as LODs allow; remove unused animations; when a skinned mesh's bones move elsewhere in the hierarchy the culling bounding box can desync (keep the skinned node in the moved hierarchy); tangents are computed at import — smooth surface, no overlapping verts in position/UV space, skinned tangents from the T-pose (start animations at frame 1+); all LODs need lights (avoid pop-in); collisions should prefer primitive shapes (rectangle/cylinder/sphere) over collidable materials.",
+          "status": "`fact (cited)` (official 2024 docs — Modeling Technical Information + Scenery LODs, fetched this run) + `empirical` (channel workflow 17/12/2024, mamu82/614nlv; FSDeveloper threads for corroboration).",
+          "statusValues": [
+            "fact (cited)",
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [
+            "official docs — docs.flightsimulator.com/msfs2024: Modeling Technical Information (Modeling_Technical_Information.htm: performance metrics table with the draw-call rule 'mesh instances with the same material are grouped in one draw call'; instancing; excess vertices; UV 2-byte precision; tangents; animation guidelines; bone affect limit 4)",
+            "official docs — docs.flightsimulator.com/msfs2024: Scenery LODs (Modeling/Landscape/LODs.htm: ≥4 LODs, last LOD ≈150 triangles / 1 material / 1 draw call, shared/removed textures, per-material resolutions, metallic-roughness parameters, SimProp Containers, animation frame-skip by distance)",
+            "channel — H.O.T. Multigaming #ri-creativity 3d_modeling_texturing, mamu82 + 614nlv, 17/12/2024 (one Blender material per object, SP layer masks, 'però aumenti le drawcalls', resolution vs single-texture-set trade-off; SP export presets resource link)",
+            "fsdeveloper.com resource — 'Substance Painter export presets for MSFS (2020)' (four SP export presets; shared in thread via mamu82)",
+            "fsdeveloper.com thread 455936 — community priority rule 'Draw Calls > Texture Vertices > Polygons'",
+            "channel — H.O.T. Multigaming #ri-creativity 3d_modeling_texturing, salvuz, 19/12/2024 (trim-sheet practice: materials grouped on one seamless-horizontal texture, tiling, sharing across models, decals masking tiling; poster is a professional third-party scenery developer — maintainer-provided context: works for INI Builds)",
+            "fsdeveloper.com threads 458792 (tiling textures as package-size remedy) + 456437 (dirt decals over repeating textures)"
+          ],
+          "user": "mamu82, 614nlv, salvuz (+ official docs)",
+          "added": "2026-09-21",
+          "updated": {
+            "date": "2026-09-21",
+            "note": "Augmented with trim-sheet practice from salvuz (19/12/2024) — merged into this guidelines entry per maintainer decision (texture-sharing family, no separate entry); no prior facts changed."
+          },
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "841214c7-92dd-5e12-b404-e0e13c09a430",
+              "note": "numeric 2024 LOD policy (max 7 LODs, lod_limits vertex budgets, ≥50% per step) — the numbers behind the LOD guidance summarized here"
+            },
+            {
+              "entryId": "445b0381-ae8e-5fbd-8bf1-6a4e42dd0685",
+              "note": "Substance Painter bake pipeline (Average Normal flag) — the texture-set side of the SP workflow here"
+            },
+            {
+              "entryId": "81cd568b-dc4b-575f-88a8-3d77e191c941",
+              "note": "exporter line-up 2020 → 2024 — per-material texture-set handling on the export side"
+            }
+          ],
+          "tags": [
+            "optimization",
+            "draw calls",
+            "materials",
+            "texture budget",
+            "texel",
+            "vertex economy",
+            "weld",
+            "uv precision",
+            "instancing",
+            "substance painter",
+            "texture sets",
+            "performance metrics",
+            "guidelines",
+            "trim sheet",
+            "tiling",
+            "decals",
+            "msfs2024"
+          ],
+          "_notes": "Umbrella/guidelines entry built from the inv-10 dump item per maintainer request ('broaden the research; general guidelines — draw calls, size, LODs'). 2020-era channels: the SP-presets resource is titled 'for MSFS 2020' — kept verbatim as the community reference, base-workflow applicable to 2024. Numeric LOD policy intentionally NOT duplicated — related to the LOD policy entry. Docs pages were fetched directly this run (Scenery LODs fetched for the first time; the LOD-policy entry's _notes noted it un-fetched then — now cited here).\n\nUpdate 2026-09-21: trim-sheet paragraph merged from inv-11 per maintainer decision (\"Yes, update\") — same texture-sharing family, kept in this entry rather than a new one. salvuz's employer (INI Builds, professional third-party scenery dev) is maintainer-provided context — user-typed (authoritative) for the attribution, while the technique claims stay `empirical` + community-corroborated. 'Seamless horizontal + tiling + decals-mask' layout reported as his practice on 19/12/2024."
+        },
+        {
           "id": "6f8372a1-2b16-5cdf-a557-efbe5e44c043",
           "title": "Alpha & transparency flicker — alphaMode=BLEND bug + glass-on-glass in 2024",
           "kind": "entry",
@@ -391,6 +496,92 @@
           "related": [],
           "tags": [],
           "_notes": null
+        },
+        {
+          "id": "870f4be8-569b-5737-9302-df2c78829cae",
+          "title": "Alpha Cutoff / clip threshold — an MSFS2024 addon material property, not a shader node: exports as JSON alphaCutoff, MASK-only, no viewport effect; channel workaround: feed alpha from Blend Alpha Map",
+          "kind": "entry",
+          "claim": "Channel episode (12–13/05/2024 — losconosciuto + mamu82): the **Alpha Cutoff (clip threshold)** slider \"non mi cambia nulla\" — no visible change however it was set; inspecting the exporter node tree between the texture input and the BSDF there is only a switch/mix node (blend mode changeable, **no adjustable cutoff value**); poster recalled a 0–1 range control existing once (\"mi pare una volta ci fosse, con range 0-1\"); enabling Clip in the plugin **does open the option** (\"se abiliti il Clip ti si apre l'opzione\"); the exported glTF **carries the values correctly** (\"i valori tornano\"). Suspicion voiced: \"puzza quasi come se mancasse effettivamente un nodo al tree\" — a node seems missing. Workaround that worked in the channel: disconnect **Base Color Multiplier A from Alpha** and connect the **Blend Alpha Map** instead (\"funziona\"). Use case context: fences/railings and nets (\"ringhiere e reti\") — alpha clip preferred for GPU efficiency (mamu82).\n\n**SDK mechanic (2024 addon, fact cited):** Alpha Cutoff is **not a shader node — it never was** in the 2024 addon. It is a **material FloatProperty** `msfs_alpha_cutoff` (default 0.5: `ALPHACUTOFF = \"Alpha Cutoff\", 0.5, \"msfs_alpha_cutoff\", None` — `blender/utils/msfs_material_utils.py:67`), registered on materials with the description: *\"When alpha mode is set to MASK the alphaCutoff property specifies the cutoff threshold. If the alpha value is greater than or equal to the alphaCutoff value … Alpha cutoff value is ignored for other modes\"* (`io/com/extensions/material/asobo_material_common.py:502-511`), and **exported into the material JSON as `alphaCutoff`** (`asobo_material_common.py:179-183`; import-side read-back 328-330). The UI draws it **only when Alpha Mode = MASK** (`draw_alpha_cutoff_prop`, `blender/utils/msfs_material_utils.py:688-705`) — matching \"se abiliti il Clip ti si apre l'opzione\". In the node tree, MASK mode only toggles input 4 of the material's **Alpha Group** node (`_update_alpha_mode`, `blender/material/msfs_material.py:309-320`); the alpha source is selected by a blend switch node (texture output / vertex color / blend linear step; `msfs_material.py:1266-1300`). The **Blend Alpha Map** slot the channel rewired to is the in-tree \"Detail alpha operator\" node (`msfs_material.py:1562-1565, 1658`).\n\n**Consequences (inferred, labeled):** (1) the cutoff is consumed by the **engine at runtime** from the material JSON — there is *no* viewport representation, so \"nothing changes in Blender\" when dragging the slider is **expected behavior, not a missing node**. (2) In the buggy exporter era that defaulted `alphaMode` to `BLEND` regardless of setup (entry `6f8372a1` — related; DevSupport report dated Jun 2024, 3.3.1 on Blender 4.2), the cutoff was silently inert in-engine because *\"Alpha cutoff value is ignored for other modes\"* — the May 2024 channel complaint predates that fix and is consistent with it. (3) The remembered 0–1 node matches the **2020-era** material pipeline (3ds Max Materials docs documented a Cutoff Threshold parameter); the 2024 FlightSim Material Parameters docs list no cutoff parameter for Standard (its only extra parameter is Pearl) — the 2024 cutoff exists addon-side only.",
+          "status": "`fact (cited)` (2024 SDK addon source — alphaCutoff property, MASK-only semantics, JSON export; docs parameters page) + `empirical` (channel 12–13/05/2024 symptom + workaround; the BLEND-era nullification link is inferred and labeled).",
+          "statusValues": [
+            "fact (cited)",
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [
+            "channel — H.O.T. Multigaming #ri-creativity 3d_modeling_texturing, losconosciuto + mamu82, 12–13/05/2024 (cutoff slider no-op; only a switch node in the tree; option opens with Clip enabled; 'i valori tornano' in the glTF; workaround: Blend Alpha Map → Alpha instead of Base Color Multiplier A; fences/railings use case)",
+            "SDK source `Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\blender\\utils\\msfs_material_utils.py:67` (ALPHACUTOFF default 0.5) + `:688-705` (draw only when Alpha Mode = MASK)",
+            "SDK source `Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\io\\com\\extensions\\material\\asobo_material_common.py:502-511` (property + 'ignored for other modes' semantics), `:179-183` (alphaCutoff JSON export), `:328-330` (import read-back)",
+            "SDK source `Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\blender\\material\\msfs_material.py:309-320` (Alpha Group input-4 MASK flag), `:1266-1300` (blend switch alpha selection), `:1562-1565, 1658` (Blend Alpha Map / detail-alpha node)",
+            "official docs — docs.flightsimulator.com/msfs2024 FlightSim_Material_Parameters.htm (no cutoff parameter listed for Standard in 2024; Pearl is Standard's only extra parameter) + 2020-era Materials docs for the historical 'Cutoff Threshold' parameter",
+            "sibling entry 6f8372a1 (alphaMode=BLEND-always exporter bug, DevSupport 17564) — epoch context for the no-op cutoff"
+          ],
+          "user": "losconosciuto, mamu82",
+          "added": "2026-09-21",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "6f8372a1-2b16-5cdf-a557-efbe5e44c043",
+              "note": "the alphaMode=BLEND-always exporter bug (3.3.1 on Blender 4.2, fixed Jun 2024+) silently nullified alphaCutoff ('ignored for other modes') — the epoch that produced the May 2024 no-op symptom"
+            }
+          ],
+          "tags": [
+            "alpha",
+            "alpha cutoff",
+            "clip",
+            "threshold",
+            "alphamode",
+            "mask",
+            "blend alpha map",
+            "msfs material",
+            "exporter",
+            "shader tree",
+            "msfs2024"
+          ],
+          "_notes": "Distinct fact from the alphaMode-BLEND flicker entry (6f8372a1) — kept as a sibling, one fact per entry. The channel's 'missing node' suspicion is resolved: the 2024 addon intentionally has no cutoff node; the cutoff is a JSON material property consumed at runtime by the engine. The BLEND-era link is inferred (dated May-2024 complaint vs Jun-2024 bug report), labeled as such. Community searches returned no dedicated thread on the node question — the finding rests on SDK + docs; 458881 (alpha-mask lattice fence, 2020-era exporter) is the same use case family."
+        },
+        {
+          "id": "652aa495-05be-58d6-8492-641d2175c011",
+          "title": "Double-sided glass flicker — 2020 toolchain forced doubleSided on (glTF hand-edit fix); double-glazing recipe; 2024 addon has native Double Sided (default off)",
+          "kind": "entry",
+          "claim": "Channel exchange (ri-creativity, 12/09/2021, MSFS2020-era — robychiarta's pinned recipe): transparent glass that **flickers in the sun** — the exported/compiled material often had **`doubleSided` forced on** (\"Tante volte devi togliere il double size manualmente perché lo mette sempre attivo\" — often you must remove double-sided manually because it is always set active), even when the author had the checkbox off. Fix used in the channel: **open the exported glTF in a text editor (Notepad++) and set `doubleSided` to 0** per material. For true double glazing (two glass panes), the recipe is: duplicate the window mesh, **flip the second copy's normals**, and nudge it slightly inward (\"la fai rientrare un pelo verso l'interno\") — two single-sided panes visible from both sides via the pair, avoiding doubleSided entirely.\n\nCaveat recorded in the same exchange (losconosciuto): with two *real* glass panes ~1 m apart, flicker **persisted even with doubleSided off** — one pane invisible when viewed from between them (loom video). DoubleSided alone was not the whole story in 2020: overlapping transparent surfaces (double panes / glass-on-glass) flicker regardless — matching the sorting-by-mesh-center mechanic documented in the alpha-flicker entry (related).\n\n2024 pipeline (SDK-verified): the Blender addon has a **native Double Sided toggle, default OFF** (`DOUBLESIDED = \"Double Sided\", False, \"msfs_double_sided\"` — `blender/utils/msfs_material_utils.py:79`), mirrored onto Blender's `use_backface_culling` (`blender/material/msfs_material.py:1115`) and **exported as a material JSON property** (`io/com/extensions/material/asobo_material_common.py:189, 335, 516-521`; the FlipBackFaceNormal extension reads the same flag — `asobo_material_flip_back_face.py:39,53`). The NP++/manual glTF edit of the 2021 workaround is obsolete on the modern pipeline — the toggle goes through officially. (Whether the 2024 native compiler can still re-inject doubleSided like the 2020-era toolchain did is unverified.)\n\nCommunity footprint for the phenomenon: DevSupport topic 3697 \"Glass through the windshield? flickers, looks strange\" (glass vs windshield material flicker) and FSDeveloper thread 460852 (2020 flickering transparency through models). The exact 'always-on doubleSided' exporter behavior has no corroboration outside the channel — labeled as such.",
+          "status": "`fact (cited)` (2024 addon source — native Double Sided property, default off, JSON export path) + `empirical` (channel 2021 recipe + counter-case; community threads for the flicker class).",
+          "statusValues": [
+            "fact (cited)",
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [
+            "channel — H.O.T. Multigaming #ri-creativity 3d_modeling_texturing, robychiarta (pinned) + losconosciuto, 12/09/2021 (doubleSided always-on → NP++ glTF edit; duplicate + flip normals + slight-offset recipe; 1 m-pane flicker counter-case with loom video)",
+            "SDK source `Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\blender\\utils\\msfs_material_utils.py:79` (DOUBLESIDED default False), `blender\\material\\msfs_material.py:1115` (use_backface_culling mirror), `io\\com\\extensions\\material\\asobo_material_common.py:189, 335, 516-521` (material JSON property emission), `asobo_material_flip_back_face.py:39,53`",
+            "devsupport.flightsimulator.com topic 3697 \"Glass through the windshield? flickers, looks strange\"",
+            "fsdeveloper.com forum thread 460852 \"MSFS20 — Problem with flickering textures and transparency through model MSFS2020\""
+          ],
+          "user": "robychiarta, losconosciuto",
+          "added": "2026-09-21",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "6f8372a1-2b16-5cdf-a557-efbe5e44c043",
+              "note": "same transparent-glass render-behavior family — alphaMode=BLEND/sorting and doubleSided are sibling flicker causes"
+            }
+          ],
+          "tags": [
+            "glass",
+            "doubleSided",
+            "flicker",
+            "transparency",
+            "gltf",
+            "workaround",
+            "blender",
+            "msfs2024",
+            "2020-era"
+          ],
+          "_notes": "2021-era channel exchange (MSFS2020 pipeline); the NP++ workaround is superseded by the 2024 addon's native toggle — kept for the recipe and 2020-conversion value. 'Always-on doubleSided' exporter behavior not corroborated outside the channel. DevSupport/FSDeveloper pages fetch-blocked from the agent — cited from search snippets. The 1 m-pane counter-case suggests depth/sorting limits in the old engine — re-verify in 2024 if the user hits it."
         },
         {
           "id": "86dc37c8-b3f3-5fe7-8d51-8ae37fc3da48",
@@ -517,6 +708,123 @@
           ],
           "tags": [],
           "_notes": null
+        },
+        {
+          "id": "878422dd-5652-5a3f-aa2e-7ba7284de6a7",
+          "title": "MSFS material tinting — Color Multiplier / vertex colors need white albedo; 2024 addon mixes Vertex Color into the exported shader (no stock preview)",
+          "kind": "entry",
+          "claim": "Channel exchange (ri-creativity, 20/12/2024): to re-tint a *textured* material to white (hangar interior: green outside, white inside), changing the material's **Albedo Color / Base Color leaves the original texture color untouched** (\"se cambio l'Albedo Color, su bianco mi tiene il colore originale\" — the albedo texture's own colors win). Community answers: the **Color Multiplier** control of the MSFS standard material is the intended tint parameter; otherwise use **vertex colors** (mamu82). Chain rule derived in the channel: **tinting (Color Multiplier or vertex colors) multiplies the albedo texture, so it needs a white / near-white albedo to be effective** — a colored albedo resists the tint; re-coloring therefore needs white albedo + tint rather than tint alone, and detail preservation is a concern (losconosciuto — \"non deve perdere il dettaglio della texture\").\n\nSDK mechanics (2024 Blender addon):\n- The material node tree **wires a Vertex Color node into the exported shader** — vertex color is mixed into the exporter nodes (`blender/material/msfs_material.py` ~line 1187 `vertex_color_map_node`, feeding detail-blend / blend_linear_step / blend_switch inputs).\n- The addon **auto-creates a default vertex color layer on new or converted meshes** (curve-to-mesh etc.) so that shader node always has data (`blender/msfs_handlers.py:26-28`).\n- Exporter: `export_vertex_color`, `export_all_vertex_colors`, `export_active_vertex_color_when_no_material` settings; at export the active color attribute is renamed to the default name and its domain/type enforced (`io/exp/multi_export.py:340-342, 708-725`).\n- The 2024 addon property list has **Base Color** factor (`msfs_base_color_factor`, `blender/utils/msfs_material_utils.py:60`) but **no literal \"Color Multiplier\" property** — Color Multiplier belongs to the 2020-era standard-material pipeline; the 2024 docs document no Color Multiplier for Standard (Pearl is its only additional parameter).\n\nChannel culture (same channel, 2020-era dates): repeated advice \"never export with vertex coloring\" — TexTools / similar could inject vertex paint and break ID bakes, so meshes were exported with Vertex Colors unchecked under Geometry (declog lines 3915, 4125, 6261-6270). The 2024 addon's explicit vertex-color handling supersedes that workflow.\n\nPreview: no stock in-plugin viewport preview of the MSFS vertex-color / color-multiplier result — the tint is verified in-sim; channel grumbles about viewport vertex paint (declog 40835-40889).",
+          "status": "`fact (cited)` (SDK addon source, file:line mechanism) + `empirical` (channel practice; docs-absence: no Color Multiplier parameter documented for the 2024 Standard material).",
+          "statusValues": [
+            "fact (cited)",
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [
+            "channel — H.O.T. Multigaming #ri-creativity 3d_modeling_texturing, losconosciuto + mamu82, 20/12/2024 (albedo-color no-tint on textured albedo; Color Multiplier; vertex colors) + earlier 2020-era exchanges in the same channel (export-without-vertex-colors advice; no viewport preview grumbles)",
+            "SDK source `Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\blender\\material\\msfs_material.py` (Vertex Color node in shader, ~1187), `blender\\msfs_handlers.py` (default vertex color layer on new/converted meshes, 26-28), `io\\exp\\multi_export.py` (export options 340-342; attribute normalization 708-725), `blender\\utils\\msfs_material_utils.py` (Base Color factor, 60)",
+            "docs.flightsimulator.com/msfs2024 — FlightSim Material Parameters (Standard: only Pearl documented; no Color Multiplier parameter)"
+          ],
+          "user": "losconosciuto, mamu82",
+          "added": "2026-09-21",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [
+            "vertex color",
+            "color multiplier",
+            "tinting",
+            "albedo",
+            "base color",
+            "blender",
+            "material",
+            "exporter",
+            "viewport",
+            "msfs2024"
+          ],
+          "_notes": "Scan-dossier detail '(Rohn fork had it)' — a claimed community plugin fork with viewport vertex-color preview — could NOT be verified: 'Rohn' appears nowhere in the dump and public search returns no such fork; dropped from the entry. Channel exchange dated 20/12/2024 (2020-era plugin context); SDK verifications are against the 2024 Blender addon. 'No stock preview' is inferred from channel workflow + SDK export-only handling — low confidence."
+        },
+        {
+          "id": "e1934755-6087-5233-9114-edee67f7d821",
+          "title": "One glTF handles many UV maps / textures — join + separate 'By Material' splits per-material parts (watch modifiers)",
+          "kind": "entry",
+          "claim": "Channel exchange (ri-creativity, 21/11/2020, MSFS2020-era): a **single glTF can pull from many UV maps / textures** — \"FS non si fa problemi a pescare da mille UV per lo stesso modello\" (losconosciuto: \"puoi usare 8 UV sullo stesso modello se serve\" — you can even use 8 UVs on one model). Multi-texture exporting does not need one glTF per part: parts with different UVs stay in the same model. Split/regroup shortcut used in the channel: once done, **Ctrl+J** (join all objects), go to Edit Mode, select all, then **Ctrl+P → \"By Material\"** — Blender automatically splits the mesh into per-material parts (everything sharing the same UVMap/material ends up grouped together). **Caveat flagged in the same exchange: watch out for modifiers when joining/separating** (\"OCCHIO ai modificatori quando lo fai\" — un-applied modifiers can affect the result). Use case cited: re-using existing UVs for variations instead of unwrapping new ones.\n\nUnderlying mechanics (standard glTF/Blender, basic level — not re-verified this run): a glTF mesh holds multiple primitives, each with its own material (and thus its own textures/UVs); Blender's \"Separate by Material\" produces exactly that shape for export — matching the exporter's per-material primitive handling.",
+          "status": "`empirical` (channel exchange; user-requested light digging — no deep verification run) + `fact (memory)` (standard glTF primitive-per-material structure, basic knowledge).",
+          "statusValues": [
+            "empirical",
+            "fact (memory)"
+          ],
+          "confidence": null,
+          "sources": [
+            "channel — H.O.T. Multigaming #ri-creativity 3d_modeling_texturing, losconosciuto + salvuz, 21/11/2020 (multi-UV single glTF; Ctrl+J + Ctrl+P 'By Material' split; modifier caveat)",
+            "glTF 2.0 core structure (one material per primitive, multiple primitives per mesh) — basic knowledge, not re-fetched"
+          ],
+          "user": "losconosciuto, salvuz",
+          "added": "2026-09-21",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "841214c7-92dd-5e12-b404-e0e13c09a430",
+              "note": "sibling export-workflow fact — mesh organization (this entry) vs LOD organization (LOD workflow entry), both Blender-side pre-export"
+            }
+          ],
+          "tags": [
+            "uv",
+            "uvmap",
+            "textures",
+            "material separation",
+            "joins",
+            "separate by material",
+            "gltf",
+            "blender",
+            "msfs2024"
+          ],
+          "_notes": "Basic Blender/3D-knowledge item — ingested with light verification per maintainer request (no SDK/docs rounds beyond the cache de-dup). 2020-era exchange; the mechanics carry over to the 2024 exporter unchanged (per-material primitives)."
+        },
+        {
+          "id": "f3e6ab2f-a7c6-5b98-9417-f392fa336544",
+          "title": "Renaming an exported glTF breaks the build — internal `.bin` buffer reference keeps the old name (`tinygltf: File not found`); re-point the JSON URI or export with final names",
+          "kind": "entry",
+          "claim": "Channel episode (ri-creativity, 21/05/2021, MSFS2020-era — losconosciuto + robychiarta): renaming exported files breaks the build. The exported `.gltf` **embeds the buffer reference to its `.bin` by name** (\"quando esporti, ti crea la dipendenza nel GLTF\"); rename the `.gltf`/`.bin` afterwards and the compiler fails with `tinygltf: File not found : <old name>.bin` — the internal JSON buffer URI still points at the original name (\"se il riferimento è a LFBP Airconditioner.bin, e io lo rinomino… non lo troverà mai\"). Fix used in the channel: open the glTF in a text editor and **re-point the buffer URI** to the renamed `.bin` (\"sono entrato nei GLTF ed ho richiamato i file .bin giusti\"). Exporting with the final names from the start avoids the whole class.\n\nCommunity footprint (same mechanic): FSDeveloper thread \"MSFS20 — Can't find 'bin' file\" (\"make sure that the glTF file does actually reference that bin file and not another one\"); DevSupport topic 3388 \"Multiple GLTFs with one BIN = compiler error\" — the compiler resolves the `.bin` reference strictly, so one shared BIN across several glTFs errors too.\n\n2024 pipeline (SDK): the exporter derives the `.bin` path from the export path (`io/exp/multi_export.py:1251` — `bin_path = bpy.path.ensure_ext(export_path, \".bin\")`), so files exported with final names (LOD Groups / `[MODEL]_LODn.gltf`) carry matching internal references automatically. Renaming after export breaks identically; re-pointing the JSON URI still works as the manual fix.\n\nRelated context from the same episode (kept as note, not merged): the 2020 exporter also failed outright when exporting LODs together with animations — stripping animations/NLA tracks, exporting LODs, then re-adding animations and exporting one-by-one was the working routine; XML naming was manual (`<LOD ModelFile=\"…_LOD00.gltf\" minSize=\"8\"/>`).",
+          "status": "`empirical` (channel 2021 + community threads FSDeveloper 453631 / DevSupport 3388 for the mechanic) + `fact (cited)` (2024 exporter derives the `.bin` name from the export path — multi_export.py:1251).",
+          "statusValues": [
+            "empirical",
+            "fact (cited)"
+          ],
+          "confidence": null,
+          "sources": [
+            "channel — H.O.T. Multigaming #ri-creativity 3d_modeling_texturing, losconosciuto + robychiarta, 21/05/2021 (tinygltf 'File not found' after rename; hand re-point of the buffer URI; LOD+animation export failure in the 2020 exporter with the strip-animations workaround)",
+            "fsdeveloper.com forum thread 453631 \"MSFS20 — Can't find 'bin' file\" (bin reference must match exactly)",
+            "devsupport.flightsimulator.com topic 3388 \"Multiple GLTFs with one BIN = compiler error\"",
+            "SDK source `Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\io\\exp\\multi_export.py:1251` (`bin_path = bpy.path.ensure_ext(export_path, \".bin\")`) + line 1099 (`\".bin\"` extension handling)"
+          ],
+          "user": "losconosciuto, robychiarta",
+          "added": "2026-09-21",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "841214c7-92dd-5e12-b404-e0e13c09a430",
+              "note": "interacts with LOD naming — the rename hazard is exactly what per-LOD final-name export (LOD Groups / _LODn) avoids"
+            }
+          ],
+          "tags": [
+            "gltf",
+            "bin",
+            "buffer",
+            "rename",
+            "compile error",
+            "tinygltf",
+            "export",
+            "workaround",
+            "lod naming",
+            "msfs2024"
+          ],
+          "_notes": "2020-era episode (21/05/2021). The LOD+animation 2020-exporter failure from the same session is NOT merged into this entry (one fact per entry) — recorded in the claim as related context only. DevSupport/FSDeveloper pages fetch-blocked from the agent — cited from search snippets. In 2024 the fix is to export with final names; hand-JSON re-point remains a valid emergency path."
         }
       ],
       "crossReferences": []
@@ -524,8 +832,57 @@
     {
       "number": 5,
       "title": "Blender Third Parties (Addons / Plugins)",
-      "reserved": "no entries yet — reserved for third-party Blender add-ons / plugins used alongside the official exporter.",
-      "entries": [],
+      "reserved": null,
+      "entries": [
+        {
+          "id": "1c2e86e0-5749-5b0e-9dc8-1a80ffd6306b",
+          "title": "Bake texture→vertex color for LOD testing — UVs must match (decimate-friendly); one-click Shader Editor bake; author-revived tool → Losco Tools on Blender 4.5",
+          "kind": "entry",
+          "claim": "Third-party Blender addon (by the cache maintainer) for **baking textures into vertex colors** — channel announcement (ri-creativity, 31/01/2025 — losconosciuto + salvuz + 614nlv): the plugin had been dormant for months, was **revived to run on Blender 3.x** (verified working on 3.6; broken since 2.8 — \"non andava più dalla 2.8\"; author: \"tecnicamente questo funziona con 3.x\"). Usage: a tab in the **Shader Editor** — pick the image, press Bake, done (\"scegli l'immagine e premi bake, fine\").\n\n**UV requirement (key rule):** the target mesh's UVs must coincide with the source (\"Ovviamente la UV deve coincidere\") — a hand-built LOD needs the **same unwrap** (else garbage: \"o lo unwrappi uguale, o fuffa\"); **decimated LODs work great** because decimation preserves the UV layout.\n\n**Purpose:** explicitly *not* for generating LODs — \"questo non serve a FARE gli LOD… serve a testarli\" — it bakes the look into vertex colors so LODs can be **tested without textures** (viewport / out-of-sim checking). Community reception: 614nlv \"will surely use it when I get back on LODs\", joking it could sell \"just under the Simplygon price\"; the author leaned toward selling it at the time. Platform rationale (official docs — Scenery LODs): low-poly LODs can be built with **no texture at all, using vertex colors** for the distant impression — the exact policy this tool serves (see the LOD workflow entry for the SU5-era vertex-colored last LOD).\n\n**Authoritative update (maintainer, 2026-09-21):** the tool belongs to the cache maintainer; it has been **updated for Blender 4.5 and ships as part of the upcoming Losco Tools addon suite** (the sale-focused plan is superseded by the suite).",
+          "status": "`empirical` (channel 31/01/2025 — tool details, UV-match rule, LOD-testing purpose) + `user-typed (authoritative)` (maintainer: tool is theirs, updated for Blender 4.5, part of the Losco Tools suite).",
+          "statusValues": [
+            "empirical",
+            "user-typed (authoritative)"
+          ],
+          "confidence": null,
+          "sources": [
+            "channel — H.O.T. Multigaming #ri-creativity 3d_modeling_texturing, losconosciuto (+ salvuz, 614nlv), 31/01/2025 (dormant plugin revived for 3.x/3.6; Shader Editor tab, pick-image-bake; UV must coincide, decimate-friendly; for testing LODs, not generating; sell-idea)",
+            "official docs — docs.flightsimulator.com/msfs2024 Scenery LODs (low-poly LODs can drop textures and use vertex colors) — fetched 2026-09-21, also cited in the optimization-guidelines entry",
+            "user-typed (authoritative), 2026-09-21 — maintainer: own tool, updated for Blender 4.5, part of the upcoming Losco Tools addon suite"
+          ],
+          "user": "losconosciuto (maintainer), salvuz, 614nlv",
+          "added": "2026-09-21",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "841214c7-92dd-5e12-b404-e0e13c09a430",
+              "note": "SU5-era vertex-colored last LOD policy + 2024 LOD rules — the practice this bake tool serves"
+            },
+            {
+              "entryId": "dd4a7cc4-5dbe-55e1-a9fa-547afaed1703",
+              "note": "optimization guidelines — vertex-color LODs and texture-drop guidance at a distance"
+            },
+            {
+              "entryId": "878422dd-5652-5a3f-aa2e-7ba7284de6a7",
+              "note": "vertex colors mixed into the exported shader (2024 addon) — the consumer side of baked vertex colors"
+            }
+          ],
+          "tags": [
+            "vertex color",
+            "bake",
+            "lod testing",
+            "decimate",
+            "shader editor",
+            "blender addon",
+            "losco tools",
+            "tool",
+            "msfs2024"
+          ],
+          "_notes": "First entry in category 5 (Blender Third Parties) — reserved placeholder removed. Tool identity: the author (losconosciuto) is the cache maintainer — authorship + Blender 4.5 + Losco Tools suite inclusion stated by the maintainer in conversation on 2026-09-21 (user-typed authoritative). The UV-match rule is mechanically consistent with UV-space baking (memory-level). 'Sell' plans in the channel are historical — superseded by the suite per the maintainer. Related entries hold the docs/SDK vertex-color mechanics."
+        }
+      ],
       "crossReferences": [
         {
           "title": "Blender glTF exporter line-up (2020 → 2024)",
@@ -564,6 +921,41 @@
           "related": [],
           "tags": [],
           "_notes": null
+        },
+        {
+          "id": "445b0381-ae8e-5fbd-8bf1-6a4e42dd0685",
+          "title": "Substance Painter bake artifacts — `Average Normal` flag (Normal Tangent baker, default ON) breaks AO / curvature / thickness",
+          "kind": "entry",
+          "claim": "Community report (ri-creativity channel, 20-21/01/2025): AO bakes in Substance Painter kept producing artifacts — surviving radius tuning, triangulated-FBX export and flat-shaded geometry — until the culprit was toggled off: the **Average Normal** option, **on by default**, on the **Normal Tangent** baker. With it enabled, artifacts hit the **AO** map mainly, plus **curvature** and **thickness**; disabling it cleans all three (re-enabling brings the artifacts straight back, even when baking only AO).\n\n- Second-poster diagnosis: the flag belongs to the normal/tangent computation, not the AO baker — \"il fatto che sballasse l'AO era una conseguenza di un problema con il calcolo dei tangent\" — so the AO artifacts are a downstream symptom of the tangent calculation; mesh problems (bad normals, hidden geometry) can trip it.\n- Checklist before blaming the AO baker (same thread): bake AO on an **exploded copy** of the model, never on the whole assembled model (\"Le AO andrebbero fatte sugli esplosi — mai sul modello intero\") — bake on the exploded copy, apply on the non-exploded original; re-inspect the mesh for **hidden faces** in edit mode; **merge duplicate vertices** (poster: always merge at 1 mm).\n- Independent corroboration (reddit r/Substance3D, baking high-poly → low-poly): \"most importantly the Average Normals option ticked off (it's on by default. Weird artifacts when baking high poly onto low poly)\".\n- MSFS context: the official cockpit-texturing docs cover AO baking (Arnold lightmap vs Substance Painter AO comparison — Ambient Occlusion page); community SP↔MSFS export/material templates exist (github.com/synapticsim/Substance-MSFS: Standard / Anisotropy / Clear Coat / Windshield). Adobe helpx baking docs were unreachable during verification (HTTP 403) — the flag's canonical wording and default-on status rest on the two independent community reports above.",
+          "status": "`empirical` (two independent community reports — channel 20-21/01/2025 + reddit r/Substance3D — agreeing on the flag, its default-on state and the artifact signature).",
+          "statusValues": [
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [
+            "channel — H.O.T. Multigaming #ri-creativity 3d_modeling_texturing, 614nlv + losconosciuto, 20-21/01/2025 (AO/curvature/thickness artifacts; Average Normal flag default-on; exploded-copy AO + hidden faces + dup-vert merge tips)",
+            "reddit.com/r/Substance3D — \"I get AO artifacts when the Object is shaded correctly...\" (Average Normals option on by default; tick off when baking high→low poly)",
+            "official docs — https://docs.flightsimulator.com/msfs2024/html/3_Models_And_Textures/Modeling/Aircraft/Cockpit/Textures/Ambient_Occlusion.htm (SP AO vs Arnold lightmap comparison context)"
+          ],
+          "user": "614nlv, losconosciuto",
+          "added": "2026-09-21",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [
+            "substance-painter",
+            "ambient-occlusion",
+            "ao",
+            "bake",
+            "normal",
+            "curvature",
+            "thickness",
+            "texturing",
+            "workflow",
+            "msfs"
+          ],
+          "_notes": "Adobe helpx page baking-mesh-maps.html returned HTTP 403 during verification — retry later to pin the flag's official UI wording. The channel exchange sits in the 2020→2024 transition window (Jan 2025), but the bake behavior is engine-agnostic (external tool) and applies to both pipelines."
         }
       ],
       "crossReferences": []
@@ -700,8 +1092,51 @@
     {
       "number": 13,
       "title": "DevMode - Various",
-      "reserved": "no entries yet — reserved for DevMode topics not covered by the other DevMode categories: ILS, custom frequencies, etc.",
-      "entries": [],
+      "reserved": null,
+      "entries": [
+        {
+          "id": "223275a8-3213-5302-b3db-2ec156b18e8c",
+          "title": "2020→2024 project conversion — 2024 compiler hang at `Generating Package Information` (no error) / editor CTD; practice: port from 2020, don't convert",
+          "kind": "entry",
+          "claim": "Channel report (ri-creativity, 25/11/2024 — single-poster anecdote, personal scenery): converting an old 2020 airport project (Blackbushe) into the 2024 toolchain made the compiler **hang at `Generating Package Information`** with **no error output** — clean, rebuild and manual delete+rebuild all failed on the then-latest SDK. Second poster (mamu82): converting another old scenery did not crash the compiler, but the project **CTD'd once loaded in the 2024 DevMode editor**. Both concluded it was not worth converting old scenery.\n\n- Workaround / prevailing community practice (multiple, independent): **don't convert — keep developing in the 2020 SDK and port/test against 2024**. FSDeveloper best-practice thread (Jun 2025): GaryGB — \"It is more practical to develop in 2020 then 'port' to 2024\" (workflow: load the original 2020 package into the 2024 Community folder for run-time comparison; copy the whole 2020 project, open its XML in the 2024 Scenery Editor, run a 2024 build and inspect the compiler Console log); WildLynxPilot — pure-2020 sceneries that \"never saw the 2024 SDK\" run fine in 2024 (serialized in a 2020-mode, no LOD popping); Nordscape — visuals differ between the sims (materials, light intensity), ending with two separate per-sim versions is pragmatic.\n- Official-side framing: many 2020 packages need no conversion and run in 2024 unchanged (Asobo: \"All projects should be compatible with 2024\"); DevSupport advice for moving a 2020 project is to copy the project folder and open/convert it in the 2024 DevMode (topics 11708, 15388). Asobo shipped no dedicated DevMode \"Project Converter\" — the 2024 SDK's conversion helpers are 3ds Max-side scripts (`SceneConversion2024\\MSFS2024_SceneConversion.ms:29` → `convertMSFS2020ObjectsToMSFS2024Object`); the `Generating Package Information` string is absent from SDK sources.\n- Related DevMode failure class: scenery-editing CTDs in the 2024 DevMode are separately reported (devsupport topic 14090).\n\nHonesty note (user-confirmed: \"this was mostly my personal experience\"): the exact hang message has no other community footprint — treat the compiler-hang symptom as a lone anecdote; the port-not-convert practice is the well-corroborated part.",
+          "status": "`empirical` (channel anecdote 25/11/2024 for the hang/CTD; independent FSDeveloper corroboration Jun 2025 + DevSupport threads for the port-not-convert practice).",
+          "statusValues": [
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [
+            "channel — H.O.T. Multigaming #ri-creativity 3d_modeling_texturing, losconosciuto + mamu82, 25/11/2024 (compiler hang \"Generating Package Information\" at then-latest SDK; editor CTD; clean/rebuild ineffective)",
+            "fsdeveloper.com forum thread 460051 \"Best practice experiences — Making 2020-scenery compatible with 2024\" (Jun 2025; Nordscape, GaryGB, WildLynxPilot)",
+            "devsupport.flightsimulator.com topics 15388 (\"2024 project from a 2020 package\" — copy folder + convert in 2024), 11708 (build in 2020, duplicate + convert) and 14090 (DevMode scenery-editing CTD) — cited from search snippets; full pages unreachable from the agent",
+            "flyawaysimulation.com — \"many Microsoft Flight Simulator 2020 scenery packages do not need conversion: they can run in MSFS 2024 unchanged\"",
+            "local SDK `C:\\MSFS 2024 SDK\\Tools\\3dsMax\\MSFS2024Package\\scripts\\msfs_max_py_2024\\SceneConversion2024\\ms\\MSFS2024_SceneConversion.ms:29` (2020→2024 object conversion is 3ds Max-side; no DevMode \"Project Converter\" and no \"Generating Package Information\" string in SDK sources)"
+          ],
+          "user": "losconosciuto, mamu82",
+          "added": "2026-09-21",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "e09c06fa-a6ce-5a03-a330-bc026ab86cd5",
+              "note": "sibling fact — the documented 2020→2024 package/format SDK differences (cat 2) this DevMode failure mode sits alongside"
+            }
+          ],
+          "tags": [
+            "conversion",
+            "2020-to-2024",
+            "devmode",
+            "compiler",
+            "scenery",
+            "workflow",
+            "port",
+            "ctd",
+            "hang",
+            "msfs2024"
+          ],
+          "_notes": "Maintainer flagged the channel reports as mostly personal experience — the hang gotcha is a single-scenery anecdote; re-verify if a second instance appears. DevSupport pages fetch-blocked for the agent — thread contents cited from search snippets only. FSDeveloper corroboration covers the broader port-don't-convert practice, not the exact hang message."
+        }
+      ],
       "crossReferences": []
     },
     {
@@ -899,6 +1334,50 @@
     "title": "Edition trail",
     "intro": "One row per edition, newest first. Recorded by the **MSFS Cache Updater** agent; rows are never removed. (Section numbers cited in rows before 2026-09-21 refer to the pre-reorg layout.)",
     "rows": [
+      {
+        "date": "2026-09-21",
+        "summary": "Added category 4 (Blender Pipeline) entry \"Alpha Cutoff / clip threshold — an MSFS2024 addon material property, not a shader node\" (`fact (cited)` + `empirical`; source B inv-13, thorough investigation: SDK — msfs_alpha_cutoff is a material FloatProperty (default 0.5) exported as JSON alphaCutoff, ignored unless Alpha Mode = MASK (asobo_material_common.py 502-511/179-183/328-330; draw MASK-only in msfs_material_utils.py 688-705; Alpha Group input-4 flag; Blend Alpha Map = in-tree 'Detail alpha operator'), docs — 2024 FlightSim Material Parameters list no cutoff for Standard (Pearl only), 2020-era 'Cutoff Threshold' explains the remembered 0-1 node; channel 12-13/05/2024 symptom + Blend-Alpha-Map workaround; no-op link to the alphaMode=BLEND-always bug (entry 6f8372a1) labeled inferred). Inserted after the Alpha & transparency flicker entry (related) — no renumber."
+      },
+      {
+        "date": "2026-09-21",
+        "summary": "Added category 5 (Blender Third Parties) FIRST entry — \"Bake texture→vertex color for LOD testing\" (`empirical` + `user-typed (authoritative)`; source B inv-12 + maintainer-stated facts: tool is the maintainer's own, updated for Blender 4.5, ships in the upcoming Losco Tools suite). Channel 31/01/2025 details: revived to 3.x (broken since 2.8), Shader Editor pick-image-bake, UVs must coincide (decimate-friendly), for testing not generating LODs; docs corroboration already in cache (Scenery LODs vertex-color LODs). Category 5 reserved placeholder removed (reserved -> null); related to LOD policy / optimization guidelines / tinting entries."
+      },
+      {
+        "date": "2026-09-21",
+        "summary": "Updated category 4 (Blender Pipeline) entry \"Model optimization guidelines for MSFS — draw calls, texture budget, vertex economy and LOD practice\" — merged the trim-sheet practice (source B inv-11; salvuz, 19/12/2024) into the existing guidelines entry per maintainer decision instead of a new entry: materials grouped on one seamless-horizontal (tileable) texture shared across models, unique textures for hero objects, decals masking tiling; corroborated by FSDeveloper 458792 + 456437; salvuz's professional third-party dev context (INI Builds) recorded as maintainer-provided attribution. set updated {date, note}; no prior facts changed."
+      },
+      {
+        "date": "2026-09-21",
+        "summary": "Added category 4 (Blender Pipeline) umbrella entry \"Model optimization guidelines for MSFS — draw calls, texture budget, vertex economy and LOD practice\" (`fact (cited)` + `empirical`; source B inv-10 broadened per maintainer request into general optimization guidelines — draw calls, texture size, LODs). Official docs fetched this run: Modeling Technical Information (performance metrics, draw-call rule, instancing, UV 2-byte precision, weld, animation limits) + Scenery LODs (≥4 LODs, last LOD ≈150 tris/1 material/1 draw call, texture sharing/removal, SimProp Containers); channel kernel 17/12/2024 (one material per object, SP layer masks, more texture sets = more draw calls, resolution trade-off, FSDeveloper SP presets). Numeric LOD policy intentionally not duplicated — related to LOD policy / SP bake / exporter entries. Inserted after the LOD workflow entry in category 4 — no renumber."
+      },
+      {
+        "date": "2026-09-21",
+        "summary": "Added category 4 (Blender Pipeline) entry \"Renaming an exported glTF breaks the build — internal `.bin` buffer reference keeps the old name (`tinygltf: File not found`); re-point the JSON URI or export with final names\" (`empirical` + `fact (cited)`; source B; 2020-era channel episode verified against the 2024 SDK exporter — multi_export.py:1251 derives the .bin path from the export path — and community threads FSDeveloper 453631 / DevSupport 3388; LOD+animation 2020-exporter failure kept as related context, one fact per entry). Inserted at the end of category 4 (after the UV/join entry, related to the LOD workflow entry) — no renumber."
+      },
+      {
+        "date": "2026-09-21",
+        "summary": "Added category 4 (Blender Pipeline) entry \"One glTF handles many UV maps / textures — join + separate 'By Material' splits per-material parts (watch modifiers)\" (`empirical` + `fact (memory)`; source B; basic Blender/glTF knowledge — light digging per maintainer request, cache de-dup only beyond the channel exchange; glTF primitive-per-material stated at memory level). Inserted at end of category 4 (after the tinting entry, related to the LOD workflow entry) — no renumber."
+      },
+      {
+        "date": "2026-09-21",
+        "summary": "Added category 4 (Blender Pipeline) entry \"LOD workflow & policy — 2020-era per-collection export loop (SU5 textureless last LOD) vs strict 2024 rules (max 7 LODs, screen-size vertex budgets, ≤50% per step)\" (`fact (cited)` + `empirical`; source B; rung 1 SDK — lod_tools_msfs_2024/lod_limits.py ModelLodLimits (1000/2500/250000 verts + 0.001/0.01 min ratios), LOD Groups exporter system (lod_groups_panel.py, lod_groups.py, LOD_NAME_PATTERN); rung 2 docs — LOD Technical Information (max 7 LODs, 2-5 typical, ≥50% per step, LOD1-simplified-first flow, ~150 vtx floor, limits-are-a-trap warning, texture reduce/reuse); SU5 textureless-last-LOD contrast inferred from 2024 docs silence, labeled). Inserted after the AutoLOD entry (related) — no renumber."
+      },
+      {
+        "date": "2026-09-21",
+        "summary": "Added category 4 (Blender Pipeline) entry \"Double-sided glass flicker — 2020 toolchain forced doubleSided on (glTF hand-edit fix); double-glazing recipe; 2024 addon has native Double Sided (default off)\" (`fact (cited)` SDK + `empirical`; source B; rung 1 addon — DOUBLESIDED default false (msfs_material_utils.py:79), use_backface_culling mirror (msfs_material.py:1115), material JSON property emission (asobo_material_common.py 189/335/516-521), FlipBackFaceNormal reads it (asobo_material_flip_back_face.py 39/53); rung 3 — DevSupport 3697 + FSDeveloper 460852 for the flicker class; 'always-on doubleSided' exporter behavior = channel-only, labeled). Inserted after the Alpha & transparency flicker entry (related) — no renumber."
+      },
+      {
+        "date": "2026-09-21",
+        "summary": "Added category 4 (Blender Pipeline) entry \"MSFS material tinting — Color Multiplier / vertex colors need white albedo; 2024 addon mixes Vertex Color into the exported shader (no stock preview)\" (`fact (cited)` SDK + `empirical` channel; source B; rung 1 addon — Vertex Color node wired into exported shader (msfs_material.py ~1187), auto default VC layer (msfs_handlers.py 26-28), export options (multi_export.py 340/708), Base Color factor only (msfs_material_utils.py 60); rung 2 docs — 2024 FlightSim Material Parameters list no Color Multiplier for Standard; '(Rohn fork had it)' dossier claim unverifiable, dropped). Inserted after the Parallax Window entry — no renumber."
+      },
+      {
+        "date": "2026-09-21",
+        "summary": "Added category 13 (DevMode - Various) entry \"2020→2024 project conversion — 2024 compiler hang at `Generating Package Information` (no error) / editor CTD; practice: port from 2020, don't convert\" (`empirical`; source B → maintainer-flagged as personal-experience anecdote; chain: rung 1 SDK — no DevMode Project Converter, message string absent (3dsMax SceneConversion2024 scripts only), rung 2 DevSupport snippets 15388/11708/14090, rung 3 FSDeveloper thread 460051 — port-not-convert practice corroborated, exact hang symptom lone anecdote). First entry in category 13 (reserved placeholder removed). Entry-level insert — no renumber."
+      },
+      {
+        "date": "2026-09-21",
+        "summary": "Added category 6 (Adobe 3D Painter Pipeline for Texturing) entry \"Substance Painter bake artifacts — `Average Normal` flag (Normal Tangent baker, default ON) breaks AO / curvature / thickness\" (`empirical`; source B → rung 1 SDK silent on Substance Painter, rung 2 official MSFS docs Ambient Occlusion page, rung 3 reddit r/Substance3D corroboration; channel report 20-21/01/2025). Entry-level insert — no renumber."
+      },
       {
         "date": "2026-09-21",
         "summary": "Added category 4 (Blender Pipeline for Modeling and Animations) entry \"MSFS 2024 rain on materials: `Receive Rain` opt-in — Windshield / Clearcoat only (standard and glass stay dry)\" (`fact (cited)` + `empirical`; source B → rung 1 local SDK `ASOBO_material_rain_options` schema + Blender addon panels/exporter source, rung 2 official docs Windshield And Windows Rain Effects, rung 3 avsim; channel empirical test on scenery objects, 21-22/01/2025). Entry-level insert — no renumber. Cross-reference added in category 1 (Scenery Objects)."
