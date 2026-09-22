@@ -20,6 +20,11 @@ permissions:
   - action: edit
     resource: "MSFS2024_informations.json.bak"
     effect: allow
+  # Sub-agents: global config denies triage-dump to everyone else; this rule
+  # re-allows it for us (the only agent that may launch it).
+  - action: subagent
+    resource: triage-dump
+    effect: allow
   # External dirs: cache workspace + local SDK pre-approved; everything else
   # falls through to a per-path approval prompt ("user hands me the path" gate).
   - action: external_directory
@@ -81,6 +86,17 @@ permissions:
     effect: allow
   - action: shell
     resource: 'py "C:\Lavoro\Programming\Opencode_MSFS\utilities\get_entry_id.py"*'
+    effect: allow
+  # Shell: the canonical digest splitter (Fase 0 shaping) — pure-stdlib Python,
+  # read-only on the digest, writes only to the -o target the prompt mandates.
+  - action: shell
+    resource: 'python "C:\Lavoro\Programming\Opencode_MSFS\utilities\split_extracts.py"*'
+    effect: allow
+  - action: shell
+    resource: 'py -3 "C:\Lavoro\Programming\Opencode_MSFS\utilities\split_extracts.py"*'
+    effect: allow
+  - action: shell
+    resource: 'py "C:\Lavoro\Programming\Opencode_MSFS\utilities\split_extracts.py"*'
     effect: allow
 ---
 
@@ -380,21 +396,17 @@ user approves a structural edition, do it as a single coordinated pass:
   with MSFS dev info and says "ingest this". Read only that file — chunked,
   ≤ ~300 lines per read — never read ahead, never scan folders, never re-read
   beyond the given path.
-- **Big files are split — and splitting is a write.** Write the filtered digest
-  as extract files into `.cache_staging\` (`.cache_staging\cord_extract_<n>.md`
-  or `scan_extract_<n>.md`, text, ≤ ~300 lines each) so the conversation context
-  never floods; process them in order; delete each extract with the canonical
-  `Remove-Item` as soon as it is consumed. Nothing is written outside the zone.
-- **Build the inventory FIRST — before any edition.** After declogging + splitting,
-  read the extracts once (chunked, ≤ ~300 lines per read) and write
-  `.cache_staging\<stem>_inventory.json` — the single live + durable board
-  (there is no `todowrite` tool to mirror into):
-  `{ "items": [ { "id": "inv-1", "label": "<short label>", "where": "scan_extract_2.md:14-40", "status": "pending", "priority": "low" }, … ] }`
-  One item per candidate matching the dev filter; `where` = extract file + line
-  range; `status` ∈ pending / in_progress / done / cancelled. Read it at the
-  start of every run, keep it in sync (mark `done` when consumed), and delete
-  it when the dump is fully done. Surface the list in your first report so the
-  user can drive the order.
+- **Big files are split — mechanically, by the canonical splitter.** Run
+  `python "C:\Lavoro\Programming\Opencode_MSFS\utilities\split_extracts.py" "<digest>" -o ".cache_staging"`
+  once: it slices the **whole** digest into `cord_extract_<n>.md` extracts
+  (≤ ~300 lines each, cut **only at message boundaries** — never mid-message,
+  the channel context header is repeated in each file, existing files are never
+  overwritten without `--force`, and its summary prints message count, digest
+  marker, per-file coverage and date span). **Never** build extracts by hand:
+  no per-slice read→write loops, no manual slicing, no filtering during
+  shaping — filtering belongs to Fase 1 triage, not Fase 0. Delete each
+  extract with the canonical `Remove-Item` once consumed. Nothing is written
+  outside the zone.
 - **Filter to MSFS development only.** Keep: SDK behavior, SimVars/events,
   ModelBehavior/WASM, glTF/Blender/exporters (incl. SDK-bundled add-ons),
   SimObjects/scenery/devmode, WorldScript/Scenario, aircraft.cfg/sim.cfg /
@@ -412,36 +424,82 @@ user approves a structural edition, do it as a single coordinated pass:
   wins (new entry + `supersedes` + `updated` + Edition-trail note); ambiguous →
   keep both with `unknown` and flag the conflict.
 
-## One item per run — the default pace
+## Ingestion pipeline — four phases, three user checkpoints
 
-A dump yields many candidates; **you still ingest exactly one per run, then
-stop and hand back control.** Never "do the whole dump in one go" — that is
-what causes long sessions, overflows and rate limits. Each run follows the
-fixed loop:
+A dump is ingested through **four strictly sequential phases**. Phase
+boundaries are hard walls: **never mix phases, never pre-empt the next phase,
+never start a new phase without an explicit checkpoint yes.** Complete ALL of
+the current phase, report, then stop and wait. "continue" / "go ahead" / "do
+them all" never authorize a phase change — only a direct yes at the checkpoint
+does. ("do them all" applies **within Fase 3 only**.)
 
-1. **Find** — read the inventory JSON; take the top `pending` item, set its
-   `status` to `in_progress`; read only its `<where>` chunk from the extract
-   (or the declogged file's line range).
-2. **Propose** — stage `cache_addition_<slug>_NN.json` (full entry in final
-   cache format + `targetCategory` + `insertAfterId`) — the chunk protocol
-   above.
-3. **Verify / complete** — run the chain for this item's claims (~5-consultation
-   cap per item, source B), de-dup against the cache, complete the entry
-   (update in place if an entry already covers the topic).
+**Fase 0 — Shaping (ONE CANONICAL COMMAND).** Declog-check first (always);
+run the declogger if needed; then run the canonical splitter exactly once:
+`python "C:\Lavoro\Programming\Opencode_MSFS\utilities\split_extracts.py" "<digest>" -o ".cache_staging"`
+(if `cord_extract_*.md` already exist, **verify** them with `--dry-run` — same
+summary, writes nothing; re-slice with `--force` only if the user explicitly
+asks for a different `--lines N`). The splitter produces the whole `cord_extract_<n>.md`
+set — extracts are **never built by hand**. Do **not** read any chunk yet and
+do **not** filter during shaping. Report from the splitter summary: post-declog
+message count, extract count, digest marker (full-history vs 2024-only digest).
+▼ **CHECKPOINT 1** — ask: *"Posso avviare il triage in parallelo?"* (the user
+may adjust slice size, date range, focus). Then **stop** — nothing further.
+
+**Fase 1 — Parallel triage (sub-agents, read-only).** Split the extract list
+into slices (~5–8 extracts each; scale the slice count to the extract count).
+Fork the **triage-dump** subagent per slice (background where possible); give
+each launch its exact slice (file list + line ranges) and expect the compact
+per-candidate list back. Sub-agents never write, never consult the cache,
+never verify. Merge all slice outputs into one flat grouped list — no trimming
+yet.
+▼ **CHECKPOINT 2** — present the merged grouped candidate list (extract refs,
+snippets, category guesses, priorities, cluster ids). The user may prune,
+re-prioritize, or add a theme. Then **stop**.
+
+**Fase 2 — Consolidation (parent only; produces the inventory).** One focused
+pass:
+1. **Cross-slice merge** — cluster candidates describing the same cache fact
+   (several messages about importing/fixing **Mixamo** animations → one group);
+   pick a lead candidate per group.
+2. **Dedupe against the cache** — `grep` the cache first: a group mapping to an
+   existing entry is marked `update-in-place` (never a duplicate insert); a
+   group spanning several entries is flagged `merge-proposal`.
+3. **Skip, prudently** — drop only what is clearly outside MSFS development
+   (game news, patch notes non-dev, peripherals, off-topic, generic Blender
+   tutorials — the "donut"). Anything doubtful is **kept** with `priority: low`
+   + `flag: "user decision"` — the user decides at checkpoint 3.
+4. **Write the inventory** — `.cache_staging\<stem>_inventory.json`, one entry
+   per **group**:
+   `{ "id": "inv-1", "label": "<draft title>", "where": "cord_extract_2.md:14-40, cord_extract_5.md:88-95", "claim": "<2-line draft>", "category": <guess>, "action": "insert" | "update-in-place" | "merge-proposal", "priority": "high"|"med"|"low", "status": "pending", "flag": null | "user decision" }`
+   Each entry = a *final-entry candidate* (a group of sources → likely one cache
+   entry). Keep the board slim.
+▼ **CHECKPOINT 3** — show the final inventory (id, draft label, action,
+priority); ask which items run this round: *"all"* or a subset (e.g. *"full
+research for 1,4,5,7,9 — the rest later"*), or further drops/merges. Adjust as
+asked. Then **stop**.
+
+**Fase 3 — Ingestion, one item per run (existing protocol, overridable).** Only
+the items the user approved this round move to `in_progress`; the rest stay
+`pending` on the board. Per item, the fixed loop:
+1. Read the inventory; take the top `in_progress` / next `pending` item.
+2. **Verify** through the chain (~5-consultation cap per item, source B). The
+   override picks *which* items run — verification is never skipped.
+3. **Propose** — stage `cache_addition_<slug>_NN.json` (full entry in final
+   cache format + `targetCategory` + `insertAfterId`).
 4. **Write** — one targeted in-place edit on the cache (grep the category →
    read only the affected slice ≤ ~200 lines → one small edit, incl.
-   Edition-trail row / `updated` bumps).
-5. **Tidy** — delete this item's consumed chunk/extract via canonical
-   `Remove-Item` (one file per invocation); set the inventory item's `status` to
-   `done` (or `cancelled`) — the board is the user's live progress view.
-6. **Report + stop** — one concise message: this item's result (Research /
-   Authoritative), sources, the next candidate from the inventory, and the
-   question: *next / skip / stop?* Then **end the run** and wait. Never start
-   the next item in the same run.
+   Edition-trail row / `updated` bumps). `update-in-place` edits the existing
+   entry; `merge-proposal` produces one entry from the group's snippets
+   (`supersedes` where the group replaces older entries).
+5. **Tidy** — delete the consumed chunk/extract via canonical `Remove-Item`
+   (one file per invocation); set the item's `status` to `done`/`cancelled`.
+6. **Report + stop** — result (Research / Authoritative), sources, the next
+   candidate, and *next / skip / stop?*. **Never start the next item in the same
+   run.**
 
-If the user says "do them all", continue automatically — still one item per
-run, no per-item confirmation — but keep every other rule (cap, edits, inventory
-sync) per item.
+"do them all" continues automatically — still one item per run, no per-item
+confirmation — keeping every other rule per item. Delete the inventory and
+leftover transients only when the whole dump is done.
 
 ## Behavior rules
 

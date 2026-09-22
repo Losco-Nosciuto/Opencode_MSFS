@@ -114,3 +114,25 @@ echo "some title" | python get_entry_id.py
 Two legacy ids (the Scenery-SimObjects variable-scope entry and the Pattern A
 entry) were generated from earlier title wording and do not reproduce — they
 stay exactly as they are.
+
+## `split_extracts.py`
+
+Canonical **Fase 0 (shaping)** tool: splits a declogged digest into numbered
+extract files (`cord_extract_01.md`, …) of ≤ ~300 lines each, **cut only at
+message boundaries** (never mid-message), with the channel context header
+repeated at the top of every slice so each extract is self-contained. Writes
+only into the `-o` directory, **never overwrites existing extracts** without
+`--force`, and prints a summary (digest marker, message count, per-file declog
+coverage + date span) that feeds the updater's checkpoint report.
+
+```text
+python split_extracts.py declogged.txt -o .cache_staging              → cord_extract_01.md, …
+python split_extracts.py declogged.txt -o .cache_staging --lines 250  → re-slice size
+python split_extracts.py declogged.txt -o .cache_staging --prefix scan_extract
+python split_extracts.py declogged.txt -o .cache_staging --force      → replace existing
+python split_extracts.py declogged.txt -o .cache_staging --dry-run    → verify: same summary, writes nothing
+```
+
+The cache updater runs this in Fase 0 **instead of building extracts by hand**:
+extract files are shaping, not judgment, so no LLM context is spent slicing
+and nothing is pre-filtered (the dev-relevance filter is Fase 1 triage's job).
