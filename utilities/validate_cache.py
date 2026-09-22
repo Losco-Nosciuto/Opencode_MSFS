@@ -11,7 +11,7 @@ Checks (each failure is reported as `ERROR:` and exits 1):
   3. every entry carries the 16 documented fields and a well-formed UUIDv5 id
   4. ids are unique across the whole cache
   5. `kind` in {entry, openQuestion}; `openQuestion` only in the Open Questions
-     category (15)
+     category — located by title, never by hardcoded number
   6. every `statusValues` item is a known status-ladder value
   7. a category with a non-null `reserved` note has an empty `entries` array,
      and a category with entries keeps `reserved` null
@@ -141,6 +141,20 @@ def main(argv: list[str] | None = None) -> int:
         if not isinstance(trail.get("rows"), list):
             c.error("editionTrail: `rows` must be an array")
 
+    # 2b. locate the Open Questions category by title — never hardcode its
+    # number (renumberings must not break this rule)
+    oq_numbers = {
+        cat["number"] for cat in categories
+        if isinstance(cat, dict)
+        and cat.get("title") == "Open Questions (Unknowns)"
+        and cat.get("number") is not None
+    }
+    if len(oq_numbers) != 1:
+        c.error(
+            "Open Questions category: expected exactly one category titled "
+            f"'Open Questions (Unknowns)', found numbers {sorted(oq_numbers) or 'none'}"
+        )
+
     all_ids: set[str] = set()
     seen: set[str] = set()
 
@@ -186,7 +200,7 @@ def main(argv: list[str] | None = None) -> int:
             kind = entry.get("kind")
             if kind not in KINDS:
                 c.error(f"{where}: kind {kind!r} — expected entry|openQuestion")
-            if kind == "openQuestion" and number != 15:
+            if kind == "openQuestion" and number not in oq_numbers:
                 c.error(
                     f"{where}: openQuestion outside the Open Questions category "
                     f"({number})"
