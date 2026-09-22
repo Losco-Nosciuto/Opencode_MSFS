@@ -18,12 +18,26 @@ image/CDN/thumbnail URLs (`cdn.discordapp.com`, `media.discordapp.net`,
 `play-lh.googleusercontent.com`), empty messages, and the
 `Exported N message(s)` footer.
 
+**2024-only policy (default):** messages dated strictly **before `--cutoff`
+(DD/MM/YYYY, default `01/08/2024`** — ~3 months before the MSFS2024 beta)
+are dropped from the output, so the cache updater ingests only 2024-relevant
+content. The picked count is reported both in the console and in the
+`# Declogged from:` header as
+`+ N pre-cutoff removed (< 01/08/2024, 2024-only policy)` — the updater uses
+that marker to attribute the file as an intentionally partial, 2024-only
+digest. Pass `--cutoff off` (or `none`) to disable truncation. The raw input
+dump is **never modified** — pre-cutoff (2020-era) recovery is done with the
+sibling manual tool [`declogger_FS2020_manualonly.py`](#declogger_fs2020_manualonlypy)
+on the untouched original.
+
 ### Usage
 
 ```text
-python declog_chat.py export.txt                 → export_declog.txt
+python declog_chat.py export.txt                 → export_declog.txt (2024-only, < 01/08/2024)
 python declog_chat.py export.txt -o clean.txt    → custom output
 python declog_chat.py export.txt --drop-links    → also strip body URLs
+python declog_chat.py export.txt --cutoff 01/08/2024   (default)
+python declog_chat.py export.txt --cutoff off          → full history, no truncation
 ```
 
 Pure stdlib, Python 3.8+. Try `py -3` if `python` is not on PATH.
@@ -41,6 +55,28 @@ receiving a dump it reads the first line, and if `# Declogged from:` is absent
 it runs this script into `.cache_staging\` before the normal scan workflow.
 De-clogged content is still **source B** for the updater: every claim still
 gets verified through the fallback chain.
+
+## `declogger_FS2020_manualonly.py`
+
+1:1 copy of the original (pre-cutoff) `declog_chat.py` — **manual 2020/2024
+recovery tool**. No `--cutoff` flag, no policy: it emits the **full history**
+de-clogged file from a raw dump.
+
+Use it when pre-cutoff (2020-era) content must be ingested: run it manually on
+the untouched raw dump and hand the output to the cache updater, which treats
+it as a normal full-history source-B file:
+
+```text
+python declogger_FS2020_manualonly.py export.txt -o full_history.txt → complete 2020+2024 text
+```
+
+**Golden rule — raw dumps are never touched:** both tools only *write* their
+output file. The downloaded dumps in
+`C:\Lavoro\DiscordChatExporter\Unfiltered_MSFS_Chats\` are the only permanent
+copy of the pre-2024 history and must never be deleted or overwritten. (Known
+quirk carried over from the original: on files whose *name* contains emoji,
+the final console summary line crashes — the output file is already written
+and correct; ignore the traceback or rename the dump.)
 
 ## `validate_cache.py`
 

@@ -54,6 +54,16 @@ permissions:
   - action: shell
     resource: 'py "C:\Lavoro\Programming\Opencode_MSFS\utilities\declog_chat.py"*'
     effect: allow
+  # Manual 2020-recovery declogger (full history, no cutoff) — same zone.
+  - action: shell
+    resource: 'python "C:\Lavoro\Programming\Opencode_MSFS\utilities\declogger_FS2020_manualonly.py"*'
+    effect: allow
+  - action: shell
+    resource: 'py -3 "C:\Lavoro\Programming\Opencode_MSFS\utilities\declogger_FS2020_manualonly.py"*'
+    effect: allow
+  - action: shell
+    resource: 'py "C:\Lavoro\Programming\Opencode_MSFS\utilities\declogger_FS2020_manualonly.py"*'
+    effect: allow
   - action: shell
     resource: 'python "C:\Lavoro\Programming\Opencode_MSFS\utilities\validate_cache.py"*'
     effect: allow
@@ -328,9 +338,14 @@ user approves a structural edition, do it as a single coordinated pass:
 
 ## Discord & .txt scan ingestion
 
-- **Declog check first — always.** Before anything else, read the dump's first
-  line:
-  - If it starts with `# Declogged from:` → already de-clogged; use it as-is.
+- **Declog check first — always.** Before anything else, look for the
+  `# Declogged from:` marker (it follows any un-dated `## Channel context`
+  lines at the top of a de-clogged file):
+  - If the marker is present → already de-clogged; use the file as-is. Read the
+    marker to learn whether it is a **full-history** dump (no `pre-cutoff
+    removed` fragment) or a **2024-only digest**
+    (`+ N pre-cutoff removed (< 01/08/2024, 2024-only policy)`) and attribute
+    claims accordingly.
   - Otherwise → **run the declogger** before scanning, exactly one command, no
     chaining (an approval prompt for the dump path is expected once per file —
     approve it):
@@ -343,6 +358,24 @@ user approves a structural edition, do it as a single coordinated pass:
   The `# Declogged from:` header line carries the source filename + counts —
   use it for attribution. De-clogged content is still **source B**: every
   claim still goes through the verification chain.
+- **2024-only policy (default).** The auto declogger
+  (`declog_chat.py`) drops messages dated **strictly before 01/08/2024**
+  (`--cutoff DD/MM/YYYY`, `--cutoff off` disables) so scans see only
+  2024-relevant content. A dump that carries the `pre-cutoff removed` marker
+  in its `# Declogged from:` line is an **intentionally partial** digest:
+  e.g. `# Declogged from: X — 7287 messages → 2945 kept … + 4265 pre-cutoff
+  removed (< 01/08/2024, 2024-only policy)`. Missing claims are by design —
+  do not treat the file as truncated-by-error.
+- **Manual 2020-recovery path.** When the user explicitly asks to ingest
+  pre-2024 / 2020-era content, run the sibling manual tool on the untouched
+  raw dump and ingest its output as a normal full-history source-B file:
+  `python "C:\Lavoro\Programming\Opencode_MSFS\utilities\declogger_FS2020_manualonly.py" "<dump>" -o "<output>"`
+  Its `# Declogged from:` line has **no** `pre-cutoff removed` fragment.
+- **Raw dumps are never modified.** Both tools only *write* their output;
+  the downloaded dumps in `C:\Lavoro\DiscordChatExporter\Unfiltered_MSFS_Chats\`
+  are the only permanent copy of the pre-2024 history and must never be
+  deleted or overwritten. Recovery always re-runs the manual tool on the
+  original file.
 - The user hands you a **path** to a downloaded channel dump or any `.txt`
   with MSFS dev info and says "ingest this". Read only that file — chunked,
   ≤ ~300 lines per read — never read ahead, never scan folders, never re-read

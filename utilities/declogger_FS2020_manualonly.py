@@ -17,23 +17,12 @@ Message-body URLs that are real references (YouTube, flightsim.to, forum/docs
 links, ...) are KEPT — they are sources for the knowledge cache. Pass
 --drop-links to strip every body URL too.
 
-**2024-only policy (default):** messages dated strictly BEFORE the --cutoff
-date (default 01/08/2024 — ~3 months before the MSFS2024 beta started) are
-removed from the output, so the cache updater ingests only 2024-relevant
-content. The dropped count is reported in the stats + the `# Declogged from:`
-header so the updater knows the output is an intentionally partial, 2024-only
-digest. Pre-cutoff (2020-era) recovery is done with the sibling manual tool
-`declogger_FS2020_manualonly.py` (full history, no cutoff). Raw dumps are
-never touched by either tool. Pass `--cutoff off` to disable truncation.
-
 Pure stdlib (Python 3.8+), no dependencies. UTF-8 (BOM-tolerant) in/out.
 
 Usage:
     python declog_chat.py export.txt
     python declog_chat.py export.txt -o cleaned.txt
     python declog_chat.py export.txt --drop-links
-    python declog_chat.py export.txt --cutoff 01/08/2024   (default)
-    python declog_chat.py export.txt --cutoff off          (full history)
 """
 
 from __future__ import annotations
@@ -41,7 +30,6 @@ from __future__ import annotations
 import argparse
 import re
 import sys
-from datetime import date
 from pathlib import Path
 
 # Message header: [DD/MM/YYYY HH:MM] <user + optional "(flag)" markers>
@@ -163,11 +151,10 @@ def declog_message(raw_body: list[str], drop_links: bool) -> tuple[list[str], di
     return out, {"attachments": attachments, "embeds": bool(embed_lines)}
 
 
-def parse_chat(text: str, drop_links: bool, cutoff: date | None = None) -> tuple[list[str], list[tuple[str, list[str]]], dict]:
-    """Split the dump into (context, messages, stats). messages = [(header, cleaned_body), ...].
-    When cutoff (a date) is given, messages dated strictly before it are dropped."""
+def parse_chat(text: str, drop_links: bool) -> tuple[list[str], list[tuple[str, list[str]]], dict]:
+    """Split the dump into (context, messages, stats). messages = [(header, cleaned_body), ...]."""
     lines = text.splitlines()
-    stats = {"messages": 0, "kept": 0, "dropped": 0, "precutoff": 0, "pins": 0,
+    stats = {"messages": 0, "kept": 0, "dropped": 0, "pins": 0,
              "embeds": 0, "attachments": 0, "context_lines": 0}
 
     context: list[str] = []
@@ -180,19 +167,6 @@ def parse_chat(text: str, drop_links: bool, cutoff: date | None = None) -> tuple
         if cur_header is None:
             return
         stats["messages"] += 1
-        if cutoff is not None:
-            m = HEADER_RE.match(cur_header)
-            if m:
-                try:
-                    d, mo, y = m.group("ts").split("/")
-                    msg_date = date(int(y), int(mo), int(d))
-                except ValueError:
-                    msg_date = None
-                if msg_date is not None and msg_date < cutoff:
-                    stats["precutoff"] += 1
-                    cur_header = None
-                    cur_body = []
-                    return
         body, msg_stats = declog_message(cur_body, drop_links)
         stats["embeds"] += msg_stats["embeds"]
         stats["attachments"] += msg_stats["attachments"]
@@ -224,26 +198,17 @@ def parse_chat(text: str, drop_links: bool, cutoff: date | None = None) -> tuple
 
 
 def render(context: list[str], messages: list[tuple[str, list[str]]],
-           stats: dict, src_name: str, cutoff_label: str | None = None) -> str:
+           stats: dict, src_name: str) -> str:
     out: list[str] = []
     if context:
         out.append("## Channel context")
         out.extend(context)
         out.append("")
-    head = (
+    out.append(
         f"# Declogged from: {src_name} — {stats['messages']} messages → "
-        f"{stats['kept']} kept, {stats['dropped']} dropped"
-    )
-    if cutoff_label and stats.get("precutoff"):
-        head += (
-            f" + {stats['precutoff']} pre-cutoff removed"
-            f" (< {cutoff_label}, 2024-only policy)"
-        )
-    head += (
-        f" · {stats['pins']} pinned · "
+        f"{stats['kept']} kept, {stats['dropped']} dropped · {stats['pins']} pinned · "
         f"{stats['embeds']} embeds collapsed · {stats['attachments']} attachment blocks removed"
     )
-    out.append(head)
     out.append("")
     for header, body in messages:
         out.append(header)
@@ -253,14 +218,6 @@ def render(context: list[str], messages: list[tuple[str, list[str]]],
 
 
 def main(argv: list[str] | None = None) -> int:
-    # Emoji / non-ASCII file names in paths crash the plain cp1252 console
-    # print at the end; make every print encoding-safe before anything else.
-    for stream in (sys.stdout, sys.stderr):
-        try:
-            stream.reconfigure(encoding="utf-8", errors="replace")
-        except (AttributeError, OSError, ValueError):
-            pass
-
     ap = argparse.ArgumentParser(
         prog="declog_chat.py",
         description="De-clog an exported Discord chat dump for easier ingestion.",
@@ -269,24 +226,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("-o", "--output", help="output path (default: <input>_declog.txt)")
     ap.add_argument("--drop-links", action="store_true",
                     help="also strip informative URLs from message bodies (default: keep them)")
-    ap.add_argument("--cutoff", default="01/08/2024",
-                    help="drop messages dated strictly BEFORE DD/MM/YYYY"
-                         " (2024-only policy; 'off'/'none' keeps full history)")
     args = ap.parse_args(argv)
-
-    raw_cutoff = (args.cutoff or "").strip().lower()
-    if raw_cutoff in ("off", "none", ""):
-        cutoff: date | None = None
-        cutoff_label: str | None = None
-    else:
-        try:
-            d, mo, y = raw_cutoff.split("/")
-            cutoff = date(int(y), int(mo), int(d))
-        except ValueError:
-            print(f"error: bad --cutoff {args.cutoff!r}; use DD/MM/YYYY or 'off'",
-                  file=sys.stderr)
-            return 2
-        cutoff_label = f"{cutoff.day:02d}/{cutoff.month:02d}/{cutoff.year}"
 
     src = Path(args.input)
     if not src.is_file():
@@ -298,8 +238,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error: cannot read {src}: {exc}", file=sys.stderr)
         return 2
 
-    context, messages, stats = parse_chat(text, args.drop_links, cutoff)
-    out_text = render(context, messages, stats, src.name, cutoff_label)
+    context, messages, stats = parse_chat(text, args.drop_links)
+    out_text = render(context, messages, stats, src.name)
 
     dst = Path(args.output) if args.output else src.with_name(src.stem + "_declog.txt")
     try:
@@ -312,8 +252,6 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  {stats['messages']} messages read: {stats['kept']} kept, "
           f"{stats['dropped']} dropped ({stats['pins']} pinned kept, "
           f"{stats['embeds']} embeds collapsed, {stats['attachments']} attachment blocks removed)")
-    if stats.get("precutoff"):
-        print(f"  {stats['precutoff']} pre-cutoff messages removed (< {cutoff_label}, 2024-only policy)")
     return 0
 
 
