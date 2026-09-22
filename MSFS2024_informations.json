@@ -137,18 +137,24 @@
           "id": "5795f656-5908-5987-93f8-c1715bbc80c7",
           "title": "Official corroboration — environment A: vars power SimObject animations",
           "kind": "entry",
-          "claim": "The shipped Asobo behavior template (`Asobo/Misc/SimObjects`, windmill / windsock) animates from `(A:AMBIENT WIND VELOCITY,feet per second)` and `(A:AMBIENT WIND DIRECTION,degrees)` (+ `(A:ANIMATION DELTA TIME, seconds)`), and references `(A:PLANE HEADING DEGREES TRUE, degrees)` in the orientation formula — how that aircraft-var resolves in a world-SimObject's context is unverified (likely own-object/constant → wind relative to object; see the `A:PLANE HEADING DEGREES TRUE` open question in §15).",
-          "status": "`fact (cited)` (template exists as shipped).",
+          "claim": "The shipped Asobo behavior template (`Asobo/Misc/SimObjects`, windmill / windsock) animates from `(A:AMBIENT WIND VELOCITY,feet per second)` and `(A:AMBIENT WIND DIRECTION,degrees)` (+ `(A:ANIMATION DELTA TIME, seconds)`), and references `(A:PLANE HEADING DEGREES TRUE, degrees)` in the orientation formula — resolved (2026-09-22): in a world-SimObject context `A:PLANE HEADING DEGREES TRUE` resolves the SimObject's own heading — `ASOBO_WindDirection_Template` subtracts it from the wind direction so the windmill/windsock turns itself to face the wind; the shipped Windsock sample calls the same template. Substance moved from the resolved open question in category 15.",
+          "status": "`fact (cited)` (template exists as shipped) + `inferred` (own-heading resolution — the wind-relative angle is computed from the SimObject's own heading).",
           "statusValues": [
-            "fact (cited)"
+            "fact (cited)",
+            "inferred"
           ],
           "confidence": null,
           "sources": [
-            "official ModelBehaviors template source — https://docs.flightsimulator.com/msfs2024/html/5_Content_Configuration/Models/ModelBehaviors/TemplateExplorer/Asobo/Misc/SimObjects.html"
+            "official ModelBehaviors template source — https://docs.flightsimulator.com/msfs2024/html/5_Content_Configuration/Models/ModelBehaviors/TemplateExplorer/Asobo/Misc/SimObjects.html",
+            "local SDK `C:\\MSFS 2024 SDK\\ModelBehaviorDefs\\Asobo\\Misc\\SimObjects.xml:19-30` (ASOBO_WindDirection_Template — orientation formula uses own heading)",
+            "local SDK sample `C:\\MSFS 2024 SDK\\Samples\\DevmodeProjects\\SimObjects\\Landmarks\\Windsock\\…\\model\\Windsock.xml:46-52` (template call)"
           ],
           "user": null,
           "added": "2026-09-20",
-          "updated": null,
+          "updated": {
+            "date": "2026-09-22",
+            "note": "Resolved the `A:PLANE HEADING DEGREES TRUE` open question: own-heading resolution in world-SimObject context; substance moved from category 15 open question."
+          },
           "resolved": null,
           "supersedes": [],
           "related": [],
@@ -1274,15 +1280,24 @@
           "id": "019eec22-ec04-5b52-b5b5-10e9ea2c722e",
           "title": "`A:PLANE HEADING DEGREES TRUE` inside the official windmill template:",
           "kind": "openQuestion",
-          "claim": "does it resolve the user plane or the SimObject itself? (affects the orientation formula's meaning). → Official corroboration — environment A: vars power SimObject animations (§2).",
-          "status": null,
-          "statusValues": [],
-          "confidence": null,
-          "sources": [],
+          "claim": "RESOLVED 2026-09-22 — in a world-SimObject context it resolves the SimObject's own heading, not the user aircraft's: `ASOBO_WindDirection_Template` computes the object's target rotation from AMBIENT WIND DIRECTION minus the object's own heading (A:PLANE HEADING DEGREES TRUE), so the windmill/windsock faces the wind. Semantics inferred (the SDK source shows the formula; no official sentence on the A: var's meaning for world SimObjects); substance in the owning entry (category 2, \"Official corroboration — environment A: vars power SimObject animations\").",
+          "status": "`fact (cited)` (template exists as shipped and uses the var in its orientation formula) + `inferred` (own-heading resolution — the only coherent reading; SDK silent on the A: var's meaning for world SimObjects).",
+          "statusValues": [
+            "fact (cited)",
+            "inferred"
+          ],
+          "confidence": "medium",
+          "sources": [
+            "local SDK `C:\\MSFS 2024 SDK\\ModelBehaviorDefs\\Asobo\\Misc\\SimObjects.xml:19-30` (ASOBO_WindDirection_Template — orientation formula uses own heading)",
+            "local SDK sample `C:\\MSFS 2024 SDK\\Samples\\DevmodeProjects\\SimObjects\\Landmarks\\Windsock\\…\\model\\Windsock.xml:46-52` (template call)"
+          ],
           "user": null,
           "added": null,
-          "updated": null,
-          "resolved": null,
+          "updated": {
+            "date": "2026-09-22",
+            "note": "Resolved via deep local SDK check; official docs mirror adds no further detail."
+          },
+          "resolved": "2026-09-22",
           "supersedes": [],
           "related": [
             {
@@ -1297,14 +1312,17 @@
           "id": "22dfbc83-3dd0-5795-8f22-a6e9fd240a68",
           "title": "`interaction/<name>.loc` package folder:",
           "kind": "openQuestion",
-          "claim": "candidate for the 2024 player/aircraft interaction system (the \"interact with your plane\" door idea) — structure and semantics not yet documented here. → SimObject package folders (2024) (§2).",
+          "claim": "verified placement (2026-09-22): the folder is listed ONLY in the Simple SimObject structure (`non\\index.md:95`, beside `localization`) and its file names need no fixed format but must be correctly referenced in the relevant CFG/XML/FLT files (line 92). The \"interact with your plane\" door idea as a separate .loc system is unsupported — the real interaction machinery is the avatar seat/seatbelt system (`[InteractionMgr.0]` graph/spawnTag in Simple SimObjects, sim.cfg InteractionMgr section, nav-graph `interactiveObject` / `interactionFile.n` params + Interaction XML). Distinct from the Navigation Service system: `interactions/` (plural, `.xml`). Content format of `<name>.loc` itself remains undocumented — still open. → SimObject package folders (2024) (§2).",
           "status": null,
           "statusValues": [],
           "confidence": null,
           "sources": [],
           "user": null,
           "added": null,
-          "updated": null,
+          "updated": {
+            "date": "2026-09-22",
+            "note": "Enriched with verified SDK-docs findings (folder placement + actual interaction machinery); question stays open — `.loc` content format undocumented, no `.loc` file ships in any SDK sample."
+          },
           "resolved": null,
           "supersedes": [],
           "related": [
@@ -1395,7 +1413,7 @@
           "id": "7b35b7cd-2371-5e3e-8e37-2151324003fe",
           "title": "Jetway IK constraints — `<IKConstraint>` in model XML (2020-era; 2024 applicability unknown)",
           "kind": "entry",
-          "claim": "- Channel tip (fs-sdk, mamu82, 20/03/2025 23:20): when a jetway won't extend/move correctly at its parking position, the jetway model XML can carry an IK constraint block:\n\n      <IKConstraint>\n      <Node>Empty01</Node>\n      <X min=\"0.54\" max=\"15.5\"/>\n      </IKConstraint>\n\n— raise `max` / lower `min` (X only) to widen the allowed extension.\n- 2024 SDK check (local grep, `C:\\MSFS 2024 SDK`): `IKConstraint` matches zero files. The 2024 `ModelBehaviorDefs\\Asobo\\Misc\\SimObjects.xml` ships only `ASOBO_Jetway_Hood_Left/Right_Bend/Deployment`, `ASOBO_Jetway_Hood_Top_Horizontal/Vertical`, `ASOBO_Jetway_Wheel_Roll` and `ASOBO_Jetway_Wheel_Orientation` templates (lines 77–186) — no IK element.\n- 2020-era docs (Jetway sample page, labeled): \"…by seeing the `<IKChain>` and `<IKConstraint>` sections of the [model].xml file\" — the element is documented for the 2020 SDK. Whether 2024 jetway models still honor it is unknown (SDK silent, no counter-evidence).",
+          "claim": "- Channel tip (fs-sdk, mamu82, 20/03/2025 23:20): when a jetway won't extend/move correctly at its parking position, the jetway model XML can carry an IK constraint block:\n\n      <IKConstraint>\n      <Node>Empty01</Node>\n      <X min=\"0.54\" max=\"15.5\"/>\n      </IKConstraint>\n\n— raise `max` / lower `min` (X only) to widen the allowed extension.\n- 2024 SDK check (local grep, `C:\\MSFS 2024 SDK`): `IKConstraint` matches zero files. The 2024 `ModelBehaviorDefs\\Asobo\\Misc\\SimObjects.xml` ships `ASOBO_WindDirection_Template` (windmill, lines 4–30) and the jetway templates `ASOBO_Jetway_Hood_Left/Right_Bend/Deployment`, `ASOBO_Jetway_Hood_Top_Horizontal/Vertical`, `ASOBO_Jetway_Wheel_Roll` and `ASOBO_Jetway_Wheel_Orientation` (lines 77–186) — no IK element.\n- 2020-era docs (Jetway sample page, labeled): \"…by seeing the `<IKChain>` and `<IKConstraint>` sections of the [model].xml file\" — the element is documented for the 2020 SDK. Whether 2024 jetway models still honor it is unknown (SDK silent, no counter-evidence).",
           "status": "`empirical` (channel tip on 2020-style jetway XML) + `unknown` (2024 applicability — 2024 SDK contains no `IKConstraint`).",
           "statusValues": [
             "empirical",
@@ -1409,7 +1427,10 @@
           ],
           "user": "mamu82",
           "added": "2026-09-20",
-          "updated": null,
+          "updated": {
+            "date": "2026-09-22",
+            "note": "Corrected the SimObjects.xml contents wording: the file also ships `ASOBO_WindDirection_Template` (windmill, lines 4–30) — it is not jetway-only."
+          },
           "resolved": null,
           "supersedes": [],
           "related": [],
@@ -1430,6 +1451,10 @@
     "title": "Edition trail",
     "intro": "One row per edition, newest first. Recorded by the **MSFS Cache Updater** agent; rows are never removed. (Section numbers cited in rows before 2026-09-21 refer to the pre-reorg layout.)",
     "rows": [
+      {
+        "date": "2026-09-22",
+        "summary": "Resolved category 15 open question \"`A:PLANE HEADING DEGREES TRUE` inside the official windmill template\" (`fact (cited)` + `inferred`; deep local SDK check — ModelBehaviorDefs Asobo Misc SimObjects.xml:19-30 + Windsock sample Windsock.xml:46-52): in a world-SimObject context the var resolves the SimObject's own heading; substance moved into category 2 entry \"Official corroboration — environment A: vars power SimObject animations\" (updated). Enriched (not resolved) category 15 open question \"`interaction/<name>.loc` package folder\" with verified SDK-docs findings (Simple SimObject structure placement; interaction machinery = avatar seat/seatbelt via InteractionMgr + nav graphs; distinct from `interactions/` XML). Corrected category 16 entry \"Jetway IK constraints\" wording — SimObjects.xml also ships windmill templates (lines 4–30), not only jetways (lines 77–186); no IK element (updated)."
+      },
       {
         "date": "2026-09-21",
         "summary": "Added category 1 (Scenery Objects) FIRST entry — \"Custom vegetation assets for MSFS 2024\" (`fact (cited)` + `empirical` + `inferred`; source C research per maintainer, inv-19 redirect; full chain: SDK addon Vegetation material msfs_material_vegetation.py — attributes + Foliage Mask slot + OPAQUE default + export code 'Vegetation'; official docs — Tree/Vegetation/Windflex materials, Foliage Mask(R) Translucency(G) WindMask(B) texture and Vegetation Translucency param all 'not currently used in the simulation'; community — DevSupport 17494 custom trees lack wind/seasons, 17365, 18406 vegetation override; FSDeveloper 456116 Speedtree + plane-atlas pipeline, 454079 FakeTerrain+Mask alpha, 457547/455131 foliage artifacts, 460420 override fail; channel fs-base pines 25/04/2024; negative ModelBehaviorDefs scan = engine/material-driven wind). Category 1 reserved placeholder filled (reserved -> null); related to optimization umbrella."
