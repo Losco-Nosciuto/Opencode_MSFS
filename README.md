@@ -21,7 +21,7 @@ OpenCode agents plus a distilled, verified **MSFS 2024 development knowledge cac
 
 ## Installation
 
-**Prerequisites:** [OpenCode](https://opencode.ai/v2/docs/) V2, and the [MSFS 2024 SDK](https://docs.flightsimulator.com/msfs2024) at `C:\MSFS 2024 SDK` — the root must also hold its `Documentation` and `Samples` folders (same root: agents read SDK sources + local docs + real samples, preferring local docs over online when the versions match).
+**Prerequisites:** [OpenCode](https://opencode.ai/it/download) V2, and the [MSFS 2024 SDK](https://docs.flightsimulator.com/msfs2024) at `C:\MSFS 2024 SDK` — the root must also hold its `Documentation` and `Samples` folders (same root: agents read SDK sources + local docs + real samples, preferring local docs over online when the versions match).
 
 **Quick path (recommended):** run the [installer](utilities/install_agents.py) — it copies the agents into your global OpenCode config, re-points all hardcoded paths to this checkout (and your SDK), and backs up anything it overwrites:
 
