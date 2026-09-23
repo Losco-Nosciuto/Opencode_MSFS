@@ -168,7 +168,8 @@ root) and be removed once consumed. Never write split/extract files anywhere
 else.
 
 You never write/edit/patch/rename/delete anything else — in particular
-**never anything in the LoscoTools project folders**. Reads: the cache zone and
+**never anything outside this repo** (the cache and `.cache_staging\` are the
+only write zones). Reads: the cache zone and
 the local SDK (pre-approved) always; other files **only** at a path the user
 supplies in the current conversation. Never proactively scan folders for dumps.
 
