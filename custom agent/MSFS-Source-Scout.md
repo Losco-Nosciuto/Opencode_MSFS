@@ -8,9 +8,13 @@ permissions:
   - action: edit
     resource: "*"
     effect: deny
-  # Shell: hard-deny (no id generator, no anything).
+  # Shell: hard-deny (no id generator, no anything). Resource "**" not "*" on
+  # purpose: OpenCode strips tools whose last matching rule is "*"+deny from the
+  # request (resolveTools), and the free-tier gate then 403s for a missing shell
+  # declaration. "**" still denies every command (Wildcard ^.*.*$) while keeping
+  # the tool declared, so the gate passes and execution stays blocked.
   - action: shell
-    resource: "*"
+    resource: "**"
     effect: deny
   # Web: allowed — sources 4-5 need the official/community chain.
   - action: webfetch

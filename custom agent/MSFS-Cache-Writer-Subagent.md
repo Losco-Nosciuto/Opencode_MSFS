@@ -17,9 +17,11 @@ permissions:
   - action: edit
     resource: "MSFS2024_informations.json.bak"
     effect: allow
-  # Shell: hard-deny; only the canonical pre-approved commands.
+  # Shell: hard-deny; only the canonical pre-approved commands. "**" not "*": a
+  # "*"+deny last rule strips shell from the request, tripping the free-tier gate;
+  # "**" denies every command while keeping the tool declared.
   - action: shell
-    resource: "*"
+    resource: "**"
     effect: deny
   - action: shell
     resource: 'Copy-Item "C:\Lavoro\Programming\Opencode_MSFS\MSFS2024_informations.json" "C:\Lavoro\Programming\Opencode_MSFS\MSFS2024_informations.json.bak"*'

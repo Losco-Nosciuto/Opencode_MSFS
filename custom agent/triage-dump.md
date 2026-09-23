@@ -7,8 +7,11 @@ permissions:
   - action: edit
     resource: "*"
     effect: deny
+  # Shell: hard-deny. "**" not "*": a "*"+deny rule makes OpenCode strip the
+  # shell tool from the request, which trips the free-tier gate (needs shell to
+  # stay declared); "**" still blocks every command while passing the gate.
   - action: shell
-    resource: "*"
+    resource: "**"
     effect: deny
   - action: webfetch
     resource: "*"

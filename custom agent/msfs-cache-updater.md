@@ -51,9 +51,12 @@ permissions:
   - action: read
     resource: 'C:\MSFS 2024 SDK\*'
     effect: allow
-  # Shell: hard-deny; only the canonical commands inside the zone.
+  # Shell: hard-deny; only the canonical commands inside the zone. "**" not "*":
+  # a "*"+deny last rule strips shell from the request (and from every spawned
+  # child's inherited rules), tripping the free-tier gate; "**" still denies
+  # every command but keeps the tool declared so the gate passes.
   - action: shell
-    resource: "*"
+    resource: "**"
     effect: deny
   - action: shell
     resource: 'Remove-Item "C:\Lavoro\Programming\Opencode_MSFS\*'
