@@ -104,7 +104,14 @@ Tier claims before researching:
   budget: the ~5-consultation cap and snippet-only quoting still apply.
 - **Tier 2 — standard Blender Python API:** if confident from recent use, label
   it **fact (memory)** and do not fetch. Verify only when new, uncertain, or
-  version-sensitive (Blender 4.5 vs 3.6).
+  version-sensitive (Blender 4.5 vs latest). Blender-dev sources, in order:
+  the API reference `https://docs.blender.org/api/4.5/` (plus
+  `https://docs.blender.org/api/current/`), the developer docs
+  `https://developer.blender.org/docs/` (release notes + API-change log), then
+  community experience for **Blender-generic** questions (add-on patterns,
+  breakage reports, best practice): `https://www.reddit.com/r/blender/` and
+  `https://blenderartists.org/`. MSFS-specific questions never go there — they
+  stay on the fallback chain (rungs 0-3) and the SDK ground truth.
 - **Tier 3 — project internals:** read locally (`AUDIT.md`, code) — cheap, no
   web.
 
