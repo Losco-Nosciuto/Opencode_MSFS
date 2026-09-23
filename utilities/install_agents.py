@@ -32,7 +32,13 @@ from pathlib import Path
 # users must re-point to their own checkout (INSTALL.md, step 3).
 REPO_PREFIX = r"C:\Lavoro\Programming\Opencode_MSFS"
 SDK_DEFAULT = r"C:\MSFS 2024 SDK"
-AGENT_FILES = ("msfs-cache-updater.md", "plan-msfs.md")
+AGENT_FILES = (
+    "msfs-cache-updater.md",
+    "plan-msfs.md",
+    "triage-dump.md",
+    "MSFS-Research-SubAgent.md",
+    "MSFS-Cache-Writer-Subagent.md",
+)
 
 
 def global_agents_dir() -> Path:

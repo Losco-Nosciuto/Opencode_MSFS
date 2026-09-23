@@ -1,8 +1,10 @@
 # MSFS2024 OpenCode Workspace — Installation
 
-This repo ships two OpenCode agents (`custom agent/`) plus a distilled MSFS 2024
-development knowledge cache (`MSFS2024_informations.json`). Setup takes ~2
-minutes and only requires changing **one path string**.
+This repo ships five OpenCode agents (`custom agent/`: the cache updater, the
+planner, and the three dump-pipeline sub-agents — triage, research, cache
+writer) plus a distilled MSFS 2024 development knowledge cache
+(`MSFS2024_informations.json`). Setup takes ~2 minutes and only requires
+changing **one path string**.
 
 ## Prerequisites
 
@@ -28,8 +30,11 @@ cd <your-clone-path>
 Copy the agent files from the repo into your global agents directory:
 
 ```sh
-cp "custom agent/msfs-cache-updater.md" ~/.config/opencode/agents/
-cp "custom agent/plan-msfs.md"          ~/.config/opencode/agents/
+cp "custom agent/msfs-cache-updater.md"        ~/.config/opencode/agents/
+cp "custom agent/plan-msfs.md"                 ~/.config/opencode/agents/
+cp "custom agent/triage-dump.md"               ~/.config/opencode/agents/
+cp "custom agent/MSFS-Research-SubAgent.md"    ~/.config/opencode/agents/
+cp "custom agent/MSFS-Cache-Writer-Subagent.md" ~/.config/opencode/agents/
 ```
 
 > Note: `custom agent/` is a **1:1 live backup** of the global agents — the
@@ -67,7 +72,8 @@ that too and keep `Documentation` + `Samples` under whichever root you choose.
 The installer (`--sdk`) rewrites it for you and reminds you about the
 same-root requirement.
 
-> Note: the cache-updater's **write** rules (`edit` on `.cache_staging/*`,
+> Note: the cache-updater's **write** rules (`edit` on `.cache_staging/extracts/*`,
+> `.cache_staging/inventory/*`, `.cache_staging/ingestion/*`,
 > `MSFS2024_informations.json`, `MSFS2024_informations.json.bak`) are deliberately
 > **relative** — OpenCode matches `edit` resources relative to the repo root, so
 > these need no editing and must not be converted to absolute paths.

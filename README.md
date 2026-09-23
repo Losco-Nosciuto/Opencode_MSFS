@@ -2,7 +2,7 @@
 
 # MSFS 2024 OpenCode Workspace
 
-OpenCode agents plus a distilled, verified **MSFS 2024 development knowledge cache** — built to serve both you and the aviation-dev community. The workspace ships two [OpenCode](https://opencode.ai) agents and a growing reference cache, with install automation so a fresh machine is minutes away from running.
+OpenCode agents plus a distilled, verified **MSFS 2024 development knowledge cache** — built to serve both you and the aviation-dev community. The workspace ships five [OpenCode](https://opencode.ai) agents (updater, planner, and the dump-pipeline sub-agents) and a growing reference cache, with install automation so a fresh machine is minutes away from running.
 
 - The knowledge cache: [`MSFS2024_informations.json`](MSFS2024_informations.json) (schema guide: [`utilities/MSFS2024_informations.guide.json`](utilities/MSFS2024_informations.guide.json); the old `.md` is history-only)
 - The agents: [`custom agent/msfs-cache-updater.md`](custom%20agent/msfs-cache-updater.md) and [`custom agent/plan-msfs.md`](custom%20agent/plan-msfs.md)
@@ -47,8 +47,8 @@ What it does:
 - **Three input contracts** — user-typed facts (taken as authoritative, always enriched with research), external files (Discord dumps / `.txt`, every claim verified), and on-demand research requests.
 - **Verification fallback chain** — cache first, then the local [MSFS 2024 SDK](https://docs.flightsimulator.com/msfs2024) (sources **+ local `Documentation`** preferred over online when they match — version-gated — **+ real `Samples`**, incl. Wwise), then official docs ([docs.flightsimulator.com/msfs2024](https://docs.flightsimulator.com/msfs2024)), then community sources; everything labelled `fact (cited)` / `fact (memory)` / `empirical` / `inferred` / `unknown`.
 - **Anti-bloat, anti-loss, anti-search-loop rules** — canonical categories, one fact per entry, mandatory metadata, de-dup before insert, entryId-based cross-references, and a structural-edition protocol that never silently renumbers.
-- **One item per run** — ingests a single verified item per session turn via a live inventory (`<stem>_inventory.json` in `.cache_staging\`), then hands control back. No more overflowing sessions.
-- **Write-scoped** — edits only the cache workspace and `.cache_staging\` staging area; the raw-dump sanitizer lives in [`utilities/declog_chat.py`](utilities/declog_chat.py).
+- **One item per run** — ingests a single verified item per session turn via a live inventory (`<stem>_inventory.json` in `.cache_staging\inventory\`), then hands control back. No more overflowing sessions.
+- **Write-scoped** — edits only the cache workspace and the `.cache_staging\` staging area (phase folders: `extracts\`, `inventory\`, `ingestion\`); the raw-dump sanitizer lives in [`utilities/declog_chat.py`](utilities/declog_chat.py).
 
 [▲ Back to top](#top)
 

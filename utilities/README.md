@@ -52,7 +52,8 @@ raw export.txt ──► declog_chat.py ──► .txt declogged
 The output's first line is a `# Declogged from: <file> — N messages …` summary
 the cache updater uses for attribution. The updater now **auto-declogs**: on
 receiving a dump it reads the first line, and if `# Declogged from:` is absent
-it runs this script into `.cache_staging\` before the normal scan workflow.
+it runs this script into `.cache_staging\extracts\` before the normal scan
+workflow.
 De-clogged content is still **source B** for the updater: every claim still
 gets verified through the fallback chain.
 
@@ -126,11 +127,11 @@ only into the `-o` directory, **never overwrites existing extracts** without
 coverage + date span) that feeds the updater's checkpoint report.
 
 ```text
-python split_extracts.py declogged.txt -o .cache_staging              → cord_extract_01.md, …
-python split_extracts.py declogged.txt -o .cache_staging --lines 250  → re-slice size
-python split_extracts.py declogged.txt -o .cache_staging --prefix scan_extract
-python split_extracts.py declogged.txt -o .cache_staging --force      → replace existing
-python split_extracts.py declogged.txt -o .cache_staging --dry-run    → verify: same summary, writes nothing
+python split_extracts.py declogged.txt -o .cache_staging\extracts              → cord_extract_01.md, …
+python split_extracts.py declogged.txt -o .cache_staging\extracts --lines 250  → re-slice size
+python split_extracts.py declogged.txt -o .cache_staging\extracts --prefix scan_extract
+python split_extracts.py declogged.txt -o .cache_staging\extracts --force      → replace existing
+python split_extracts.py declogged.txt -o .cache_staging\extracts --dry-run    → verify: same summary, writes nothing
 ```
 
 The cache updater runs this in Fase 0 **instead of building extracts by hand**:

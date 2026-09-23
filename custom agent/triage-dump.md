@@ -1,5 +1,5 @@
 ---
-description: MSFS dump triage — scans an assigned slice of extract files in .cache_staging, clusters cache-worthy development candidates, and returns a compact structured list. Read-only: never writes, never consults the cache, never verifies.
+description: MSFS dump triage — scans an assigned slice of extract files in .cache_staging\extracts, clusters cache-worthy development candidates, and returns a compact structured list. Read-only; never writes, never consults the cache, never verifies.
 mode: subagent
 hidden: true
 color: "#3b82f6"
@@ -33,7 +33,7 @@ you were given.
 The parent hands you:
 
 - Your exact **slice**: the list of extract files and line ranges, e.g.
-  `cord_extract_03.md:1-300, cord_extract_04.md:1-300`.
+  `.cache_staging/extracts/cord_extract_03.md:1-300, .cache_staging/extracts/cord_extract_04.md:1-300`.
 - Optionally a **theme focus** or date range.
 
 ## Read only your slice

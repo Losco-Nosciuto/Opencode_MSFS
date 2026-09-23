@@ -1,6 +1,15 @@
-# Ship the .cache_staging folder itself, but not its contents
+# Ship the .cache_staging folder structure itself, but not its transient contents
 .cache_staging/*
 !.cache_staging/.gitkeep
+!.cache_staging/extracts/
+!.cache_staging/inventory/
+!.cache_staging/ingestion/
+.cache_staging/extracts/*
+!.cache_staging/extracts/.gitkeep
+.cache_staging/inventory/*
+!.cache_staging/inventory/.gitkeep
+.cache_staging/ingestion/*
+!.cache_staging/ingestion/.gitkeep
 
 MSFS2024_informations.md.bak
 MSFS2024_informations.json.bak
