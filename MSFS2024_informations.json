@@ -929,7 +929,12 @@
           "_notes": "2020-era episode (21/05/2021). The LOD+animation 2020-exporter failure from the same session is NOT merged into this entry (one fact per entry) — recorded in the claim as related context only. DevSupport/FSDeveloper pages fetch-blocked from the agent — cited from search snippets. In 2024 the fix is to export with final names; hand-JSON re-point remains a valid emergency path."
         }
       ],
-      "crossReferences": []
+      "crossReferences": [
+        {
+          "title": "3D model materials — no displacement/POM input; parallax = fake interiors, FakeTerrain = terrain shading",
+          "entryId": "8b9a8e05-a2eb-5912-a8f9-c47f707ae6b8"
+        }
+      ]
     },
     {
       "number": 5,
@@ -1112,7 +1117,12 @@
           "_notes": null
         }
       ],
-      "crossReferences": []
+      "crossReferences": [
+        {
+          "title": "Displacement / tessellation — ground-material-only, authored via Ground Surface heightmap settings",
+          "entryId": "e804a48b-d351-50bc-be79-e86d2086aa19"
+        }
+      ]
     },
     {
       "number": 11,
@@ -1164,9 +1174,57 @@
     {
       "number": 12,
       "title": "DevMode - Texturing (Polygons and Aprons)",
-      "reserved": "no entries yet — reserved for DevMode polygon/apron texturing.",
-      "entries": [],
-      "crossReferences": []
+      "reserved": null,
+      "entries": [
+        {
+          "id": "e804a48b-d351-50bc-be79-e86d2086aa19",
+          "title": "Displacement / tessellation — ground-material-only, authored via Ground Surface heightmap settings",
+          "kind": "entry",
+          "claim": "Displaced / tessellated textures in MSFS2024 are a GROUND-material feature only: the engine generates displacement on terrain and ground surfaces (polygons / aprons / projected-mesh areas), and the developer-facing authoring lives in the Material Inspector's Ground Surface Settings — no 3D-model material exposes it.\n\n- Authoring (Material Inspector, Ground Surface context): supply a greyscale heightmap texture, then set `Heightmap Range` (maps pure white→pure black to a height range in centimeters), `Heightmap Blend Below Threshold` (alpha threshold for the \"hollows\") and `Heightmap Blend Above Threshold` (alpha threshold for the \"bumps\"). The three settings are only visible once a heightmap texture is supplied. Release notes frame them as \"ground material heightmaps\".\n- Engine-generated on terrain: the displacement is generated for the ground by the engine — developers have no direct SDK control over it (DevSupport feature request open); the user-facing graphics option \"Displacement Mapping\" toggles this terrain relief.\n- Do NOT confuse with rectangle heightmaps (DEMs) — a different system (DevSupport KB).\n- Scope check: the full FlightSim material parameter list for 3D models has no displacement/tessellation/POM entry (see related entries).",
+          "status": "`fact (cited)` — local SDK docs + official docs + DevSupport (snippet-verified).",
+          "statusValues": [
+            "fact (cited)"
+          ],
+          "confidence": null,
+          "sources": [
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\devmode\\editors\\material-editor\\the-material-inspector\\index.md:182,257-269` (Ground Surface Settings; Heightmap Range / Blend Above / Below Threshold); `...\\introduction\\sdk-release-notes\\index.md:4321` (\"ground material heightmaps\")",
+            "devsupport.flightsimulator.com topics 10165 (\"SDK control over Displacement Mapping in MSFS 2024\" — displacement generated for the ground), 10433 (\"Working with displacement maps / heightmaps\" — DEM distinction, meshes engrave into displaced ground) — snippet-verified, pages fetch-blocked for the agent",
+            "official docs — https://docs.flightsimulator.com/msfs2024/html/3_Models_And_Textures/Textures/Materials/FlightSim_Materials.htm (no displacement parameter on model materials); forums.flightsimulator.com thread 719695 (\"Displacement Mapping\" graphics setting = terrain relief)"
+          ],
+          "user": null,
+          "added": "2026-09-23",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "8b9a8e05-a2eb-5912-a8f9-c47f707ae6b8",
+              "note": "complementary fact — 3D-model materials expose no displacement/POM input; only FakeTerrain / ParallaxWindow"
+            },
+            {
+              "entryId": "f7487036-5dfe-57cc-a4cb-f6d743a76b16",
+              "note": "runtime limitation of displacement-enabled materials on terrain mesh"
+            }
+          ],
+          "tags": [
+            "displacement",
+            "tessellation",
+            "heightmap",
+            "ground material",
+            "material editor",
+            "devmode",
+            "texturing",
+            "terrain"
+          ],
+          "_notes": "Whether the heightmap produces true geometry tessellation or a parallax-style shader trick is not stated in the docs — mechanism inferred only. DevSupport 10433/10165 snippet-verified from search snippets (agent fetch-blocked); re-verify on next SDK bump."
+        }
+      ],
+      "crossReferences": [
+        {
+          "title": "FakeTerrain material — properties, quirks and uses (terrain shading on custom meshes)",
+          "entryId": "f5abbe84-53d6-58c0-a7b9-39ddfe92f10b"
+        }
+      ]
     },
     {
       "number": 13,
@@ -1194,6 +1252,44 @@
           "related": [],
           "tags": [],
           "_notes": null
+        },
+        {
+          "id": "f7487036-5dfe-57cc-a4cb-f6d743a76b16",
+          "title": "Displacement on polygons/aprons — DevMode renders, runtime terrain mesh does not (DevSupport report, engine 1.0.77.0)",
+          "kind": "entry",
+          "claim": "DevSupport report (SDK / engine 1.0.77.0 era): displacement-map materials applied to polygons or aprons render correctly in the DevMode editor but NOT in the compiled package at runtime — \"Displacement / Tessellation doesn't work in the game engine for terrain mesh\".\n\nRelated KB discussion (topic 10433) shows the surrounding pain: terrain displacement is engine-generated and developers cannot suppress it through polygons and/or projected meshes (requested feature); meshes placed anywhere other than concrete or asphalt will engrave into the displaced ground.\n\nNo confirmed workaround and no confirmation that the bug is fixed in the current SDK (1.7.3, Sep 2026).",
+          "status": "`empirical` (single DevSupport report + KB discussion, snippet-verified) + `unknown` (fix status in SDK 1.7.3)",
+          "statusValues": [
+            "empirical",
+            "unknown"
+          ],
+          "confidence": null,
+          "sources": [
+            "devsupport.flightsimulator.com topic 10637 — \"Displacement Map materials applied to polygons or aprons work in DevMode but not when compiled and run from in the community folder in the 2024 sim\" (\"Displacement / Tessellation doesn't work in the game engine for terrain mesh\"; engine 1.0.77.0) — snippet-verified, page fetch-blocked for the agent",
+            "devsupport.flightsimulator.com topic 10433 — \"Working with displacement maps / heightmaps\" (no suppression via polygons/projected meshes; mesh engraves into displaced ground) — snippet-verified, page fetch-blocked for the agent"
+          ],
+          "user": null,
+          "added": "2026-09-23",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "e804a48b-d351-50bc-be79-e86d2086aa19",
+              "note": "the ground-material displacement feature this bug limits"
+            }
+          ],
+          "tags": [
+            "displacement",
+            "tessellation",
+            "bug",
+            "devsupport",
+            "aprons",
+            "polygons",
+            "devmode",
+            "workaround"
+          ],
+          "_notes": "Single-report evidence (search-snippet verified — the agent could not fetch the full thread). Re-verify by direct thread fetch or by building a test polygon with a displacement-enabled material in the current sim before relying on this."
         }
       ],
       "crossReferences": []
@@ -1251,6 +1347,139 @@
             "msfs2024"
           ],
           "_notes": "Maintainer flagged the channel reports as mostly personal experience — the hang gotcha is a single-scenery anecdote; re-verify if a second instance appears. DevSupport pages fetch-blocked for the agent — thread contents cited from search snippets only. FSDeveloper corroboration covers the broader port-don't-convert practice, not the exact hang message."
+        },
+        {
+          "id": "8b9a8e05-a2eb-5912-a8f9-c47f707ae6b8",
+          "title": "3D model materials — no displacement/POM input; parallax = fake interiors, FakeTerrain = terrain shading",
+          "kind": "entry",
+          "claim": "3D-model FlightSim materials (scenery objects / SimObject meshes) expose NO displacement, tessellation or POM parameter — in MSFS2024 a material cannot displace model geometry. What exists on meshes instead:\n\n- `ParallaxWindow` / `Porthole` material types — fake-interior parallax (UV2-driven room tiling / parallax scrolling), NOT depth displacement. Workflow detail in the Parallax Window entry (related).\n- `FakeTerrain` material type — \"The terrain material type. Meshes with this type will have the same shading system as the terrain in Microsoft Flight Simulator 2024.\" The only documented route for a mesh to borrow ground/terrain shading.\n- Confirmed by absence: the full FlightSim Materials parameter/texture list contains no displacement entry, and the SDK Blender add-on + glTF schemas define no displacement extension (0 grep hits for displacement/tessellation/POM across `Tools\\Blender\\addons`, `Schemas\\`, `ModelBehaviorDefs\\`).",
+          "status": "`fact (cited)` — official docs + local SDK docs + SDK source grep.",
+          "statusValues": [
+            "fact (cited)"
+          ],
+          "confidence": null,
+          "sources": [
+            "official docs — https://docs.flightsimulator.com/msfs2024/html/3_Models_And_Textures/Textures/Materials/FlightSim_Materials.htm (material type list incl. FakeTerrain / Porthole / ParallaxWindow; no displacement/POM parameter on model materials)",
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\models-and-textures\\textures\\materials\\flightsim-materials\\index.md:126-128,170-176,219-225` (Porthole \"fake views through portholes using parallax scrolling\"; FakeTerrain \"The terrain material type\")",
+            "local SDK sources `Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\...` + `Schemas\\` — 0 displacement/tessellation/POM hits; only parallax construct is `io\\com\\extensions\\material\\asobo_material_parallax_window.py:26`"
+          ],
+          "user": null,
+          "added": "2026-09-23",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "6a81feda-b55b-5507-9e8e-f98f069bb9f6",
+              "note": "the ParallaxWindow fake-interior workflow (UV2 room grid) referenced above"
+            },
+            {
+              "entryId": "e804a48b-d351-50bc-be79-e86d2086aa19",
+              "note": "complementary fact — ground materials DO have heightmap-based displacement"
+            }
+          ],
+          "tags": [
+            "material",
+            "displacement",
+            "parallax",
+            "faketerrain",
+            "gltf",
+            "devmode",
+            "models"
+          ],
+          "_notes": "Whether FakeTerrain meshes inherit the terrain's displacement behavior is undocumented (unknown). Community hint that FakeTerrain meshes diverge from default terrain (no wet/puddle effect) — fsdeveloper.com thread 460630. Terms POM/SPOM: see the terminology entry."
+        },
+        {
+          "id": "0691d5b6-ab50-5811-8d35-2373649d038f",
+          "title": "POM / SPOM are not MSFS SDK terms — official wording is displacement mapping / tessellation (ground) and parallax (fake interiors)",
+          "kind": "entry",
+          "claim": "The acronyms \"POM\" (Parallax Occlusion Mapping) and \"SPOM\" appear NOWHERE in the MSFS2024 official documentation, SDK sources, or DevSupport — they are not SDK terminology. When someone says \"POM / displaced texture\" in MSFS2024 they are (imprecisely) describing one of two official features:\n\n- Ground materials: \"displacement mapping\" / \"tessellation\" — engine-generated terrain relief + Ground Surface heightmap settings (related entry).\n- 3D models: \"parallax\" — the fake-interior `ParallaxWindow` / `Porthole` material types (related entry); no depth displacement exists there.\n\nVerified by exhaustive case-insensitive greps: `Documentation\\public` (*.md) for parallax occlusion|SPOM|POM|tessellat = 0 hits; SDK sources (`Tools\\Blender\\addons`, `Schemas\\`, `ModelBehaviorDefs\\`) = 0 hits; official docs + DevSupport sweep found no use of the terms.",
+          "status": "`inferred` (absence-of-evidence finding from exhaustive local greps + official-source sweep; not directly confirmed by a single statement)",
+          "statusValues": [
+            "inferred"
+          ],
+          "confidence": null,
+          "sources": [
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public` — grep parallax occlusion|SPOM|POM|tessellat over *.md = 0 hits (2026-09-23, SDK 1.7.3)",
+            "local SDK sources `Tools\\Blender\\addons`, `Schemas\\`, `ModelBehaviorDefs\\` — grep displacement|tessellat|SPOM|POM = 0 hits (2026-09-23, SDK 1.7.3)",
+            "official docs https://docs.flightsimulator.com/msfs2024 + devsupport.flightsimulator.com — terms absent from all sampled pages/threads (Sept 2026 sweep)"
+          ],
+          "user": null,
+          "added": "2026-09-23",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "e804a48b-d351-50bc-be79-e86d2086aa19",
+              "note": "the official ground feature (displacement mapping / tessellation)"
+            },
+            {
+              "entryId": "8b9a8e05-a2eb-5912-a8f9-c47f707ae6b8",
+              "note": "the official model-side feature (parallax fake interiors)"
+            }
+          ],
+          "tags": [
+            "terminology",
+            "pom",
+            "spom",
+            "parallax",
+            "displacement",
+            "tessellation",
+            "docs"
+          ],
+          "_notes": "Absence claims expire: re-check after every SDK / Documentation bump. Community shorthand may still use POM/SPOM for the techniques above — treat as unofficial."
+        },
+        {
+          "id": "f5abbe84-53d6-58c0-a7b9-39ddfe92f10b",
+          "title": "FakeTerrain material — properties, quirks and uses (terrain shading on custom meshes)",
+          "kind": "entry",
+          "claim": "FakeTerrain is \"The terrain material type. Meshes with this type will have the same shading system as the terrain in Microsoft Flight Simulator 2024\" — the standard way to make a custom 3D mesh (helipads, aprons, ground scenery) adopt terrain-style lighting/shading. The identical wording existed in the MSFS2020 docs, so the type is not new to 2024.\n\nEngine / SDK side:\n\n- Dedicated glTF extension `ASOBO_material_fake_terrain` — bare on/off flag only: schema `gltf.ASOBO_material_fake_terrain.schema.json:7` (key `enabled`), exporter writes just `{\"enabled\": True}` (addon `io\\com\\extensions\\material\\asobo_material_fake_terrain.py:53-60`); docs: \"Used to enable or disable the FakeTerrain material property\".\n- No material-specific parameters — docs list \"Additional Parameters: N/A\" (flightsim-materials index.md:223) and no FakeTerrain section exists in flightsim-material-parameters.\n- Blender add-on: material type \"Fake Terrain\" (`msfs_fake_terrain`, panel dropdown asobo_material_common.py:363; enum msfs_material_utils.py:34), class `MSFS2024_Fake_Terrain` (msfs_material_fake_terrain.py:23). Property list (msfs_material_fake_terrain.py:25-68): Base Color, Emissive (Color/Scale/Day/Night multipliers), Draw Order Offset, No Cast Shadow, Two-Sided, Flip Backface Normal, Disable Motion Blur, Metal/Rough/Occlusion/Normal scales, Detail UV scale / Detail Normal scale / Detail Blend Threshold, UV offset/tiling/rotation/clamp, and Gameplay flags CollisionMaterial / RoadCollisionMaterial / GroundCollisionMaterial. NO alpha-mode control in its list or panels → base default ALPHAMODE = \"OPAQUE\" (msfs_material_utils.py:58).\n- Textures: the shared Standard-group set — Base Color, Occlusion(R) Roughness(G) Metallic(B), Normal, Emissive, Detail Color/Detail ORM/Detail Normal (detail maps are compressed — cannot be reused in other slots), Blend Mask (`MTL_BITMAP_BLENDMASK`; Detail slots become Secondary Color/ORM), Occlusion (UV2) (flightsim-material-textures index.md:9-96; texture-xml-properties index.md:48).\n- Decal compatibility (docs): \"Decal materials will only be rendered over: Standard, ClearCoat, Anisotropic, FakeTerrain and SSS\" (flightsim-materials index.md:110). Note the separate community claim that DevMode polygons/aprons/projected meshes cannot be layered OVER an imported custom 3D mesh — that is a DevMode-layering limitation, not a contradiction of material-level decal support.\n\nQuirks (community-verified, MSFS2024):\n\n- NO wet/rain/puddles effect: a Blender-mesh helipad with FakeTerrain \"is not producing the wet effect like the default terrain\" (FSDeveloper 460630, Jan-Feb 2026; OP's expected behavior contradicted by observation — no confirmed workaround yet; suggested untested: layered Terraforming Rectangles + flat mesh, or Projected Mesh instead).\n- NO seamless blending with surrounding terrain: alpha blending / decals tried, best result albedo transparency with a \"shadow\" artifact in the transition zone (even with Do-not-cast-shadow).\n- Lighting ≠ true terrain: \"it certainly doesn't look 100% like terrain and always stands out at certain daytimes\" (FSDeveloper 451768); it also gives NO collision — mesh needs a collision-tagged material, and runways/taxiways/markings render only on official terrain, not on FakeTerrain meshes.\n- Alpha/mask quirk (tool-dependent): 3ds Max/MCX path keeps mask alpha (pre-select Mask mode in Standard, then switch type to FakeTerrain) — FSDeveloper 454079 \"glass blending with Trees (SOLVED)\"; the Blender add-on instead drops the alpha to opaque when switching to FakeTerrain (no alpha control in its panel).\n\nUses / examples: custom heliport ground mesh (FSDeveloper 460630); vegetation/tree alpha blending via Mask mode (FSDeveloper 454079); bridge/taxiway-over-water experiments using terrain lighting on a stand-in mesh (FSDeveloper 451768). Local SDK Samples ship NO FakeTerrain example (0 grep hits). DevMode Options has an unrelated debug \"Fake Terrain\" toggle (menus/options index.md:146).",
+          "status": "`fact (cited)` (SDK docs + add-on source + schemas) + `empirical` (community-verified quirks: wet effect, blending, alpha, collision)",
+          "statusValues": [
+            "fact (cited)",
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\models-and-textures\\textures\\materials\\flightsim-materials\\index.md:219-225,110`; `...\\flightsim-material-textures\\index.md:9-96`; `...\\textures\\texture-xml-properties\\index.md:48`; `...\\plugins\\gltf-schemas\\index.md:238-245`; `...\\devmode\\menus\\options\\index.md:146`",
+            "local SDK source `Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\blender\\material\\msfs_material_fake_terrain.py:23-68,195-256` + `blender\\utils\\msfs_material_utils.py:34,58-126` + `blender\\material\\msfs_material.py:309-359` + `io\\com\\extensions\\material\\asobo_material_common.py:363,470` + `io\\com\\extensions\\material\\asobo_material_fake_terrain.py:53-60`; `C:\\MSFS 2024 SDK\\Schemas\\ASOBO_material_fake_terrain\\gltf.ASOBO_material_fake_terrain.schema.json:7`",
+            "official docs — https://docs.flightsimulator.com/msfs2024/html/3_Models_And_Textures/Textures/Materials/FlightSim_Materials.htm (FakeTerrain section, Decal section); MSFS2020 counterparts (same wording, not new to 2024)",
+            "fsdeveloper.com/forum threads 460630 (\"Fake terrain material blend & rain and puddles effect\", Jan-Feb 2026), 451768 (\"Bridge taxiway over water\" — lighting-only, no platform), 454079 (\"Glass blending with Trees (SOLVED)\" — mask mode), forums.flightsimulator.com thread 387481 (2020-era SDK Q&A)",
+            "devsupport.flightsimulator.com — no FakeTerrain material threads found (fetch-blocked; snippet-only evidence)"
+          ],
+          "user": null,
+          "added": "2026-09-23",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "8b9a8e05-a2eb-5912-a8f9-c47f707ae6b8",
+              "note": "companion entry — model materials have no displacement/POM; FakeTerrain is one of the only two ground-style routes (with ParallaxWindow fake interiors)"
+            },
+            {
+              "entryId": "e804a48b-d351-50bc-be79-e86d2086aa19",
+              "note": "ground displacement fact — whether FakeTerrain meshes inherit terrain displacement stays unknown"
+            },
+            {
+              "entryId": "9580789a-649e-59d7-821c-17423d1dcfe0",
+              "note": "vegetation entry — Mask-mode + FakeTerrain tree alpha use case (FSDeveloper 454079)"
+            }
+          ],
+          "tags": [
+            "faketerrain",
+            "material",
+            "terrain",
+            "ground mesh",
+            "helipad",
+            "alpha",
+            "decal",
+            "gltf",
+            "devmode",
+            "terrain shading"
+          ],
+          "_notes": "DevSupport is fetch-blocked for the agent — thread absence is snippet-only evidence, may be incomplete. Community quirks rest on 2-3 threads (460630 OP follow-up still pending — workarounds untested). Blender-vs-Max alpha behavior is reported as an observed contradiction. Unresolved unknowns: LOD behavior, detail/bump maps on FakeTerrain, decals-over-material in 2024, instancing, and terrain-displacement inheritance (ties into the displacement entries). Re-verify the wet-effect claim after any SU release."
         }
       ],
       "crossReferences": []
@@ -1465,6 +1694,14 @@
     "title": "Edition trail",
     "intro": "One row per edition, newest first. Recorded by the **MSFS Cache Updater** agent; rows are never removed. (Section numbers cited in rows before 2026-09-21 refer to the pre-reorg layout.)",
     "rows": [
+      {
+        "date": "2026-09-23",
+        "summary": "Research edition (request C): added 1 entry — 'FakeTerrain material — properties, quirks and uses (terrain shading on custom meshes)' (DevMode - Various; fact (cited) + empirical), researched by a 5-scout parallel chain (cache dedup, SDK add-on sources, local docs+samples, official remote, community). Key facts: glTF extension ASOBO_material_fake_terrain is a bare enabled flag; Additional Parameters N/A; shared Standard texture set + Blend Mask/Occlusion UV2; Decals render over FakeTerrain (docs); no ALPHAMODE control in Blender panel (base default OPAQUE); community quirks — no wet/rain/puddles effect (FSDeveloper 460630), no seamless terrain blending ('shadow' artifact), lighting not identical to true terrain and no collision (451768), Mask-mode alpha works in Max/MCX but drops to opaque in Blender (454079); SDK Samples ship no FakeTerrain example. Cross-reference added in DevMode - Texturing (Polygons and Aprons). Related links to the model-materials entry (8b9a8e05), ground displacement (e804a48b) and vegetation (9580789a). Entry-level insert — no renumber."
+      },
+      {
+        "date": "2026-09-23",
+        "summary": "Research edition (request C, no user-typed claims): added 4 entries on displaced textures in MSFS2024, sponsored by a 5-scout parallel chain + this edition's re-verification greps (version gate: local SDK 1.7.3 == online 1.7.3 → local docs authoritative). DevMode - Texturing (Polygons and Aprons) — first entry (reserved cleared): displacement/tessellation is ground-material-only, authored via Material Inspector Ground Surface heightmap settings (Heightmap Range cm + blend thresholds), engine-generated on terrain (fact (cited); docs + DevSupport 10165/10433/10165 snippet-verified). DevMode - Various — 2 entries: '3D model materials — no displacement/POM input; parallax = fake interiors, FakeTerrain = terrain shading' (fact (cited); absence confirmed via full FlightSim material list + SDK addon/schema 0-hit greps) and 'POM / SPOM are not MSFS SDK terms' (inferred; absence-of-evidence, expires on SDK bumps). DevMode - Workarounds — 'Displacement on polygons/aprons: DevMode renders, runtime terrain mesh does not' (empirical + unknown; DevSupport 10637, engine 1.0.77.0). Cross-references added: Projected Meshes → ground-displacement entry, Blender Pipeline → model-materials entry. Related links: E1↔E2↔E3, E4→E1, E2→Parallax Window entry. Entry-level inserts — no renumber."
+      },
       {
         "date": "2026-09-22",
         "summary": "Structural edition: added two categories right after category 5 (Blender Third Parties) — new 6 \"External Tools (Various)\" (non-Blender ecosystem tooling: ModelConverterX / VFSProjector 2024-BGL read support, LOD visualizer, Materialize / NormalMap-Online, PBR sourcing) and new 7 \"AI-Assisted Asset Generation\" (AI mesh/texture generation + AI blueprints; decided with the maintainer at triage checkpoint 2 of the Mamu Design 3d-modelling-texturing dump). Categories after them renumbered +2 (Adobe 3D Painter Pipeline became 8, Terrain 9, Projected Meshes 10, RPN 11, DevMode - Texturing 12, DevMode - Workarounds 13, DevMode - Runways 14, DevMode - Various 15, DevMode - Light Presets 16, Open Questions 17, MSFS Programmability Gotchas 18); edition trail moved from 17 to 19 (stays meta, last). Usage notes updated (1–16 → 1–18). No entries modified; all ids unchanged; crossReferences untouched (title+entryId pairs survive reorders)."
