@@ -103,6 +103,10 @@
         {
           "title": "MSFS 2024 rain on materials: `Receive Rain` opt-in — Windshield / Clearcoat only (standard and glass stay dry)",
           "entryId": "86dc37c8-b3f3-5fe7-8d51-8ae37fc3da48"
+        },
+        {
+          "title": "Scenery animation scope — scenery objects CAN animate: Standard `<Animation type=\"Standard\" typeParam=\"AutoPlay\">` plays on render on plain scenery objects (lighthouse mirror, bone/armature glTF); sim-reactive animation (wind → windsock, aircraft → jetway) is the Scenery SimObj path (category=StaticObject, DistanceToNotAnimate)",
+          "entryId": "b2e0c233-2e22-50f3-a59e-998a9af58963"
         }
       ]
     },
@@ -360,6 +364,219 @@
             "msfs2024"
           ],
           "_notes": "Channel rule (29/05/2024) + full-chain verification (SDK addon asset_library/multi_export, official Blender Plugin Properties + Collision Handling pages fetched in full, DevSupport 17794). The 'keep colliders outside the scaled hierarchy' rule combines the docs' child-object auto-fit mechanic with the documented large-scale collision breakage. Community search surfaced no dedicated thread on the apply-transforms/collider interaction; DevSupport 458197 (floatplane 'climbing' colliders) is tangential, not cited."
+        },
+        {
+          "id": "b2352151-91d2-5325-8e98-95b4c743e185",
+          "title": "Split glTF model + animations — <MergeModel> merges an external animation .gltf per LOD (deprecated <AnimationFileList>; merge keyed by ASOBO unique id)",
+          "kind": "entry",
+          "claim": "MSFS 2024 pattern for characters / any bone-animated object: the model (`.gltf`) and its animations live in SEPARATE glTF files, merged at load through the model XML. Each `<LOD>` of `[model].xml` can contain one or more `<MergeModel>` elements naming extra glTF files (\"the different animation and/or submodel gLTF files that should be used for the SimObject over the different <LOD /> elements\"); paths are relative to the model XML location. Merge order: base `ModelFile` first, then each `<MergeModel>` in document order (docs example — FireTruck LOD with four submodel parts, then `<MergeModel>..\\animation\\FireTruck.gltf</MergeModel>`).\n\nThis replaced the 2020-era `<AnimationFileList>` element, now deprecated: \"the code put in place to deal with submodels is also applicable when working with animations, and has deprecated the <AnimationFileList> element\". Submodel merging is also more efficient — \"the submodel data is shared across all models that use it, whereas the <AnimationFileList> code duplicated the animation data\".\n\nMerge mechanics (Submodel Merging page — BETA): merging happens by **unique id**, NOT by node name (ASOBO_unique_id glTF extension; enable it on both base and merged exports; ids default to node name; duplicate ids → warning). Animations merge by NAME — an animation name already present in the destination is merged/ignored (the docs say this will become an error). Materials are NOT merged. Conflicts abort the merge: same node carrying objects in both models, or mismatched parent-chain ids; name mismatches only warn. Restrictions: all merged files must be in the SAME project; skinned submodels must export with their bones; at least one common ancestor between submodel mesh and skin bones; max ONE skin root (\"More than one root node for the skin\" error); never export animations for a node in more than one merged model; never export meshes in more than one merged model. Official framing: \"sub-models can only be used to attach a relatively simple model with animations and a small amount of behavior logic in it\".\n\nShipped example — SDK Bears sample (`Samples\\DevmodeProjects\\SimObjects\\Animals\\Bears`): `GrizzlyBear.xml` / `BlackBear.xml` each carry 4 LODs with `<LOD minSize=\"6\" ModelFile=\"GrizzlyBear_LOD00.gltf\">` + `<MergeModel>..\\animation\\Bears.gltf</MergeModel>`, plus `<AnimationInclude><Include File=\".\\..\\animations.xml\"/></AnimationInclude>`. The `animation\\Bears.gltf` ships ONLY the node hierarchy + animation clips (no meshes; ASOBO_unique_id extension; exporter stamp \"babylon.js glTF exporter for 3dsmax 2022\" — but a Blender source ships at `Sources\\Art\\Blender\\Bear_Adult.blend`). `animations.xml` composes clips: `<Animation name=\"Walk\" type=\"Standard\" typeParam=\"random\"/>` + `Idle1/2/3`, then an `<AnimGraph>` with `<BlendTreeState>` Idle (3 looped clips) and Walk (condition `(A:GROUND VELOCITY, METERS PER SECOND)`) plus A:-based `<Transition>`s.",
+          "status": "`fact (cited)` (official docs + SDK Blender/Max exporter options + shipped SDK sample).",
+          "statusValues": [
+            "fact (cited)"
+          ],
+          "confidence": null,
+          "sources": [
+            "official docs — Submodel Merging (BETA; merge-by-unique-id mechanics, restrictions, deprecated <AnimationFileList>, submodel code applies to animations, materials not merged, 'relatively simple model' framing) — `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\models-and-textures\\submodel-merging\\index.md`",
+            "official docs — Model XML Properties, `<MergeModel>` element definition — `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\content-configuration\\models\\model-xml-properties\\index.md:136-138`",
+            "official docs — Model XML Examples, 'Submodels And Animations' (FireTruck, merge order base-first) — `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\content-configuration\\models\\model-xml-examples\\index.md:148-166`",
+            "SDK sample — `C:\\MSFS 2024 SDK\\Samples\\DevmodeProjects\\SimObjects\\Animals\\Bears\\PackageSources\\SimObjects\\Animals\\MyCompany_Bears\\model.GrizzlyBear\\GrizzlyBear.xml:5-21` (4 LODs each merging `..\\animation\\Bears.gltf` + AnimationInclude), `animation\\Bears.gltf` (no meshes, ASOBO_unique_id), `animations.xml` (Walk/Idle AnimGraph driven by GROUND VELOCITY)"
+          ],
+          "user": null,
+          "added": "2026-09-23",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "84b783d0-1c0a-50df-acc4-095d041a3aae",
+              "note": "same family — the Cascadeur entry documents the shared glTF animation-export options (one clip per action, Use Asobo Unique ID Extension) that produce the clips merged via <MergeModel>"
+            }
+          ],
+          "tags": [
+            "gltf",
+            "animation",
+            "mergemodel",
+            "simobject",
+            "character",
+            "bones",
+            "skeleton",
+            "msfs2024"
+          ],
+          "_notes": "Source-C research 2026-09-23 (user question: Asobo examples ship model and animation in separate files — 'not possible in Blender'?). Resolved: it IS the documented 2024 pattern; see Blender exporter entry for the addon-side options."
+        },
+        {
+          "id": "b2e0c233-2e22-50f3-a59e-998a9af58963",
+          "title": "Scenery animation scope — scenery objects CAN animate: Standard `<Animation type=\"Standard\" typeParam=\"AutoPlay\">` plays on render on plain scenery objects (lighthouse mirror, bone/armature glTF); sim-reactive animation (wind → windsock, aircraft → jetway) is the Scenery SimObj path (category=StaticObject, DistanceToNotAnimate)",
+          "kind": "entry",
+          "claim": "MSFS 2024 scenery has TWO delivery paths, and BOTH can carry animations — 'static scenery object' is a CLASS of object ('one that has no animations or interactions within the simulation'), a definition, NOT a ban on animated scenery (maintainer correction 2026-09-23: 'Scenery Objects CAN and are frequently animated'):\n\n- **Plain scenery object (Scenery Editor / ModelLib asset group)** — CAN be animated: its model XML supports `<Animation>` elements and the animation plays on render: `<Animation name=\"Ambient\" guid=\"{...}\" type=\"Standard\" typeParam=\"AutoPlay\" />` — AutoPlay = 'the animation will run when the object is rendered' (render-driven, no SimObject needed). This is the classic lighthouse-mirror / radar-antenna / windmill pattern: node rotation keyframes AND bone/armature glTF animations both play (maintainer: simple animated objects + 'more complex bone and armature animations'). ModelInfo children include `<Animation>`, `<NodeAnimation>`, `<AnimationEvent>`, `<AnimGraph>` — none restricted to SimObjects (model-xml-properties:50-62). The Scenery Editor instancing rule only makes sense if scenery objects can be animated: 'For an object to be instanced, it **cannot be animated** nor have multiple nodes' (scenery-objects:99).\n- **Scenery SimObj** — required only for SIM-REACTIVE animation: reading simstate (windsock → AMBIENT WIND BlendTreeState; jetway → aircraft attach/approach) or using Behaviors/conditions. Windsocks and jetways are Scenery SimObjects precisely BECAUSE they react to the simulation — they are NOT counter-examples of scenery-object animation (maintainer clarification 2026-09-23). Scenery SimObj package: sim.cfg beside the folders, model.cfg `[General] category=StaticObject` + `DistanceToNotAnimate` ('at what distance the animations can be ignored'), animations folder, hand-written model XML (multi-exporters cannot generate it).\n\nCommunity practice corroborates: 'the Standard animation type will work in any old scenery objects. If you want something more complex then you will need to create a simobject' (FSDeveloper); rotating lighthouse head + scale-blink are the classic scenery-object anims (Blender → glTF exporter, typeParam=\"Autoplay\" in scenery model XML — apollomaniacs rotating radar/lighthouse tutorial; FSDeveloper lighthouse light resource, 30s per 360° rotation at 18fps).\n\nDiscriminator: RENDER-driven looping animation (Standard/AutoPlay, no conditions) → plain scenery object works; SIMULATION-driven animation (conditions, simvars, random clip selection via BlendTreeState/AnimGraph) → Scenery SimObj. The 2024-launch parity regression (2020-era scenery-object animations) is recorded separately — see related.",
+          "status": "`user-typed (authoritative)` (maintainer correction 2026-09-23: scenery objects CAN and are frequently animated — simple + bone/armature; windsock/jetway are Scenery SimObjects, not plain scenery) + `fact (cited)` (local SDK 1.7.3 docs — Standard/AutoPlay semantics, ModelInfo children, Scenery Editor instancing rule) + `empirical` (community scenery-animation practice 2020-2025).",
+          "statusValues": [
+            "user-typed (authoritative)",
+            "fact (cited)",
+            "empirical"
+          ],
+          "confidence": "high",
+          "sources": [
+            "local SDK `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\content-configuration\\models\\scenery-model-xml-and-cfg-setup\\index.md:8-10` ('A static scenery object is one that has no animations or interactions within the simulation')",
+            "same file `:41-47` (Scenery SimObj files: glTF/bin/xml/cfg in `model`, textures, animation files in `animations`, sim.cfg beside)",
+            "same file `:75-81` (model.cfg `[General] category=StaticObject` + `DistanceToNotAnimate=2000` — 'at what distance the animations can be ignored')",
+            "same file `:105-109` (multi-exporters cannot generate the scenery SimObj XML — manual creation required)",
+            "local SDK `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\content-configuration\\models\\model-xml-properties\\index.md:50-62` (ModelInfo children: `<Animation>`, `<NodeAnimation>`, `<AnimationEvent>`, `<AnimGraph>` — model-generic, not SimObject-only)",
+            "local SDK `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\content-configuration\\models\\animation-xml-properties\\index.md:44` (typeParam AutoPlay — 'the animation will run when the object is rendered'); same file `:146` (AnimGraph 'mostly used by Living Thing SimObjects' — blend-tree machinery is the SimObject path)",
+            "local SDK `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\devmode\\editors\\scenery-editor\\objects\\scenery-objects\\index.md:99` (instancing rule: 'it cannot be animated nor have multiple nodes' — proof scenery objects can be animated)",
+            "community: FSDeveloper 'Triggered Animation?' thread — 'the Standard animation type will work in any old scenery objects. If you want something more complex then you will need to create a simobject'; apollomaniacs 'How to add Blender 3D animated objects to MSFS scenery' (rotating radar/lighthouse via Standard typeParam=\"Autoplay\" in scenery XML); FSDeveloper 'MSFS Blender Lighthouse light' resource (30s per 360° rotation at 18fps)"
+          ],
+          "user": null,
+          "added": "2026-09-23",
+          "updated": {
+            "date": "2026-09-23",
+            "note": "Maintainer correction: scenery objects CAN be animated — 'static' is the class name for no-animation objects, not a ban. Standard typeParam=AutoPlay runs on plain scenery objects (render-driven); Scenery SimObj needed only for sim-reactive animation. Windsock/jetway are Scenery SimObjects (sim-reactive), not counter-examples. Retitled; cat 1 cross-reference title updated to match."
+          },
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "5795f656-5908-5987-93f8-c1715bbc80c7",
+              "note": "variable scope on scenery-placed SimObjs — conditions/values read global + own state only (SimObj path)"
+            },
+            {
+              "entryId": "93545927-bcd0-58b0-a034-c7a5d61a0e97",
+              "note": "2020-era scenery-object animations regressed at 2024 launch — empirical launch-state parity note; deeper machinery still on the SimObject path"
+            },
+            {
+              "entryId": "40ee0d17-5246-5cd7-ab7c-de9cf89f727c",
+              "note": "single-clip Standard flags (AutoPlay/Random) apply to plain scenery objects; BlendTreeState random selection is the SimObject path"
+            }
+          ],
+          "tags": [
+            "scenery",
+            "simobj",
+            "staticobject",
+            "animation",
+            "autoplay",
+            "model.cfg",
+            "scenery editor",
+            "msfs2024"
+          ],
+          "_notes": "CORRECTED in place 2026-09-23 after maintainer pushback: my original wording over-generated from the Scenery SimObj setup page into a capability ban. Doc re-check: ModelInfo children list + AutoPlay-on-render + Scenery Editor instancing rule all confirm scenery-object animation; community threads 2020-2025 show lighthouse/radar/beacon patterns in the wild. BlendTreeState/AnimGraph random-selection machinery = SimObject path (docs: mostly Living Thing SimObjects) — see related E2. Cross-referenced in category 1 (title updated to match)."
+        },
+        {
+          "id": "40ee0d17-5246-5cd7-ab7c-de9cf89f727c",
+          "title": "Random looping-animation selection — `<AnimGraph>` `<BlendTreeState doBlend=\"FALSE\">` weighted-random next clip per loop end; `typeParam=\"AutoPlay,Random\"` for autoplay + random start frame",
+          "kind": "entry",
+          "claim": "The XML-level answers to '4-5 looping animations on one object, pick a random one' — all from Model Animation Definitions (elements live in `[model].xml`, a shared `animations.xml`, or `<Behaviors>`/`<Component>`):\n\n- **Scope (2026-09-23, scenery correction):** the single-clip Standard flags below — `typeParam=\"AutoPlay,Random\"` (autoplay + random start frame) — run on PLAIN scenery objects (render-driven, no SimObject needed); blend-tree machinery DOES appear in scenery model XML too — the official windsock example puts `<AnimGraph>` → `<BlendTreeState>` with six Standard clips straight in the scenery model XML (scenery-model-xml-and-cfg-setup:141-180), BUT that state is threshold-driven (`<Value>(A:AMBIENT WIND VELOCITY, KNOTS)</Value>` + per-clip `threshold`) — i.e. the doBlend=TRUE continuous rule, NOT random selection. The doBlend=\"FALSE\" weighted-random CLIP SELECTION below is documented on the AnimGraph/SIMOBJECT path — docs: 'The AnimGraph system is mostly used by Living Thing SimObjects' (animation-xml-properties:146); a scenery character that needs random CLIP selection uses the Scenery SimObj wrapper (category=StaticObject).\n- **Random start frame + autoplay on a single clip**: `<Animation name=\"Ambient\" guid=\"{...}\" type=\"Standard\" typeParam=\"AutoPlay,Random\" />` — AutoPlay: 'the animation will run when the object is rendered'; Random: 'the animation will be started at a random point along its timeline'. (Optional FrameRate=N — the FrameRate reference value, default 18 fps, a speed scalar — then requires `length`.)\n- **Weighted random pick between multiple looping clips**: `<AnimGraph>` → ONE `<BlendTreeState>` listing ALL the clips with `doBlend=\"FALSE\"` ('if this is set to FALSE, then animations will only change when the current one is finished playing, and the subsequent animation to use will be chosen **at random**, based on the `weight` attribute'). Each clip is an `<Animation guid=\"...\" loop=\"True\" speed=\"1\" weight=\"0.2\" />` — weight between 0 and 1, 'the higher the value, the more likely the animation is to be chosen'. With `loop=\"True\"` on every clip the state cycles through random picks forever — no code, no SimVar input needed. This is exactly the '4/5 looping animations, random one every loop' pattern.\n- **Conditions / other circumstances**: `<Transition start=... end=...>` — automatic with `<Condition>` RPN 'evaluated every frame' (docs example: `(A:SURFACE RELATIVE GROUND SPEED, METERS PER SECOND) 0.1 >` — swap when ground speed exceeds 0.1 m/s), or automatic by `ExitTime` ratio (1.0 = at end of the current animation, 0.5 = halfway, 2.5 = after 2.5 looped iterations); a transition with NEITHER Condition NOR ExitTime is '**manual**' — only fires when code/script requests the other state (e.g. `SimMission.PlayBlendTreeStateAction`; `FireEventOnEnd` makes the action wait for clip end). Within a state, `doBlend=\"TRUE\"` + `<Value>` RPN + per-clip `threshold` blends clips continuously instead of random-switching.\n- RPN scope reminder: on scenery-placed SimObjs `<Condition>`/`<Value>` code can only read the object's own / global state (wind, time, `A:ANIMATION DELTA TIME`, L: mirrors written by aircraft/WorldScript) — never the user aircraft's A: scope (see the Official corroboration entry + variable-scope entries).\n- First-pick caveat: the docs define the weighted-random draw only for picks AFTER an animation ends; which clip plays when the state is first entered / object first renders is not specified — open question.",
+          "status": "`fact (cited)` (local SDK 1.7.3 docs — Model Animation Definitions + Model XML Examples).",
+          "statusValues": [
+            "fact (cited)"
+          ],
+          "confidence": "high",
+          "sources": [
+            "local SDK `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\content-configuration\\models\\animation-xml-properties\\index.md:44` (typeParam AutoPlay / Random / FrameRate semantics)",
+            "same file `:146` ('The AnimGraph system is mostly used by Living Thing SimObjects' — blend-tree weighted-random machinery is the SimObject path; scenery BlendTreeState = Scenery SimObj wrapper)",
+            "same file `:195` (doBlend=FALSE — next animation chosen at random, based on `weight`)",
+            "same file `:234-238` (Animation-in-state attrs: guid, loop, speed, weight 0-1 'higher = more likely', threshold, FireEventOnEnd)",
+            "same file `:250-260` (Transition: manual vs automatic; Condition vs ExitTime ratio rules)",
+            "same file `:274` (Condition 'evaluated every frame') + `:307` (docs example `(A:SURFACE RELATIVE GROUND SPEED, METERS PER SECOND) 0.1 >`)",
+            "local SDK `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\content-configuration\\models\\model-xml-examples\\index.md:397` (Simple Animation Example — `<Animation name=\"Ambient\" ... typeParam=\"AutoPlay,Random\" />`)",
+            "local SDK `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\content-configuration\\models\\scenery-model-xml-and-cfg-setup\\index.md:141-180` (official windsock example — AnimGraph + BlendTreeState with six Standard clips + `<Value>(A:AMBIENT WIND VELOCITY, KNOTS)</Value>` + per-clip `threshold`: blend-trees run in scenery XML, but threshold/continuous-driven, not doBlend=FALSE random)"
+          ],
+          "user": null,
+          "added": "2026-09-23",
+          "updated": {
+            "date": "2026-09-23",
+            "note": "Scope clarification after the scenery-animation correction: single-clip Standard flags (AutoPlay/Random) run render-driven on plain scenery objects; blend-trees DO appear in scenery XML (official windsock example — threshold-driven BlendTreeState on AMBIENT WIND VELOCITY, scenery-model-xml-and-cfg-setup:141-180); the doBlend=FALSE weighted-random CLIP SELECTION is AnimGraph machinery on the SimObject path (Scenery SimObj wrapper for scenery characters; docs: AnimGraph 'mostly used by Living Thing SimObjects')."
+          },
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "b2e0c233-2e22-50f3-a59e-998a9af58963",
+              "note": "scope: Standard AutoPlay/Random flags run on plain scenery objects; BlendTreeState weighted-random = Scenery SimObj (category=StaticObject) path — see scenery animation scope"
+            },
+            {
+              "entryId": "b2352151-91d2-5325-8e98-95b4c743e185",
+              "note": "the clips a BlendTreeState switches are the glTF animations merged via <MergeModel>"
+            },
+            {
+              "entryId": "5795f656-5908-5987-93f8-c1715bbc80c7",
+              "note": "RPN scope for conditions on scenery SimObjs — own/global only"
+            }
+          ],
+          "tags": [
+            "animation",
+            "animgraph",
+            "blendtree",
+            "random",
+            "autoplay",
+            "characters",
+            "scenery simobj",
+            "msfs2024"
+          ],
+          "_notes": "Source-C research 2026-09-23 (user question: multiple random looping animations on one prop, non-SimObject). The user's 'Random flag for random starting frame' = typeParam Random; the 'autoplay flag' = typeParam AutoPlay. First-pick-on-state-entry unknown → open question in category 17. Scope 2026-09-23 (scenery correction): for a NON-SimObject prop the answer is the single-clip Standard path — typeParam=\"AutoPlay,Random\" runs on plain scenery objects; the BlendTreeState weighted-random selection requires SimObject machinery (Scenery SimObj wrapper, category=StaticObject)."
+        },
+        {
+          "id": "dcdda7d6-ccca-5f40-80f2-d800d3822e64",
+          "title": "Creating a custom animal from scratch (2024) — Living Thing SimObject: sim.cfg (category=Animal|FlyingAnimal) + animations.xml AnimGraph Walk/Idle on GROUND VELOCITY + Scenery Editor SimObj spawn points (Bears sample); default wildlife spawns as Living World entities, not via LWcfg.xml",
+          "kind": "entry",
+          "claim": "Deep-dive research (source C, 2026-09-23) on **adding a custom animal to MSFS 2024 post-export** — the user asked for the full practical pipeline (walking animation + random wandering around spawn points, like MSFS 2020 wildlife). All paths verified against the official docs + the shipped **BearsSampleProject** (the canonical Living-Thing template).\n\n**1. Animals are 'Living Things' SimObjects — NOT Living World config.** Living Things docs: \"the different living things available in the simulation are configured as SimObjects\", split into Humans / Animals (ground: elephants, crabs, pigs) / Flying Animals (seagulls, bats, sparrows); a water animal (whale) is a **Boat** SimObject instead. They ship as `sim.cfg` + model + texture + (usually) animation, optionally `ai.cfg`, `camara.cfg`, `navigation_graph.cfg`. The 2024 `LWcfg.xml` (Living World Config) covers ONLY road traffic, leisure boats and airport life (vehicles + human characters) — **animals are not listed there**; default wildlife spawns independently as Living World entities (DevSupport 11803, empirical: \"Animals now are spawned as Living World\", visible in DevMode under debug SimObjects Living World). TL;DR: a custom animal is a normal SimObject package you place yourself, not a Living World config edit.\n\n**2. Package layout (Bears sample — `PackageSources\\SimObjects\\Animals\\MyCompany_Bears\\`).** Top folder: `sim.cfg` + `animations.xml` (shared by all variations); per-variation subfolders `model.<X>\\model.cfg` + `[model].xml` + LOD glTF, `texture.<X>\\texture.cfg` + textures; shared `animation\\Bears.gltf` + `animation\\Bears.bin` (no meshes, ASOBO_unique_id) merged per-LOD via `<MergeModel>..\\animation\\Bears.gltf</MergeModel>` and included via `<AnimationInclude><Include File=\".\\..\\animations.xml\"/></AnimationInclude>` — the split-mesh/animations pattern (see the Split glTF entry). The SimObj Objects docs add that files for a *scenery* SimObject must live in a folder literally called **Landmarks** (the 'folder the simulation will look for when generating SimObjects for use in scenery'); the Bears animal sample instead uses the `SimObjects\\Animals\\...` Living-Things path ('This SimObject can be used anywhere in the world').\n\n**3. sim.cfg — the movement/AI-side sections.** `[VERSION]`; `[fltsim.N]` variations (title/model/texture/animation; numbers can't be skipped; `model=BlackBear` → folder `model.BlackBear`); `[General]` `category=Animal` (REQUIRED — \"will tell the simulation what other parameters to expect and initialise certain internal parameters\"; use `FlyingAnimal` for birds — docs default `DistanceToNotAnimate`: FlyingAnimals 250 m, all others 1000 m; the Bears sample sets a custom 1500); `[contact_points] wheel_radius=1 / static_pitch=0.0 / static_cg_height=0` (ground resting); `[DesignSpecs] max_speed_mph=15 + acceleration_constants/deceleration_constants` (0.3/0.4, 0.2/0.4); `[WAYPOINT] CanReverse=0`. These are the parameters the ground AI uses to move the animal on the ground.\n\n**4. animations.xml — Walk↔Idle AnimGraph driven by GROUND VELOCITY + random start frame.** `<Animation name=\"Walk\" type=\"Standard\" typeParam=\"random\"/>` (random start frame!) + three `<Animation name=\"Idle1..3\" type=\"Standard\"/>`; then `<AnimGraph>`: `<DefaultState name=\"Idle\"/>`; `<BlendTreeState name=\"Idle\" doBlend=\"False\">` listing the three Idle clips `loop=\"True\" speed=\"1\"` (the **doBlend=FALSE weighted-random next-clip machinery** from the E2 entry — Living Things are SimObjects, so the SimObject-path AnimGraph applies) + `<BlendTreeState name=\"Walk\">` with `<Value>(A:GROUND VELOCITY, METERS PER SECOND)</Value>`; `<Transition start=\"Idle\" end=\"Walk\"><Condition>(A:GROUND VELOCITY, METERS PER SECOND) 0.1 &gt;</Condition></Transition>` and the reverse `< 0.1`. Result: the animal plays random idle clips when stopped and the walk clip (random start frame) whenever the sim moves it — exactly 'old MSFS 2020 animals' style wandering, with `DistanceToNotAnimate` powering down both ModelBehaviors and animation when far (on return the animation jumps to the frame it should be on; `ANIMATION DELTA TIME` reports the skipped time).\n\n**5. Spawn points — Scenery Editor → SimObj Objects.** Project Editor → Add Asset Group → Custom → asset type **SimObject** → add the files (model/glTF+xml+cfg, textures, animations bin, sim.cfg) → check AssetDir/OutputDir → build. In the Scenery Editor, the **SimObj Objects** object type lists SimObjects from installed packages (\"ground vehicles, marshallers, animals, etc... are all SimObjects\"); click Add, place with Translate/Rotation/Scale gizmos or **One-Click Placing** — each placed instance IS a spawn point (Snap To Ground enabled by default so it stays glued to terrain; Snap To Normal orients to the ground surface). Per-instance options: Assign Instance ID (guid — for mission/WorldScript spawning), Replace With…, and Convert To SimPropContainer (SimPropHolders can then spawn it with an optimized spawn probability). To verify your placed animals: DevMode debug shows default wildlife under SimObjects Living World; place your own instances and check the Behaviors/animations tool.\n\n**6. Community reality (empirical).** DevSupport 11803 complains the Bears sample is minimal ('teaches nothing' — it deliberately stays simple for SDK beginners; per the Asobo reply it's aimed at people starting with MSFS); commercial animal packs exist (SoFly 'Animals for MSFS'); FSDeveloper marketplace-acceptability thread: \"it is not permitted to add any animals or MS/Asobo planes as static decorations in your custom scenery\" (marketplace rule of thumb — use your own models, or place SimObjects that stay dynamic). What remains undocumented: the exact wander logic of a placed Animal SimObject (see the linked Open Question).",
+          "status": "`fact (cited)` (official Living Things docs, sim.cfg category/DistanceToNotAnimate/[fltsim.N] pages, Scenery Editor SimObj Objects + LivingWorld sample pages, shipped BearsSampleProject files) + `empirical` (DevSupport 11803 default-Living-World spawning; SoFly Animals-for-MSFS product; FSDeveloper 460849 marketplace note) + `inferred` (place-and-go wandering from the [contact_points]/[DesignSpecs]/[WAYPOINT]+GROUND-VELOCITY wiring — exact wander AI undocumented → Open Question).",
+          "statusValues": [
+            "fact (cited)",
+            "empirical",
+            "inferred"
+          ],
+          "confidence": "high",
+          "sources": [
+            "local SDK docs — `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\content-configuration\\modular-simobjects\\simobjects\\living-things\\index.md:1-22` (Living Things = SimObjects; Humans/Animals/Flying Animals; whale = Boat not Living Thing; optional ai.cfg/camera.cfg/navigation_graph.cfg)",
+            "local SDK docs — `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\content-configuration\\cfg-files\\sim.cfg\\index.md:40-52` (`[General] category` required, DistanceToNotAnimate per-category values + animation-skip/ANIMATION DELTA TIME behavior), `:398-427` (`[fltsim.N]` variations, no skipped numbers, model/texture/animation folder naming)",
+            "local SDK docs — `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\devmode\\editors\\scenery-editor\\objects\\simobj-objects\\index.md:9-19,30-65,153-214` (SimObj objects list incl. animals; placement gizmos/One-Click; Snap To Ground default; Assign Instance ID; asset-group creation; 'folder must be called Landmarks'; AssetDir/OutputDir + build)",
+            "local SDK sample — `C:\\MSFS 2024 SDK\\Samples\\DevmodeProjects\\SimObjects\\Animals\\Bears\\PackageSources\\SimObjects\\Animals\\MyCompany_Bears\\sim.cfg` (category=Animal, DistanceToNotAnimate=1500, 2 fltsim variations, contact_points/DesignSpecs/WAYPOINT), `animations.xml` (Walk typeParam=random + 3 Idle clips + AnimGraph Idle doBlend=False / Walk on GROUND VELOCITY / transitions 0.1), `model.GrizzlyBear\\GrizzlyBear.xml:5-21` (4 LODs MergeModel ..\\animation\\Bears.gltf + AnimationInclude)",
+            "local SDK docs — `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\samples-tutorials\\samples\\sceneries\\livingworld\\index.md:1-60` (LWcfg sample: only traffic/boats/airport-life; *.spb compiled XML; community-folder + restart to see changes)",
+            "DevSupport — 11803 'BearSampleProject Teaches Me Nothing' ('Animals now are spawned as Living World, (debug Simobjects Living World you will see all of them)'; sample deliberately minimal per Asobo reply)",
+            "FSDeveloper — 460849 'How to make a scenery acceptable' (marketplace: no animals / MS-Asobo planes as static decorations)",
+            "community product — SoFly 'Animals for MSFS' (commercial custom-animal pack exists)"
+          ],
+          "user": null,
+          "added": "2026-09-23",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "40ee0d17-5246-5cd7-ab7c-de9cf89f727c",
+              "note": "doBlend=FALSE weighted-random machinery — the Bears Idle state uses exactly this, on a SimObject (Living Thing), confirming the SimObject-path scope"
+            },
+            {
+              "entryId": "b2352151-91d2-5325-8e98-95b4c743e185",
+              "note": "split mesh/animations + <MergeModel> — the Bears model XML merges animation\\Bears.gltf per LOD"
+            },
+            {
+              "entryId": "648c4c70-3fc2-5375-b50d-4e756c3863dd",
+              "note": "category=Animal / FlyingAnimal in the sim.cfg category list"
+            },
+            {
+              "entryId": "25274e73-125d-5f3e-bce2-819cb00e9df3",
+              "note": "non-aircraft SimObjects (wildlife among the kinds) are simulated/SimVar-controllable"
+            },
+            {
+              "entryId": "5c37f0c6-4abc-5164-bb98-2af77ecfcfef",
+              "note": "SimObject package folders — model/texture/animation/etc. at the sim.cfg root"
+            }
+          ],
+          "tags": [
+            "animals",
+            "living things",
+            "simobject",
+            "wildlife",
+            "spawn",
+            "scenery editor",
+            "simobj objects",
+            "animgraph",
+            "living world",
+            "bears",
+            "msfs2024"
+          ],
+          "_notes": "Source-C research 2026-09-23 (user: 'create a new animal with spawn points from scratch, post-export, walking randomly around the spawn points like old 2020 animals'). Verified against local SDK flighting docs + the shipped Bears sample files; DevSupport/community only for the default-living-world-vs-custom distinction. Bears = the official from-scratch template end-to-end (project XML -> sim.cfg -> model XML -> animations.xml -> Scenery Editor placement). Wander AI of a placed animal is undocumented -> linked Open Question. No cross-references added: animal SimObjects fit Category 2 as the home (non-aircraft/ground-world SimObjects); Category 3 remains aircraft-only."
         }
       ],
       "crossReferences": []
@@ -389,6 +606,10 @@
         {
           "title": "Multiplayer Near/Far SimVar propagation — aircraft ↔ aircraft only",
           "entryId": "d20e0905-9d93-56ba-a0af-a8311bf31b89"
+        },
+        {
+          "title": "Split glTF model + animations — <MergeModel> merges an external animation .gltf per LOD (deprecated <AnimationFileList>; merge keyed by ASOBO unique id)",
+          "entryId": "b2352151-91d2-5325-8e98-95b4c743e185"
         }
       ]
     },
@@ -927,6 +1148,47 @@
             "msfs2024"
           ],
           "_notes": "2020-era episode (21/05/2021). The LOD+animation 2020-exporter failure from the same session is NOT merged into this entry (one fact per entry) — recorded in the claim as related context only. DevSupport/FSDeveloper pages fetch-blocked from the agent — cited from search snippets. In 2024 the fix is to export with final names; hand-JSON re-point remains a valid emergency path."
+        },
+        {
+          "id": "0147db0e-ebb2-52e2-8479-5b7cc7efb07e",
+          "title": "Blender: Export as submodel + disable meshes → animation-only .gltf for <MergeModel> (2024 addon)",
+          "kind": "entry",
+          "claim": "The 2024 SDK Blender addon exports the split animation file natively — the Asobo pattern (model + separate animation .gltf merged via `<MergeModel>`) IS feasible from Blender. Two exporter settings combine:\n\n- **Export as submodel** (Export process panel): docs — \"This option is dedicated to 'Merge models'. Only use it for models contained in `<MergeModel>` xml elements\". Addon source: `export_as_submodel` BoolProperty — \"(You need to use it for models contained in <MergeModel> element in the xml only)\" (`io\\exp\\export_settings.py:237-240`); UI slot in `ui\\exp\\export_settings_panel.py:157`; on export it runs `MSFS2024_NodeUtils.create_submodel_scenes()` (`io\\exp\\gltf_hooks.py:397-398`, `io\\com\\msfs_nodes_utils.py:349`) and validates parent relationships (`io\\exp\\pre_export.py:227,259`).\n- **Mesh export toggle** (Mesh panel): \"Enable/Disable meshes export (useful for exporting animations only)\" — switching meshes OFF yields an animation-only glTF (bone hierarchy + clips, no meshes): exactly the shape of the shipped Bears animation file.\n\nSetup notes: the animation export must keep the SAME armature/bone hierarchy as the base model — the runtime merge keys on ASOBO unique ids and node-parent chains, and skinned submodels must include their bones (see the `<MergeModel>` entry). Use **Use Asobo Unique ID Extension** on both exports; one clip per action (Blender ≥4.5) / NLA track; negative frames rejected — same rules as the Cascadeur entry.\n\nCaveat: the Submodel Merging doc page (retail docs tree) carries a callout \"This functionality is currently not supported when using The Blender Plugin\" — contradicted by the Blender Exporter docs + the addon option itself; treated as stale (the Bears sample ships a Blender source file, and the flighting-tree Model XML docs document `<MergeModel>` without that caveat).",
+          "status": "`fact (cited)` (official docs + SDK addon source).",
+          "statusValues": [
+            "fact (cited)"
+          ],
+          "confidence": null,
+          "sources": [
+            "official docs — The Blender Exporter: 'Export as submodel' (Export process) — `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\models-and-textures\\plugins\\blender-plugin\\the-blender-exporter\\index.md:363`; Mesh panel 'Enable/Disable meshes export (useful for exporting animations only)' — `index.md:382-384`",
+            "SDK source — `Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\io\\exp\\export_settings.py:237-240` (export_as_submodel BoolProperty), `ui\\exp\\export_settings_panel.py:157`, `io\\exp\\gltf_hooks.py:397-398`, `io\\com\\msfs_nodes_utils.py:349` (create_submodel_scenes), `io\\exp\\pre_export.py:227,259`",
+            "official docs — Submodel Merging callout 'not supported when using The Blender Plugin' (treated as stale) — `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\models-and-textures\\submodel-merging\\index.md:16-20`"
+          ],
+          "user": null,
+          "added": "2026-09-23",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "84b783d0-1c0a-50df-acc4-095d041a3aae",
+              "note": "same export family — the Cascadeur entry lists the shared MSFS animation options the submodel exporter applies"
+            },
+            {
+              "entryId": "b2352151-91d2-5325-8e98-95b4c743e185",
+              "note": "the mechanic this export feeds — <MergeModel> merging in the model XML"
+            }
+          ],
+          "tags": [
+            "blender",
+            "gltf",
+            "animation",
+            "mergemodel",
+            "submodel",
+            "export",
+            "msfs2024"
+          ],
+          "_notes": "Source-C research 2026-09-23. Doc-tree contradiction noted (retail callout vs exporter docs + addon source); addon source treated as ground truth."
         }
       ],
       "crossReferences": [
@@ -1084,8 +1346,116 @@
     {
       "number": 9,
       "title": "Terrain Edition (Satellite and CGL)",
-      "reserved": "no entries yet — reserved for satellite imagery and CGL terrain editing.",
-      "entries": [],
+      "reserved": null,
+      "entries": [
+        {
+          "id": "d32b62db-e1cb-5b61-9c68-ba0b3e863e00",
+          "title": "CGL aerial scenery for MSFS 2024 — QGIS XYZ tiles to Bing quadkey PNGs (Tiles2Bing gone; Python replacement + build workflow)",
+          "kind": "entry",
+          "claim": "CGL aerial scenery pipeline for MSFS 2024 (deep-dive research, source C, 2026-09-24): QGIS XYZ tiles → Bing-quadkey-named PNGs → CGL package. Verified against the official 2024 docs, the shipped SimpleAerial sample and the community toolchain.\n\n1. Official CGL background. CGL files are \"container files used by the simulation to hold compressed imagery, elevation, and/or vector data about the world\", stored \"following a quadtree scheme, based on a mercator projection\" — i.e. the Bing Maps Tile System; CGL is \"the Microsoft Flight Simulator 2024 equivalent of BGL files\", but \"at the moment this data cannot be edited by add-ons\" except the imagery route. Add-on aerials: \"you can modify the simulation CGL images used for terrain... create a number of PNG format images (named with the quadtree key to identify the location where they are to be used) and then use the CGL Asset Type in the Project Editor\". The XML lives next to the images folder (the shipped sample puts it at `PackageSources\\CGL\\CGLBuilderConfig.xml` — the docs' \"vegetation folder\" wording does not match the sample):\n\n    <CGLBuilder>\n    \t<CGL type=\"SecondaryAerialImage\" input=\"Tiles\" directory=\"aerial_images\"/>\n    </CGLBuilder>\n\n    `type` (only \"SecondaryAerialImage\" for custom aerials), `input` (only \"Tiles\" — each file is one tile whose NAME IS THE QUADKEY of the tile, with a `*.png` extension), `directory` (sub-folder relative to the XML).\n\n2. Authoring specs (CGL Files page). Aerial PNGs are authored at LOD20 — map width/height 268,435,456 px, ground resolution 0.1493 m/pixel, \"16bit PNG\", fixed 256x256 px; \"the build process will automatically generate the images for the lower levels of detail as part of the generated CGL file\". The PNG ALPHA blends with the in-game aerial: alpha 0 = in-game aerial pixel, alpha 1 = your pixel, in-between = linear interpolation (use it to feather the edges of the override area).\n\n3. Step 1 — QGIS tile extraction (verified routes):\n- Browser panel → right-click \"XYZ Tiles\" → New Connection with the Bing aerial URL `http://ecn.t3.tiles.virtualearth.net/tiles/a{q}.jpeg?g=1` (any XYZ/WMTS source works; Bing URL from the AW-MSFS tutorial); zoom to the target area.\n- Processing Toolbox → Raster tools → \"Generate XYZ tiles (Directory)\" — set extent and zoom levels (~17–20), produces `z/x/y.png`.\n- GeoTIFF route (community-favoured): export your composited raster EPSG:3857, cut with GTiff2Tiles (`GTiff2Tiles.Console.exe --input test.tif --output Tiles --minz 20 --maxz 20 --tms FALSE -c mercator` — github.com/Gigas002/GTiff2Tiles) or `gdal2tiles.py --xyz -z 17-20`; \"EPSG:3857 for both geotiff and tiles\" gives metres/pixel units (rhumbaflappy).\n\n4. Step 2 — XYZ → Bing quadkey conversion and the Tiles2Bing situation:\n- The original `tiles2bing` (Christine Winther, v0.0.2) was a small .NET-Core CLI: `tiles2bing \"\\path\\to\\Tiles\" /o \"\\path\\to\\PackageSources\\CGL\\aerial_images\" /y google` — `/y google` = input uses the standard XYZ (top-left) y-axis. Its official distribution is GONE (May 2025: \"it seems the tiles2bing tool is no longer available\"). Surviving copies are community-shared: rhumbaflappy's fixed build (FSDeveloper threads 457437 / 448680 — framework-dependent .NET app; keep the matching runtimes installed, the newest-only install breaks it: \"dotnet chooses the one it needs... I think that might be your problem\"), a OneDrive mirror (thread 458692), and the Sep-2026 \"AerialWorkshop\" bundle (GeotiffCreator + GTiff2Tiles + tiles2bing + a batch file producing the aerial_images folder, FSDeveloper 461140).\n- Python-replacement feasibility: HIGH and trivial — the conversion is a pure RENAME to quadkey names. XYZ tiles from QGIS/GTiff2Tiles/GDAL sit on the same Web-Mercator global grid as Bing tiles (2^z × 2^z, origin top-left) at the same zoom, so NO resampling is needed: for each tile compute `quadkey` from (x, y, z) — for i = z..1 take bit (i−1) of x and y: digit = (X bit) + 2·(Y bit), append as base-4 digit; quadkey length = z (official algorithm + full C# reference in the Bing Maps Tile System article). TMS-flipped input needs y′ = 2^z − 1 − y first. A ~40-60 line Pillow script walks the XYZ dir → writes `<quadkey>.png` (force 256x256, RGBA, alpha feathering) → emits CGLBuilderConfig.xml + a SimpleAerial-style project XML. Only dependency: Pillow. Tiles2Bing's disappearance is therefore NOT a blocker.\n\n5. Step 3 — package build (official sample pattern, SDK `Samples\\DevmodeProjects\\Sceneries\\SimpleAerial\\`):\n- `SimpleAerialProject.xml` (Project Version=\"2\", FolderName=\"Packages\", `<Package>` → `PackageDefinitions\\mycompany-aerial.xml`); `PackageSources\\CGL\\CGLBuilderConfig.xml` as in §1; `PackageSources\\CGL\\aerial_images\\` containing the quadkey PNGs (the shipped tiles are 20-digit quadkeys = LOD20).\n- DevMode → File → Open project… → `SimpleAerial.xml` → Project Editor → right-click the project → Build and Mount → package in `Packages\\mycompany-aerial`, mounted in the VFS; sample teleport test: lat 47.000744, lon -122.858906 (the sim caches the area — teleport far away first if already positioned there).\n\n6. Empirical notes (MSFS 2024 runtime, community-verified): pre-SU3, LOD19 tiles did not show and LOD20 needed a TIN-exclude polygon; SU3 fixed the bleed-through — \"the aerial CGL just works\" without exclusions (FSDeveloper 448680, p10, 2025). rhumbaflappy's iteration loop uses LOD17-18 for colour tests (2-4 h speed) and LOD20 for the final compile; a full 5-minute round trip is typical with the GTiff2Tiles + tiles2bing batch.\n\n7. Projection — EPSG:3857 ONLY. The CGL quadtree lives on the spherical Web-Mercator plane (Bing Maps Tile System): zoom z = a global 2^z × 2^z grid of 256×256 px tiles, origin top-left, latitude clip ±85.05112878°, tile boundaries on EPSG:3857 (pseudo-Mercator) coordinates — not on lat/lon degrees, UTM or any local CRS. So every source must be reprojected to EPSG:3857 (set QGIS project CRS + raster CRS to EPSG:3857) and the composite GeoTIFF exported in EPSG:3857 BEFORE XYZ-tiling; tiles cut from a 4326/UTM 32632/3003/23032 mosaic will not match the quadkey grid and the CGL lands misaligned. The Piemonte ombreggiature WMS already serves EPSG:3857 natively (verified capabilities) → request the hillshade in 3857 directly. Ground resolution in 3857 = 156543.03392 / 2^z m/px × cos(latitude) (Bing article; z20 = 0.1493 m/px at the equator); at Domodossola (~46.1° N) z20 resolves ~0.1036 m/px — size your source imagery so it samples at or above the zoom you compile.\n\n8. Georeferencing through Photoshop (or GIMP/Affinity). They all STRIP the internal GeoTIFF tags on save — 'Photoshop gets rid of the metadata that makes it a GeoTIFF' (GIS StackExchange 423985); paint.net is the exception (preserves GeoTIFF attributes — why rhumbaflappy's CGL colour loop uses it, thread 454878). The robust fix is a world-file sidecar: export the stitched GeoTIFF with `.tfw` (QGIS Raster → Conversion → Translate → advanced parameter `tfw` = `yes`; or `gdal_translate -co TFW=YES -co PROFILE=BASELINE in.tif out.tif` — BASELINE drops internal geo tags so the world file becomes the ONLY georef source). A world file is 6 plain-text lines: pixel X size, rotation Y (0), rotation X (0), pixel Y size (negative), X/Y of the top-left PIXEL CENTER (GDAL WLD driver); PS never touches it. Then: (a) edit in PS keeping the exact pixel grid — NO crop/resize/rotation or the world file is invalid; (b) Save As TIFF keeping alpha ('Save Transparency'; the alpha channel is what CGL uses to blend with the in-game aerial, so paint your border feathering into it); (c) reload in QGIS (it reads the sidecar) and check alignment against the Bing XYZ layer — a few-metre offset between independent sources is the norm; fix by re-georeferencing (QGIS Georeferencer, Linear) or hand-editing the 6 .tfw numbers. If you must crop, do it in QGIS BEFORE PS (Raster → Extraction → Clip) or re-georeference after — never blind-crop in PS. Validate the alpha survives the tiling step on the first batch (one check tile under QGIS/GTiff2Tiles: the CGL blend depends on it).",
+          "status": "`fact (cited)` (official docs + shipped sample + Bing article) + `empirical` (community threads, MSFS 2024 runtime)",
+          "statusValues": [
+            "fact (cited)",
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\devmode\\editors\\project-editor\\file-formats\\cgl-files\\index.md:2-27` (CGL definition, LOD20 0.1493 m/px, 16-bit 256x256 PNG, alpha blend semantics)",
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\content-configuration\\environment\\terrain\\cgl-aerial-xml-properties\\index.md:14-47` (CGLBuilder / SecondaryAerialImage / Tiles / quadkey naming)",
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\introduction\\using-the-sdk\\index.md:235-254` (CGL = BGL equivalent; add-on editing not possible yet)",
+            "local SDK sample `C:\\MSFS 2024 SDK\\Samples\\DevmodeProjects\\Sceneries\\SimpleAerial\\` (SimpleAerialProject.xml:1-9, PackageSources\\CGL\\CGLBuilderConfig.xml:1-3, 20-digit quadkey PNG names, PackageDefinitions\\mycompany-aerial.xml)",
+            "Bing Maps Tile System article — https://learn.microsoft.com/en-us/bingmaps/articles/bing-maps-tile-system (quadkey algorithm + C# reference, ground-resolution table)",
+            "fsdeveloper.com forum threads 457437 (tiles2bing .NET runtime problem; rhumbaflappy's fixed build), 448680 p10 (19 May 2025 'tiles2bing no longer available'; z19/z20/SU3 empirical), 454878 (GTiff2Tiles command line, EPSG:3857 pipeline, LOD17-18 colour loop / LOD20 final), 458692 (OneDrive copy), 461140 (AerialWorkshop, 4 Sep 2026), 455203 (QGIS XYZ-connection CGL tutorial), 458625 (SASPlanet + Plymouth tiles2bing syntax)",
+            "studylib.net AW-MSFS scenery tutorial (QGIS: XYZ Tiles → New Connection Bing URL, Raster tools → Generate XYZ tiles (Directory); tiles2bing by Christine Winther v0.0.2; command syntax)",
+            "GDAL WLD driver docs — gdal.org/en/latest/drivers/raster/wld.html (world-file format: 6 lines, pixel sizes, rotations, top-left PIXEL CENTER coordinates; .tfw/.pgw/.jgw suffixes)",
+            "GDAL GTiff driver docs — gdal.org/en/latest/drivers/raster/gtiff.html (TFW=YES creation option; PROFILE=BASELINE drops internal geo tags so the world file is the sole georef source)",
+            "gis.stackexchange 423985 (Photoshop strips GeoTIFF tags; tfw sidecar survives PS; QGIS Translate -co tfw=yes; no crop/resize rule) and 348988 (paint.net preserves GeoTIFF metadata; GIMP/Affinity/Photoshop do not)",
+            "reddit r/QGIS 13n8og8 / 11p3qny (same QGIS translate tfw=yes recipe; world file survives the editor if resolution is unchanged)"
+          ],
+          "user": null,
+          "added": "2026-09-24",
+          "updated": {
+            "date": "2026-09-24",
+            "note": "Follow-up research (user Q: tile projection + Photoshop georef preservation) — claim extended with §7 (EPSG:3857-only grid rationale, latitude-dependent resolution) and §8 (world-file .tfw sidecar workflow for PS/GIMP/Affinity, paint.net exception, alpha-survival validation)."
+          },
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "525bed1c-5cc5-5605-a513-bdc6a76f70c2",
+              "note": "the elevation branch of the same CGL pipeline — no mesh injection, hillshade compositing instead"
+            }
+          ],
+          "tags": [
+            "cgl",
+            "terrain",
+            "aerial",
+            "satellite",
+            "qgis",
+            "xyz",
+            "quadkey",
+            "bing",
+            "tiles2bing",
+            "ortho",
+            "photoscenery",
+            "gdal",
+            "georef",
+            "worldfile",
+            "photoshop"
+          ],
+          "_notes": "Tiles2Bing mirrors are community-held and may die — the Python rename is the durable path. '16bit PNG' official requirement vs the 8-bit RGBA tiles most community pipelines produce: not side-by-side tested — inspect the sample PNG bit depth with Pillow before a mass conversion. /y google semantics and zoom behaviour verified from forum threads only."
+        },
+        {
+          "id": "525bed1c-5cc5-5605-a513-bdc6a76f70c2",
+          "title": "Custom elevation for terrain — 5m DEM vs default MSFS 2024 mesh (hillshade compositing instead of mesh injection)",
+          "kind": "entry",
+          "claim": "The 5 m elevations for Domodossola (Piemonte LIDAR-era data) versus the default MSFS 2024 terrain — deep-dive research, source C, 2026-09-24. Answer: the 5 m DEM is finer than the default mesh in principle, but MSFS 2024 exposes NO add-on path to inject custom elevation into the terrain — so the DEM's productive role is generating HILLSHADE that is composited into the CGL aerial imagery, not replacing the mesh.\n\n1. 2020 and 2024 SHARE the same height field. Jorg Neumann (WU XVII announcement, 24 Jul 2024): \"We are not going to have two different digital twins — cities like London are going to be shared, POIs are shared, the height field (DEM) and aerials are all shared. What's different in MSFS 2024 is we have optimized how the data is brought to the player.\" So 2024 did not ship a new global DEM — it changed streaming, not data.\n\n2. What the default data actually is. An EU data-policy change let Asobo use \"incredibly accurate digital elevation maps... closer to one to two meters\" (vs ~20-30 m before) — but only for regions re-mapped by world updates (flagship: WU XVII Great Britain, with LiDAR DEM + TIN surface modeling). Elsewhere the community-decompiled default 2024 mesh (FSDeveloper 460737, Mar 2026) is an \"Enhanced Terrain Mesh\" at ~10 m horizontal spacing built from Sentinel-1 SAR DEM/DTM: each ~10x10 m cell becomes a triangulated irregular network (TIN) with linear interpolation between vertices — smooth but unable to represent anything under ~10 m (micro-relief, narrow embankments, ditches), with SAR altimetric noise; SDK DevMode lets you inspect the live mesh structure.\n\n3. Alps status (as of 2026-09-24). No dedicated Alpine TIN/DEM world update has shipped: the first \"country-side TIN\" world update was WU22 US National Parks (Jul 2026), and the community wishlist explicitly asks \"I'm hoping for the Alps next (DACH+Italy+France)\". Domodossola therefore sits on the generic ~10 m SAR-based mesh — a 5 m DEM is meaningfully finer, but see §4.\n\n4. You CANNOT feed it to the mesh. CGL files store elevation data, but \"at the moment this data cannot be edited by add-ons\" (SDK intro; \"in the future it may be possible\"); the SDK DEM doc page is a TO-DO stub; the ONLY add-on CGL asset type is `SecondaryAerialImage` (imagery — see the CGL pipeline entry). There is no add-on custom-mesh / custom-elevation API in 2024; airport polygons/aprons only flatten or adjust around the default mesh (see the ground-displacement entry: do not confuse DEM heightmaps with ground-material displacement — different system).\n\n5. What the 5 m DEM IS for: (a) the \"Satellite AND elevation\" branch = generate a shaded relief and composite it with the satellite imagery BEFORE tiling (QGIS: Raster → Terrain Analysis → Hillshade, or GDAL `gdaldem hillshade`; sun azimuth/altitude under your control) — the CGL aerial then carries realistic relief shading over the default 10 m mesh, which is the practical maximum visual gain; (b) geometry QA (runway slopes, airport flatten checks).\n\n6. Ready-made hillshade: the Piemonte geoportal already serves it — `https://geomap.reteunitaria.piemonte.it/WEBCAT/CAPABILITIES/wms_regp_ombreggiature.xml` is a LIVE WMS 1.1.1 capabilities (mapproxy, CSI Piemonte): layer `regp_ombreggiature`, title \"Ripresa Aerea ICE 2009-2011 - Rilievo ombreggiato\" (hillshade of the ICE 2009-2011 aerial survey), GetMap png/jpeg, SRS EPSG:3857 (also 4326/32632/3003/23032), bbox ~4.8-11.1 E / 43.8-46.6 N. In QGIS: Layer → Add Layer → Add WMS/WMTS Layer with the capabilities URL, pick the ombreggiature layer, set Multiply/Overlay blending under the satellite source, then run the tile generation over the composite. Expect a few-metre misalignment between independent sources (community norm) — verify against the Bing layer in QGIS first.\n\nVerdict for Domodossola: implement Satellite AND hillshade (from the 5 m DEM or the ombreggiature WMS); do not chase mesh replacement — the default ~10 m SAR mesh (un-upgraded region) + 5 m-derived shading texture is the practical maximum for CGL aerial scenery today.",
+          "status": "`fact (cited)` (official docs + WMS capabilities + Neumann quote) + `empirical` (ETM 10m community decompile) + `inferred` (Domodossola region-specific mesh comparison)",
+          "statusValues": [
+            "fact (cited)",
+            "empirical",
+            "inferred"
+          ],
+          "confidence": null,
+          "sources": [
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\introduction\\using-the-sdk\\index.md:235-254` (CGL holds elevation; 'at the moment this data cannot be edited by add-ons')",
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\content-configuration\\environment\\terrain\\dem\\index.md:1-2` (page is a 'TO DO' stub — no add-on elevation API documented)",
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\content-configuration\\environment\\terrain\\cgl-aerial-xml-properties\\index.md:44-45` (only SecondaryAerialImage add-on CGL type)",
+            "news.xbox.com/en-us/2024/07/24/biggest-world-update-ever-microsoft-flight-simulator-best-yet (Neumann: shared DEM/aerials digital twin; EU policy ~1-2 m elevation maps; LiDAR + TIN for WU XVII)",
+            "fsdeveloper.com forum thread 460737 (Enhanced Terrain Mesh 10 m, Sentinel-1 SAR DEM/DTM, TIN from 10 m vertices, sub-10 m detail impossible)",
+            "forums.flightsimulator.com thread 769981 p3-4 (first country-side TIN only at WU22, Jul 2026; 'hoping for the Alps next (DACH+Italy+France)')",
+            "WMS capabilities (verified live) — https://geomap.reteunitaria.piemonte.it/WEBCAT/CAPABILITIES/wms_regp_ombreggiature.xml (layer regp_ombreggiature, Ripresa Aerea ICE 2009-2011 · Rilievo ombreggiato, CSI Piemonte mapproxy, WMS 1.1.1, EPSG:3857)"
+          ],
+          "user": null,
+          "added": "2026-09-24",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "d32b62db-e1cb-5b61-9c68-ba0b3e863e00",
+              "note": "the imagery side of the same CGL pipeline — how the composited satellite+hillshade gets tiled, quadkey-named and built"
+            },
+            {
+              "entryId": "e804a48b-d351-50bc-be79-e86d2086aa19",
+              "note": "do not confuse DEM heightmaps with ground-material displacement/heightmap settings — a different system"
+            }
+          ],
+          "tags": [
+            "cgl",
+            "terrain",
+            "elevation",
+            "dem",
+            "lidar",
+            "hillshade",
+            "satellite",
+            "domodossola",
+            "wms",
+            "qgis"
+          ],
+          "_notes": "Region-resolution claims (10 m SAR mesh globally, no Alps WU yet) rest on the community ETM-10m decompile + forum sentiment — re-verify after any Alpine world-update announcement. Whether Asobo later opens CGL elevation editing is the single future unknown (docs say 'in the future it may be possible'). ICE 2009-2011 survey age: hillshade from it is stable (shading is resolution-driven, not date-driven)."
+        }
+      ],
       "crossReferences": []
     },
     {
@@ -1599,6 +1969,73 @@
           ],
           "tags": [],
           "_notes": null
+        },
+        {
+          "id": "85f14d73-1032-595f-8a9c-53d4e22a8bdd",
+          "title": "BlendTreeState first clip on state entry / first render — random draw or first-listed? (docs define weighted random only for picks after an animation ENDS)",
+          "kind": "openQuestion",
+          "claim": "The Model Animation Definitions docs specify the weighted-random selection (`doBlend=\"FALSE\"` + per-`<Animation>` `weight`) only for 'the subsequent animation to use' — i.e. picks made AFTER the current clip finishes. Nothing in the docs states how the FIRST clip is chosen when the BlendTreeState is entered (object first rendered / default state becomes active): random draw across the listed clips, or always the first-listed / last-used? Matters for the 'character VFS-loads into the scene with a random looping animation' use case — if the first pick is deterministic, randomness only starts from the second loop end onward.",
+          "status": null,
+          "statusValues": [],
+          "confidence": null,
+          "sources": [],
+          "user": null,
+          "added": null,
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "40ee0d17-5246-5cd7-ab7c-de9cf89f727c",
+              "note": ""
+            }
+          ],
+          "tags": [
+            "animation",
+            "animgraph",
+            "blendtree",
+            "random",
+            "open question"
+          ],
+          "_notes": null
+        },
+        {
+          "id": "6cb28791-9c2b-56e2-9f51-22254cb77ccf",
+          "title": "Placed Animal SimObject wander logic — automatic ground-AI wandering around spawn or itinerary-driven? (Bears sample documents placement, not movement)",
+          "kind": "openQuestion",
+          "claim": "A placed Animal-category SimObject (Scenery Editor SimObj instance) has all movement equipment in sim.cfg — [contact_points] resting, [DesignSpecs] max_speed_mph + acceleration/deceleration, [WAYPOINT] CanReverse — and its animations.xml switches Walk↔Idle on (A:GROUND VELOCITY). Research 2026-09-23 (source C, 6cb28791 verification) established WHAT IS documented:\n\n- **`[WAYPOINT]` controls AI movement BETWEEN points** (ai.cfg docs, `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\content-configuration\\cfg-files\\ai.cfg\\index.md:48-61`): \"This section controls how the AI will deal with taxiway points, specifically the way it will move between them\" — SlowDownDistance (50.0 default), SlowDownSpeed (0.4 kts), StopDistance (2.0 m), SlowDownOnLastWayPoint (TRUE), CanReverse (TRUE default; the Bears sample sets 0), FrontRadiusMeters (-1.0 → bbox). So the ground AI CAN move a placed SimObject, but the docs only describe point-to-point movement tuning — they never say where a placed animal's POINTS come from or whether any are auto-generated around the spawn.\n- **Human SimObjects get movement from XML waypoint navigation** (Ground Traffic docs, `...environment\\living-world\\ground-traffic\\index.md:10-16`): idle workers'/marshallers' \"behavior... is defined in their XML files (in the *AirportServices* folder), and it will describe the way the object navigates the waypoints used to move around, and its animations\"; the marshaller \"uses an AI simulation to set some SimVars\" driving its animations. Analogous XML-driven navigation for animals is NOT documented.\n- **Ambient vehicles move semi-randomly via TaxiPaths** (`ground-traffic\\index.md:22-40`): vehicles wait random time, pick a random unoccupied parking, taxi there via `TaxiPaths` (VEHICLE type preferred, runways avoided, ATC-aware); a `RatioOfAmbientVehiclesThatAreImmobile` fraction never moves. This is the closest documented 'random roaming' analog — but it belongs to the Living World airport-traffic system, not to a Scenery-Editor-placed Animal.\n- **No 'Itinerary' feature in the 2024 docs** — 2020's Scenery Editor itinerary mechanism has zero matches in the flighting docs; the 2024 placement flow (SimObj Objects → Add → gizmos/One-Click) has no itinerary/wander option.\n- **Community datapoints:** default 2024 animals spawn as Living World entities (DevSupport 11803) and default fauna visibly moves/flees (World Photographer fauna reports — deer run away from low flight); FSDeveloper 'Does Living World Work?' (5394, 2007 — FSX-era third-party tool) is only tangential ('animals configured either like a vehicle... fish/whales comparable to boats'). Nothing found describes the behavior of a CUSTOM placed Animal SimObject — neither proof of automatic random wandering nor of full staticity.\n\nVerdict: STILL OPEN. The ground-AI point-to-point machinery ([WAYPOINT]), the XML-waypoint navigation precedent (humans), and the semi-random TaxiPath roaming (ambient vehicles) all suggest placed animals COULD move without addon scripts, but no official sentence or community record confirms the trigger, radius or randomness of a solo placed animal's wandering. Needs an in-sim test (place the Bears sample animal, observe) or a DevSupport/FSDeveloper thread.",
+          "status": null,
+          "statusValues": [],
+          "confidence": null,
+          "sources": [],
+          "user": null,
+          "added": null,
+          "updated": {
+            "date": "2026-09-23",
+            "note": "Source-C verification run (user request): folded in ai.cfg [WAYPOINT] parameter semantics (point-to-point AI movement tuning), Ground Traffic XML-waypoint navigation precedent for human SimObjects, ambient-vehicle semi-random TaxiPath roaming as the nearest documented analog, the 2024 docs' zero 'Itinerary' matches, and community datapoints (DevSupport 11803 default Living-World spawn; World Photographer fauna flee reports; FSDeveloper 5394 FSX-era tangential). Question remains open — the wander trigger/radius for a solo placed Animal is still undocumented; an in-sim test of the Bears sample is the suggested next step."
+          },
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "dcdda7d6-ccca-5f40-80f2-d800d3822e64",
+              "note": "owning entry — custom animal creation pipeline"
+            },
+            {
+              "entryId": "25274e73-125d-5f3e-bce2-819cb00e9df3",
+              "note": "non-aircraft SimObjects are simulated/SimVar-controllable"
+            }
+          ],
+          "tags": [
+            "animals",
+            "simobject",
+            "ai behavior",
+            "wander",
+            "ground ai",
+            "spawn",
+            "open question"
+          ],
+          "_notes": "Born 2026-09-23 from the custom-animal deep-dive (source C). The [WAYPOINT] section in the Bears sim.cfg suggests built-in ground-AI pathing exists, but its trigger/radius semantics are undocumented — keep open until a DevSupport/community source (or in-sim test) confirms the wander behavior of a solo placed animal."
         }
       ],
       "crossReferences": []
@@ -1694,6 +2131,38 @@
     "title": "Edition trail",
     "intro": "One row per edition, newest first. Recorded by the **MSFS Cache Updater** agent; rows are never removed. (Section numbers cited in rows before 2026-09-21 refer to the pre-reorg layout.)",
     "rows": [
+      {
+        "date": "2026-09-24",
+        "summary": "Follow-up research amendment to Category 9 entry d32b62db ('CGL aerial scenery for MSFS 2024 — QGIS XYZ tiles to Bing quadkey PNGs...') — user asked (a) what projection to generate tiles in and (b) how to preserve georeferencing when editing the stitched GeoTIFF in Photoshop. Claim extended with §7: tile generation MUST be EPSG:3857 only — the CGL quadtree is defined on the Bing spherical Web-Mercator grid (2^z × 2^z, origin top-left, lat clip ±85.05°), so 4326/UTM/local-CRS sources must be reprojected before tiling or quadkeys land misaligned; the Piemonte ombreggiature WMS serves 3857 natively; ground resolution = 156543.03392/2^z × cos(lat) (z20 ≈ 0.1036 m/px at Domodossola ~46.1° N). §8: Photoshop/GIMP/Affinity all strip GeoTIFF tags (paint.net preserves them — rhumbaflappy's CGL loop uses it); the fix is a .tfw world-file sidecar (QGIS Translate advanced param tfw=yes, or gdal_translate -co TFW=YES -co PROFILE=BASELINE; 6-line format with top-left PIXEL CENTER per GDAL WLD driver), keep the pixel grid untouched in PS (no crop/resize), keep alpha on TIFF save (CGL blends in-game aerial via alpha), crop in QGIS before PS, validate alpha survives tiling. Entry updated (updated note + 5 new sources + 3 tags); no ids changed."
+      },
+      {
+        "date": "2026-09-24",
+        "summary": "Research edition (source C, deep-dive): 'Living World & custom animals' follow-up — CGL aerial scenery for MSFS 2024. Filled Category 9 (Terrain Edition - Satellite and CGL — reserved cleared) with 2 entries: (1) 'CGL aerial scenery for MSFS 2024 — QGIS XYZ tiles to Bing quadkey PNGs (Tiles2Bing gone; Python replacement + build workflow)' (d32b62db, fact (cited) + empirical): official CGL background (BGL-equivalent container, quadtree/mercator, add-on path only for imagery — CGLBuilder XML 'SecondaryAerialImage' + 'Tiles' = quadkey-named PNGs, sample at PackageSources\\CGL\\CGLBuilderConfig.xml), authoring specs (LOD20 0.1493 m/px, 16-bit 256x256 PNG, alpha-blended vs in-game aerial), QGIS routes (XYZ Tiles connection / Generate XYZ tiles (Directory) / GTiff2Tiles or gdal2tiles --xyz), Tiles2Bing status (Christine Winther v0.0.2 distribution gone May 2025; community copies — rhumbaflappy .NET-7 build, OneDrive mirror, Sep-2026 AerialWorkshop bundle) and Python-replacement feasibility HIGH (pure quadkey rename, official Bing Tile System algorithm, ~40-60 lines Pillow, no resampling; TMS y-flip caveat), build workflow from the shipped SimpleAerial sample, empirical zoom notes (z19 invisible pre-SU3, z20+TIN-exclude, SU3 'just works'). (2) 'Custom elevation for terrain — 5m DEM vs default MSFS 2024 mesh (hillshade compositing instead of mesh injection)' (525bed1c, fact (cited) + empirical + inferred): 2020/2024 share the same DEM digital twin (Neumann), default mesh = ~10 m Sentinel-1 SAR-based ETM outside upgraded WU regions (FSDeveloper 460737), no Alps TIN/DEM world update yet (wishlisted, WU22 thread), and — decisive — no add-on path to inject elevation (CGL elevation 'cannot be edited by add-ons', DEM doc page TO DO, only SecondaryAerialImage type) → the 5 m Piemonte DEM's role is hillshade compositing into the aerial; the Piemonte 'ombreggiature' WMS (regp_ombreggiature, ICE 2009-2011 relief shading, CSI Piemonte mapproxy) verified LIVE and documented as the ready-made hillshade source with QGIS blend/tile steps. Both entries related to each other; elevation entry also related to the ground-displacement entry (e804a48b). Entry-level additions — no renumber; Category 9 reserved placeholder cleared."
+      },
+      {
+        "date": "2026-09-23",
+        "summary": "Research verification of open question 6cb28791 (Placed Animal SimObject wander logic — Category 17). Ran the source-C chain on the wander question: the ground AI DOES move SimObjects point-to-point ([WAYPOINT] ai.cfg docs — SlowDownDistance/SlowDownSpeed/StopDistance/CanReverse/FrontRadiusMeters semantics), human SimObjects' movement is XML-waypoint-driven (Ground Traffic docs — idle workers/marshallers), ambient vehicles roam semi-randomly via TaxiPaths (closest documented random-roaming analog, Living World airport-traffic system), the 2024 flighting docs have zero 'Itinerary' matches (2020 feature gone), and community datapoints (DevSupport 11803 default Living-World spawn; World Photographer fauna flee reports; FSDeveloper 5394 FSX-era tangential). OQ claim enriched with all findings + updated research note; question deliberately LEFT OPEN (no official sentence confirms a solo placed Animal's wander trigger/radius — in-sim Bears test proposed). Entry-level edit — no renumber, no ids changed."
+      },
+      {
+        "date": "2026-09-23",
+        "summary": "Research edition (source C, deep-dive): 'Living World & custom animals' — added entry dcdda7d6 to Category 2 (Scenery SimObjects): full post-export pipeline for a custom animal from the shipped BearsSampleProject — animals are Living Thing SimObjects (sim.cfg category=Animal|FlyingAnimal, not LWcfg.xml which only covers traffic/boats/airport life; default wildlife spawns as Living World entities per DevSupport 11803), package layout (SimObjects\\Animals\\<Name>, per-variation model.<X>/texture.<X>, shared animation\\Bears.gltf merged per-LOD + animations.xml), movement/AI sim.cfg sections ([contact_points], [DesignSpecs], [WAYPOINT], DistanceToNotAnimate — FlyingAnimals 250 m default), animations.xml Walk↔Idle AnimGraph on GROUND VELOCITY with Walk typeParam=random (random start frame) and Idle doBlend=FALSE (the E2 weighted-random machinery, SimObject path), and spawn points via Scenery Editor → SimObj Objects (each placed instance = a spawn point; Assign Instance ID; SimPropContainer conversion). Status fact (cited) + empirical + inferred. Added open question 6cb28791 to Category 17 (Open Questions): whether a placed Animal SimObject wanders automatically around spawn or needs itineraries/nav-graph/script — undocumented. Entry-level additions — no renumber, no ids changed."
+      },
+      {
+        "date": "2026-09-23",
+        "summary": "Follow-up refinement (maintainer question on E2 scope): confirmed with the official windsock example (scenery-model-xml-and-cfg-setup:141-180) that blend-trees DO run in scenery model XML — `<AnimGraph>` → `<BlendTreeState>` with six Standard clips + `<Value>(A:AMBIENT WIND VELOCITY, KNOTS)</Value>` + per-clip `threshold` — but that state is threshold/continuous-driven (doBlend=TRUE rule), NOT doBlend=FALSE weighted-random selection. E2 scope bullet + sources + updated note amended: plain scenery objects = Standard typeParam=AutoPlay,Random only; doBlend=FALSE weighted-random clip selection = AnimGraph/SimObject path (Scenery SimObj wrapper for scenery characters). Entry-level edit — no renumber, no ids changed."
+      },
+      {
+        "date": "2026-09-23",
+        "summary": "Correction edition (maintainer correction, source A): corrected the Scenery SimObjects entry 'Scenery animation scope' (b2e0c233) — scenery objects CAN be animated; 'static scenery object' is the docs' CLASS name (one that has no animations/interactions), not a capability ban. Corrected claim: plain scenery objects play Standard `<Animation type=\"Standard\" typeParam=\"AutoPlay\">` on render (lighthouse mirror, radar antenna; node rotation AND bone/armature glTF animations — maintainer-typed), ModelInfo children include Animation/NodeAnimation/AnimationEvent/AnimGraph (model-xml-properties:50-62), Scenery Editor instancing rule ('cannot be animated') proves animated scenery exists (scenery-objects:99); Scenery SimObj (sim.cfg + category=StaticObject + DistanceToNotAnimate + manual XML) is required only for SIM-REACTIVE animation (windsock ↔ wind, jetway ↔ aircraft — both are Scenery SimObjects, not plain scenery; maintainer-clarified). Status upgraded to user-typed (authoritative) + fact (cited) + empirical; retitled; category 1 cross-reference title synced. E2 (40ee0d17, Random looping-animation selection) scope-clarified: single-clip AutoPlay/Random = plain-scenery path; BlendTreeState weighted-random = AnimGraph machinery on the SimObject path (docs: mostly Living Thing SimObjects — animation-xml-properties:146; Scenery SimObj wrapper for scenery characters). Entry-level corrections — no renumber, no ids changed."
+      },
+      {
+        "date": "2026-09-23",
+        "summary": "Research edition (request C): answered whether an object can carry 4-5 looping animations, pick a random one at runtime, 'without it being an actual SimObject' — the animation engine only runs on the SimObject machinery, so the answer is: NOT as a static Scenery Editor object; use the Scenery SimObj path (model.cfg category=StaticObject + DistanceToNotAnimate + manual model XML). Added 3 items, all fact (cited) (local SDK 1.7.3 docs — version gate unchanged): Scenery SimObjects — 'Scenery animation scope — static scenery objects never animate; animated scenery = Scenery SimObj path' (static object = no animations/interactions, exporter-generated XML only; Scenery SimObj = sim.cfg + model.cfg [General] category=StaticObject DistanceToNotAnimate=2000 + animations folder + hand-written XML — multi-exporters cannot generate it); Scenery SimObjects — 'Random looping-animation selection — AnimGraph BlendTreeState doBlend=FALSE weighted-random next clip per loop end; typeParam=AutoPlay,Random for autoplay + random start frame' (single clip: typeParam AutoPlay run-when-rendered + Random random-start-point, optional FrameRate scalar; multiple clips: one BlendTreeState doBlend=FALSE + per-clip weight 0-1 'higher = more likely' → random pick at each loop end; Transition = Condition RPN evaluated every frame / ExitTime ratio / manual via SimMission.PlayBlendTreeStateAction + FireEventOnEnd; doBlend=TRUE + Value + threshold for continuous blends; RPN scope = own/global only on scenery SimObjs); Open Questions — 'BlendTreeState first clip on state entry / first render — random draw or first-listed?' (docs define weighted random only for picks after an animation ENDS). Cross-reference added in Scenery Objects; related links to Official corroboration + animation parity + MergeModel. Entry-level inserts — no renumber."
+      },
+      {
+        "date": "2026-09-23",
+        "summary": "Research edition (request C): answered the maintainer's question 'Asobo ship model + animations in separate files — is that even possible in Blender?' — YES: it is the documented 2024 pattern. Added 2 entries, both fact (cited) (version gate: local SDK 1.7.3 == online 1.7.3 → local docs authoritative): Scenery SimObjects — 'Split glTF model + animations — <MergeModel> merges an external animation .gltf per LOD' (deprecated <AnimationFileList>; merge keyed by ASOBO unique id, NOT node name; animations merge by name; materials not merged; same-project restriction; max one skin root; shipped Bears sample — 4 LODs each merging ..\\animation\\Bears.gltf + animations.xml Walk/Idle AnimGraph driven by GROUND VELOCITY); Blender Pipeline — 'Blender: Export as submodel + disable meshes → animation-only .gltf for <MergeModel> (2024 addon)' (export_as_submodel BoolProperty export_settings.py:237-240; create_submodel_scenes gltf_hooks.py:397-398 + msfs_nodes_utils.py:349; Mesh toggle 'useful for exporting animations only' — the-blender-exporter index.md:384; stale retail callout 'not supported when using The Blender Plugin' flagged in _notes). Cross-reference added in Aircraft Simobjects; related links to the Cascadeur entry. Entry-level inserts — no renumber."
+      },
       {
         "date": "2026-09-23",
         "summary": "Research edition (request C): added 1 entry — 'FakeTerrain material — properties, quirks and uses (terrain shading on custom meshes)' (DevMode - Various; fact (cited) + empirical), researched by a 5-scout parallel chain (cache dedup, SDK add-on sources, local docs+samples, official remote, community). Key facts: glTF extension ASOBO_material_fake_terrain is a bare enabled flag; Additional Parameters N/A; shared Standard texture set + Blend Mask/Occlusion UV2; Decals render over FakeTerrain (docs); no ALPHAMODE control in Blender panel (base default OPAQUE); community quirks — no wet/rain/puddles effect (FSDeveloper 460630), no seamless terrain blending ('shadow' artifact), lighting not identical to true terrain and no collision (451768), Mask-mode alpha works in Max/MCX but drops to opaque in Blender (454079); SDK Samples ship no FakeTerrain example. Cross-reference added in DevMode - Texturing (Polygons and Aprons). Related links to the model-materials entry (8b9a8e05), ground displacement (e804a48b) and vegetation (9580789a). Entry-level insert — no renumber."
