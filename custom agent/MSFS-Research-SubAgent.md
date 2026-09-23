@@ -129,8 +129,8 @@ Write `<outputFile>` (always `.cache_staging\ingestion\research_ready_<inv-id>.j
 ```
 
 - `flagged: "structural"` when applying it would require renumbering/renaming a
-  category or touching the fixed skeleton — the parent handles those; never
-  attempt them.
+  category or any structural change — the parent owns those, always
+  user-confirmed via the question tool; never attempt them yourself.
 - End your reply with one summary line:
   `research_ready <inv-id> → <status> (category <N>)`.
 

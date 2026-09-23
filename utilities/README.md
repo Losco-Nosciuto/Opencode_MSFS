@@ -83,9 +83,10 @@ and correct; ignore the traceback or rename the dump.)
 
 Integrity gate for the knowledge cache (`MSFS2024_informations.json`) — pure
 stdlib. Checks: valid JSON + expected top-level keys; `categories` numbered
-sequentially 1..N with a meta `editionTrail` at N+1 (17); the 16 mandatory
-entry fields with UUIDv5 ids, unique across the cache; `kind` rules
-(`openQuestion` only in the Open Questions category, 15); `statusValues`
+sequentially 1..N with a meta `editionTrail` at N+1 (locate it dynamically —
+never by hardcoded number); the 16 mandatory entry fields with UUIDv5 ids,
+unique across the cache; `kind` rules (`openQuestion` only in the Open
+Questions category, located by title); `statusValues`
 against the known ladder; the `reserved`-note / empty-entries coupling; and
 that every `crossReferences` / `related` / `supersedes` entryId resolves to an
 existing entry.

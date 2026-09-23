@@ -241,16 +241,23 @@ channel, date, or doc.
   documented top-level keys (`formatVersion`, `title`, `description`, `created`,
   `usage`, `categories`, `editionTrail`, `omittedMetaSections`, `footer`) and the
   guide's field catalog rule everything.
-- **Canonical categories (fixed set and order).** 1 Scenery Objects · 2 Scenery
+- **Canonical categories — snapshot only; the FILE is ground truth.** The live
+  `categories` array (re-read at session start) is authoritative; never trust a
+  remembered number. Current snapshot (18): 1 Scenery Objects · 2 Scenery
   SimObjects · 3 Aircraft Simobjects · 4 Blender Pipeline for Modeling and
-  Animations · 5 Blender Third Parties (Addons / Plugins) · 6 Adobe 3D Painter
-  Pipeline for Texturing · 7 Terrain Edition (Satellite and CGL) · 8 Projected
-  Meshes · 9 RPN Schematics and Quirks · 10 DevMode - Texturing (Polygons and
-  Aprons) · 11 DevMode - Workarounds · 12 DevMode - Runways · 13 DevMode -
-  Various · 14 DevMode - Light Presets · 15 Open Questions (Unknowns) · 16 MSFS
-  Programmability Gotchas. The `editionTrail` is meta (its `number` is 17) and
-  lives at top level, not inside `categories`. Adding/renaming/removing/
-  reordering a category is a **structural edition** (dedicated protocol below).
+  Animations · 5 Blender Third Parties (Addons / Plugins) · 6 External Tools
+  (Various) · 7 AI-Assisted Asset Generation · 8 Adobe 3D Painter Pipeline for
+  Texturing · 9 Terrain Edition (Satellite and CGL) · 10 Projected Meshes ·
+  11 RPN Schematics and Quirks · 12 DevMode - Texturing (Polygons and Aprons) ·
+  13 DevMode - Workarounds · 14 DevMode - Runways · 15 DevMode - Various ·
+  16 DevMode - Light Presets · 17 Open Questions (Unknowns) · 18 MSFS
+  Programmability Gotchas. The `editionTrail` is meta (currently `number` 19 =
+  N + 1) and lives at top level, not inside `categories`. If the live array
+  ever differs from this snapshot (count, order, titles), trust the **FILE**,
+  flag the drift to the maintainer, and never act on the stale snapshot. Match
+  entries and category-guesses by **NAME, never by number**. Adding/renaming/
+  removing/reordering a category is a **structural edition** (dedicated
+  protocol below).
 - **Routine insertions never renumber** — adding an entry touches only its
   category's `entries` array. Category `number` fields change **only** on
   structural editions.
@@ -270,8 +277,9 @@ channel, date, or doc.
   (multi-category), using **ids**. Never write `§N`, `## N.`, anchors, or
   heading slugs into claims, titles, `_notes`, or summaries. (Bare `§N`
   already present in old claims and historical trail rows stays as-is.)
-- **Open questions (lifecycle).** Unresolved unknowns are category-15 entries
-  with `kind: "openQuestion"`, `status: null`, `statusValues: []`,
+- **Open questions (lifecycle).** Unresolved unknowns are entries in the Open
+  Questions category (found by title in the live array, never a hardcoded
+  number), with `kind: "openQuestion"`, `status: null`, `statusValues: []`,
   `sources: []`, and a `related` link to the owning entry. To resolve one: keep
   the entry **and its kind**, set `status` + `statusValues` + `sources` +
   `resolved` (date), and move the substantive detail into the owning entry.
@@ -370,10 +378,16 @@ denied except the canonical `Remove-Item`, declogger, `validate_cache.py`, and
 
 ## Structural-edition protocol (add / rename / remove / reorder a category)
 
-Renumbering is the one operation that can silently break references. When the
-user approves a structural edition, do it as a single coordinated pass:
+Renumbering is the one operation that can silently break references. Category
+additions are **user-confirmed by design**: propose one ONLY through the
+question tool, and ONLY when no existing category fits (check the live
+`categories` array plus its `reserved` notes by name first — a reserved-but-
+empty category counts as a fit). Never add a category on your own judgment.
+When the user approves a structural edition, do it as a single coordinated
+pass:
 
-1. **Confirm scope** with the user (which category, and where it goes).
+1. **Confirm scope** with the user via the question tool (which category, where
+   it goes, and why no existing category fits).
 2. **Renumber** the affected `number` fields (sequential 1..N) and reorder the
    `categories` array; the `editionTrail` stays meta, last, at `number` N + 1.
 3. **Remap references** — ids survive reorders, so only titles can be affected:
@@ -605,8 +619,9 @@ is alive.
 ## Behavior rules
 
 - Accuracy over volume. When in doubt about a structural decision (split,
-  category move, rename), **ask the user** — never guess at the cache's
-  skeleton.
+  category move, rename), **ask the user via the question tool** — never guess
+  at the cache's skeleton. Category additions follow the same rule: question
+  tool only, and only when no existing category (incl. reserved ones) fits.
 - Respect the ~5-consultation cap (**per item**) — enforced INSIDE
   `MSFS-Research-SubAgent`; you never verify directly. A result that hit the cap
   still writes with `unknown` (parent policy).

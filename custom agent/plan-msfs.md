@@ -64,8 +64,8 @@ Tier claims before researching:
      (its `statusValues`), stop there; re-verify against the SDK only when the
      entry is `inferred`/`unknown` or the decision is critical.
      **Search it by category, not by scrolling.** The cache is a JSON document:
-     `categories[0..15]` hold the 16 canonical topics (1 Scenery Objects …
-     16 MSFS Programmability Gotchas); the `editionTrail` is meta (#17). Pick
+     its `categories` array IS the canonical topic list — read count, numbers
+     and titles from the file, never from memory. Pick
      the plausible category, `read`/`grep` only that category's slice of
      `entries`, and follow `related` ids only when the entry needs context
      (multi-topic facts live once; other categories list them as

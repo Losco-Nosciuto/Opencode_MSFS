@@ -64,8 +64,9 @@ parent's context.
 
 1. **Knowledge cache — ground truth** — `MSFS2024_informations.json` (worktree
    root, the distilled verified cache the updater maintains). **Search by
-   category, not by scrolling:** `categories[0..15]` hold the 16 canonical
-   topics; pick the plausible category and read/grep only that slice of
+   category, not by scrolling:** the `categories` array in the file is the
+   canonical topic list (read count/numbers/titles from it, never from memory);
+   pick the plausible category and read/grep only that slice of
    `entries`; follow `related`/`crossReferences` ids only when the entry needs
    context. Never read the whole cache for one question. A solid Status
    (`fact (cited)` / `empirical` / `user-typed (authoritative)`) answers the

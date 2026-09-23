@@ -66,7 +66,7 @@
         "openQuestion"
       ],
       "purpose": "Subtype of the entry.",
-      "usage": "openQuestion is used only for category-15 unknowns that are still unresolved. Everything else is entry. Once answered, an open question stays put and gains status + sources + resolved (it does not change kind on its own)."
+      "usage": "openQuestion is used only for unresolved unknowns in the Open Questions category (found by title, never a hardcoded number). Everything else is entry. Once answered, an open question stays put and gains status + sources + resolved (it does not change kind on its own)."
     },
     {
       "name": "claim",
@@ -148,7 +148,7 @@
       "required": true,
       "values": null,
       "purpose": "Marks an entry that was BORN from an open question or an `unknown` and has since been answered.",
-      "usage": "Set ONLY when the reason we researched this was an open question or an unknown entry. Once resolved the entry carries a real status + sources (no longer open/unknown), plus this date. Provenance stays checkable: open questions live in category 15; unknowns have 'unknown' in statusValues."
+      "usage": "Set ONLY when the reason we researched this was an open question or an unknown entry. Once resolved the entry carries a real status + sources (no longer open/unknown), plus this date. Provenance stays checkable: open questions live in the Open Questions category (found by title, never a hardcoded number); unknowns have 'unknown' in statusValues."
     },
     {
       "name": "supersedes",
