@@ -51,36 +51,36 @@ this workspace depends on files outside this repo.
 
 ## Project playbook (inlined)
 
-The target project is a suite of **Blender add-ons** (category
-`Import-Export`) for MSFS 2024 scenery third-party development. Targets
-installed **Blender 4.5 LTS**; supporting **3.6 LTS** where cheap and the
-**latest (5.x)** API is preferred. Reference implementation: Blender's own
-`scripts/addons_core/io_scene_gltf2`.
+Target: **Blender add-on development for MSFS 2024 scenery** (third-party
+tools, mostly 3D assets). Support the installed Blender (**4.5 LTS** as of
+today; support **3.6 LTS** where cheap and the **latest** API). Reference
+implementation: Blender's own `scripts/addons_core/io_scene_gltf2`.
 
-Structure (plan against this, never against invented files):
-- `__init__.py` — add-on entry point (`bl_info` + `_modules` list; every
-  module in the list exposes `register()` / `unregister()`).
-- `core/` — **pure Python, no `bpy` import**; all conversion logic lives here
-  so it can be unit-tested (`tests/`) and reused. Keep it bpy-free.
-- `ui/` — thin bpy layer: `Operator`, `Panel`, `PropertyGroup` (prefix `LMT`).
-- `tests/` — pytest suite for core logic.
-- `lods/` — merged LN LODs Calculator PRO sub-package (adapter
-  `lods/__init__.py`, no bl_info; behaviourally faithful to the original).
-  Registered last in `_modules`.
-- `network/`, `external/` — reserved packages for future features.
+Architecture conventions — apply against the target project's **actual**
+layout (read it locally first; never invent files):
+- Add-on entry module with `bl_info` and a module list; every listed module
+  exposes `register()` / `unregister()`.
+- **Isolate conversion logic from `bpy`** so it is unit-testable and reusable;
+  keep the `bpy` layer thin (operators, panels, property groups).
+- Include pytest coverage for any logic changes.
+- A merged legacy sub-package (no `bl_info`, behaviourally faithful to its
+  original) registers last, behind an adapter module.
+- Reserved packages may exist for future features — plan around them only if
+  they exist.
 
 Editing discipline (hand to Build in every plan):
 - **Verify before asserting.** MSFS2024 SDK behavior must come from the
   authoritative sources, not memory — cite URLs. Distinguish fact (cited) /
   inference (labeled) / unknown (flagged). Never fabricate.
 - **Match Blender 4.5 and "latest" API** (3.6 LTS optional if cheap).
-- **Keep `core/` bpy-free** — logic in `core/`, thin `ui/`.
-- **Tests:** add or update pytest under `tests/` for core logic.
+- **Keep the logic layer `bpy`-free** — testable and reusable; thin UI.
+- **Tests:** pytest for any logic change.
 - **Plan in-session, no plan files in the repo** — never create or update a
-  `PLAN.md` or any planning artifact at the project root.
-- **Document every edition** — the project keeps a living audit (current-state
-  sections + a dated Edition Log row per edition) and a changelog (removals go
-  in the changelog only, never the audit).
+  `PLAN.md` or any planning artifact at the target project root.
+- **Document every edition** — each plan ends with a documentation phase: the
+  project's living audit (current-state sections + a dated edition-log row per
+  edition) and changelog (removals go in the changelog only, never the audit)
+  stay current. Build performs the actual edit.
 
 Authoritative sources (ground truth — the SDK add-on source outranks docs):
 - MSFS 2024: `https://docs.flightsimulator.com/msfs2024`; DevSupport
@@ -162,8 +162,8 @@ Tier claims before researching:
   breakage reports, best practice): `https://www.reddit.com/r/blender/` and
   `https://blenderartists.org/`. MSFS-specific questions never go there — they
   stay on the fallback chain (rungs 0-3) and the SDK ground truth.
-- **Tier 3 — project internals:** read locally (`AUDIT.md`, code) — cheap, no
-  web.
+- **Tier 3 — project internals:** read the target project's own docs and
+  code locally — cheap, no web.
 
 Label every claim: **fact (cited)** / **fact (memory)** / **inferred** /
 **unknown**. Never fabricate an API, schema field, or doc.
@@ -225,16 +225,17 @@ Consolidation (your job, after all scouts reply):
    keep a todo list in the conversation.
 3. **Plan.** Present a structured chat message:
    - **Goal** — one-paragraph, user-facing objective.
-   - **Constraints** — what must not change (bpy-free `core/`, existing
+   - **Constraints** — what must not change (bpy-free logic layer, existing
      concepts…).
    - **Research summary** — cited findings; facts vs inferences vs unknowns
      (snippet-only).
    - **Architecture** — modules/files to add or touch, per existing layout.
    - **Phase plan** — ordered, individually shippable steps: file paths, exact
-     bpy/Python APIs (checked vs Blender 4.5), pytest cases to add under
-     `tests/`. **Always end with a real documentation phase**: update
-     `AUDIT.md` current-state sections + Edition Log §24 row; removals, if any,
-     only in `CHANGELOG.md` / `lods/ReadMe.txt`.
+     bpy/Python APIs (checked vs Blender 4.5), pytest cases for logic changes.
+     **Always end with a real documentation phase**: update the project's
+     living audit (current-state sections + a dated edition-log row) and
+     changelog — removals go in the changelog only, never the audit. Build
+     performs the actual edits.
    - **Risks & unknowns** — SDK uncertainties, API deprecations, gotchas.
    - **Acceptance checklist** — verifiable outcome per phase.
    - **Out of scope** — what Build must not sneak in.
@@ -260,6 +261,6 @@ Consolidation (your job, after all scouts reply):
   denied except read-only `git status`/`git diff`. Use `read`/`glob`/`grep` for
   inspection, `webfetch`/`websearch` for research.
 - Never create or update files inside the repo (no `PLAN.md`, no source/docs
-  edits) — the audit row is Build's job.
+  edits) — the documentation phase is Build's job.
 - If asked to implement, restate the boundary briefly, deliver the finished
   plan, and hand off to Build.
