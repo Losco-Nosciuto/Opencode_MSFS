@@ -60,9 +60,16 @@ Tier claims before researching:
   current rung has no answer for the task:
   0. **Knowledge cache — always first** (`msfs2024-knowledge` reference →
      `C:\Lavoro\Programming\Opencode_MSFS\MSFS2024_informations.json`): distilled
-     verified knowledge. If an entry answers the claim with a solid Status
-     (its `statusValues`), stop there; re-verify against the SDK only when the
-     entry is `inferred`/`unknown` or the decision is critical.
+     verified knowledge. **Cache-as-distilled-research (dispatch rule):** any
+     entry carrying a research-derived status (`fact (cited)`, `empirical`,
+     `fact (memory)`, `inferred`, strongest: `user-typed (authoritative)`)
+     answers the claim — the cache IS the distilled research: stop there, spawn
+     no sub-agents, run no fallback. Deeper verification happens only when the
+     user explicitly asks. Exceptions: `unknown` status = unverified by the
+     pipeline's own definition → NOT covered (run the fallback, scouts 2-5,
+     unless the user says cache-only is fine); critical decision on an
+     `inferred` entry → cache-only answer plus one flagged verification offer
+     in Risks & unknowns, verify only after the user says yes.
      **Search it by category, not by scrolling.** The cache is a JSON document:
      its `categories` array IS the canonical topic list — read count, numbers
      and titles from the file, never from memory. Pick
@@ -127,14 +134,19 @@ When a Tier-1 question genuinely needs **multi-source coverage**, spawn
 When to fan out vs stay serial:
 
 - **Cache is source 1, outranking everything.** For a narrow claim, grep the
-  knowledge cache in-session first (local JSON, costs no spawn): an entry with
-  a solid Status answers it — stop there, no scouts.
+  knowledge cache in-session first (local JSON, costs no spawn): any entry with
+  a research-derived status answers it — stop there, no scouts (see the
+  cache-as-distilled-research rule in rung 0).
+- **Deploy scouts ONLY** for (a) cache-absent items (or `unknown`-status
+  entries, unless cache-only is fine for the user) or (b) an explicit user
+  request for deeper verification. Never fan out on your own for something the
+  cache already covers.
+- **Fan out (parallel 4)** on a cache-absent item — sources **2–5** (SDK
+  sources, docs+samples, official remote, community); you already checked
+  source 1, so it drops out of the batch. On user-requested depth, keep the
+  full 1–5 batch (the cache scout anchors consolidation).
 - **Stay serial** when a single source is likely to answer (most narrow
   claims) — fan-out is designed for wall-clock speed, not token economy.
-- **Fan out (parallel 5)** when the claim spans sources — e.g. "how does X
-  behave across SDK source vs docs vs community reports" — or when the cache is
-  `inferred`/`unknown` and the decision is critical. The cache scout (source 1)
-  runs in the same batch; its verdict anchors consolidation.
 
 Consolidation (your job, after all scouts reply):
 
@@ -177,7 +189,10 @@ Consolidation (your job, after all scouts reply):
    surfaced facts worth caching that aren't already in the cache (check via
    `msfs2024-knowledge` first), end your delivery with a short **Cache
    candidates** block, one per new fact: entry title, 1–2-line claim, sources,
-   suggested status. Then propose switching to the **MSFS Cache Updater** to
+   suggested status. This is what keeps cache-as-distilled-research
+   self-sustaining: newly cached facts stop future re-research (the next
+   identical question is answered from the cache without spawning scouts).
+   Then propose switching to the **MSFS Cache Updater** to
    add them before building. You never write the cache yourself (read-only);
    the updater re-verifies every fact through its own chain (no fast-tracking).
    If nothing new is worth caching, say so in one line and skip the block.
