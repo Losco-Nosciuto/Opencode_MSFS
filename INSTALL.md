@@ -1,9 +1,9 @@
 # MSFS2024 OpenCode Workspace — Installation
 
-This repo ships five OpenCode agents (`custom agent/`: the cache updater, the
-planner, and the three dump-pipeline sub-agents — triage, research, cache
-writer) plus a distilled MSFS 2024 development knowledge cache
-(`MSFS2024_informations.json`). Setup takes ~2 minutes and only requires
+This repo ships six OpenCode agents (`custom agent/`: the cache updater, the
+planner, the three dump-pipeline sub-agents — triage, research, cache writer —
+plus the planning source-scout) and a distilled MSFS 2024 development knowledge
+cache (`MSFS2024_informations.json`). Setup takes ~2 minutes and only requires
 changing **one path string**.
 
 ## Prerequisites
@@ -35,6 +35,7 @@ cp "custom agent/plan-msfs.md"                 ~/.config/opencode/agents/
 cp "custom agent/triage-dump.md"               ~/.config/opencode/agents/
 cp "custom agent/MSFS-Research-SubAgent.md"    ~/.config/opencode/agents/
 cp "custom agent/MSFS-Cache-Writer-Subagent.md" ~/.config/opencode/agents/
+cp "custom agent/MSFS-Source-Scout.md"         ~/.config/opencode/agents/
 ```
 
 > Note: `custom agent/` is a **1:1 live backup** of the global agents — the

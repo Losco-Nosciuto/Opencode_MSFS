@@ -1,7 +1,6 @@
 ---
 description: Applies a batch of research-ready items to MSFS2024_informations.json — one serialized batch, backup once, targeted edits, renames consumed ready-files to flushed_* (temporary audit trail), validates. Never researches; never spawns sub-agents; the ONLY sub-agent that may edit the cache.
 mode: subagent
-hidden: true
 color: "#f59e0b"
 steps: 40
 permissions:

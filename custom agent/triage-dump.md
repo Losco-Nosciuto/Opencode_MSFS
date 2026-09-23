@@ -1,7 +1,6 @@
 ---
 description: MSFS dump triage — scans an assigned slice of extract files in .cache_staging\extracts, clusters cache-worthy development candidates, and returns a compact structured list. Read-only; never writes, never consults the cache, never verifies.
 mode: subagent
-hidden: true
 color: "#3b82f6"
 steps: 30
 permissions:

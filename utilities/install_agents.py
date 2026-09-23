@@ -38,6 +38,7 @@ AGENT_FILES = (
     "triage-dump.md",
     "MSFS-Research-SubAgent.md",
     "MSFS-Cache-Writer-Subagent.md",
+    "MSFS-Source-Scout.md",
 )
 
 

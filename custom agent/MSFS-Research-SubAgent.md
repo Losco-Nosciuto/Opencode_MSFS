@@ -1,7 +1,6 @@
 ---
 description: Verifies ONE inventory item through the MSFS fallback chain and writes a research-ready entry file into .cache_staging\ingestion. Read-only on the cache; never edits outside .cache_staging; never spawns sub-agents.
 mode: subagent
-hidden: true
 color: "#8b5cf6"
 steps: 30
 permissions:

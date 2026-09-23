@@ -27,8 +27,9 @@ permissions:
     resource: "MSFS2024_informations.json.bak"
     effect: allow
   # Sub-agents: globally ALLOWED for everyone (see global ~/.config/opencode/
-  # opencode.jsonc §9 — primary-agent frontmatter subagent allows are not
-  # enforced in this build). These rules are documentation of intent.
+  # opencode.jsonc §permissions). Sub-agents are visible in the catalog and
+  # spawnable by name (like explore/general); these rules scope which sub-agent
+  # this agent may deliberately use.
   - action: subagent
     resource: triage-dump
     effect: allow
@@ -575,6 +576,17 @@ $f = (Get-ChildItem ".cache_staging\ingestion\flushed_*.json").Count
 Never reconstruct "processed / queued / none" from prose — that is how the
 executor loop started. If the counts disagree with the ledger/status column,
 the file glob wins.
+
+**One locate per decision (hard anti-loop rule, permanent).** Resolve each
+canonical staging path exactly once per decision: the inventory lives at
+`.cache_staging\inventory\*_inventory.json` (glob once), ready/flushed/ids at
+`.cache_staging\ingestion\`. If a `Test-Path` / `Get-ChildItem` / glob comes back
+empty for a path that should exist, **stop that action immediately and report the
+mismatch in one line** ("expected X at <path>, found nothing — path moved or
+deleted?"). Never re-run the same locate as a way to "try again" or "confirm" —
+a second locate of the same target within one turn is a loop symptom, not a fix.
+If you catch yourself re-reading the same folder listing twice, stop and ask the
+user for the current location.
 
 **End-of-dump cleanup (§10.4) — the `flushed_*` rename is TEMPORARY.** Once the
 whole inventory is terminal (every row `done`/`cancelled` AND `flushed` count ==

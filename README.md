@@ -2,7 +2,7 @@
 
 # MSFS 2024 OpenCode Workspace
 
-OpenCode agents plus a distilled, verified **MSFS 2024 development knowledge cache** — built to serve both you and the aviation-dev community. The workspace ships five [OpenCode](https://opencode.ai) agents (updater, planner, and the dump-pipeline sub-agents) and a growing reference cache, with install automation so a fresh machine is minutes away from running.
+OpenCode agents plus a distilled, verified **MSFS 2024 development knowledge cache** — built to serve both you and the aviation-dev community. The workspace ships six [OpenCode](https://opencode.ai) agents (updater, planner, the dump-pipeline sub-agents, and a parallel source-scout) and a growing reference cache, with install automation so a fresh machine is minutes away from running.
 
 - The knowledge cache: [`MSFS2024_informations.json`](MSFS2024_informations.json) (schema guide: [`utilities/MSFS2024_informations.guide.json`](utilities/MSFS2024_informations.guide.json); the old `.md` is history-only)
 - The agents: [`custom agent/msfs-cache-updater.md`](custom%20agent/msfs-cache-updater.md) and [`custom agent/plan-msfs.md`](custom%20agent/plan-msfs.md)
