@@ -4,27 +4,31 @@ mode: primary
 color: "#0e9f6e"
 steps: 40
 permissions:
-  # Writes: hard-deny everywhere; allow ONLY the cache workspace.
-  # NOTE: OpenCode matches edit/write/patch resources as WORKTREE-RELATIVE
-  # paths — absolute patterns never match an internal file, so these allow
-  # rules are relative ON PURPOSE. They mirror the prompt's write zone exactly.
+  # Writes: hard-deny everywhere; allow ONLY the cache workspace and its
+  # staging zone. LOCATION-AGNOSTIC: OpenCode matches edit/write/patch
+  # resources as WORKTREE-RELATIVE paths, so from any launch folder other
+  # than the workspace the resource gains a "..\" prefix (e.g.
+  # ..\Opencode_MSFS\MSFS2024_informations.json). A leading "*" in each
+  # pattern matches that prefix — and also matches the bare relative path
+  # when launched from the workspace itself — so the write zone is honored
+  # from ANY working directory.
   - action: edit
     resource: "*"
     effect: deny
   - action: edit
-    resource: ".cache_staging/extracts/*"
+    resource: "*.cache_staging/extracts/*"
     effect: allow
   - action: edit
-    resource: ".cache_staging/inventory/*"
+    resource: "*.cache_staging/inventory/*"
     effect: allow
   - action: edit
-    resource: ".cache_staging/ingestion/*"
+    resource: "*.cache_staging/ingestion/*"
     effect: allow
   - action: edit
-    resource: "MSFS2024_informations.json"
+    resource: "*MSFS2024_informations.json"
     effect: allow
   - action: edit
-    resource: "MSFS2024_informations.json.bak"
+    resource: "*MSFS2024_informations.json.bak"
     effect: allow
   # Sub-agents: globally ALLOWED for everyone (see global ~/.config/opencode/
   # opencode.jsonc §permissions). Sub-agents are visible in the catalog and

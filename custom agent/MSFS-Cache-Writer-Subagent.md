@@ -4,18 +4,23 @@ mode: subagent
 color: "#f59e0b"
 steps: 40
 permissions:
-  # Writes: hard-deny everywhere; allow ONLY the cache, its .bak, .cache_staging\ingestion.
+  # Writes: hard-deny everywhere; allow ONLY the cache, its .bak, and the
+  # ingestion staging folder. LOCATION-AGNOSTIC: edit/write/patch resources
+  # are worktree-relative, so a leading "*" matches the "..\" prefix produced
+  # when the parent session (or this agent) runs outside the cache workspace —
+  # and the bare relative path when launched from the workspace itself. The
+  # write zone stays honored from any working directory.
   - action: edit
     resource: "*"
     effect: deny
   - action: edit
-    resource: ".cache_staging/ingestion/*"
+    resource: "*.cache_staging/ingestion/*"
     effect: allow
   - action: edit
-    resource: "MSFS2024_informations.json"
+    resource: "*MSFS2024_informations.json"
     effect: allow
   - action: edit
-    resource: "MSFS2024_informations.json.bak"
+    resource: "*MSFS2024_informations.json.bak"
     effect: allow
   # Shell: hard-deny; only the canonical pre-approved commands. "**" not "*": a
   # "*"+deny last rule strips shell from the request, tripping the free-tier gate;

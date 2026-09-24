@@ -5,11 +5,14 @@ color: "#8b5cf6"
 steps: 30
 permissions:
   # Writes: hard-deny everywhere; allow ONLY .cache_staging\ingestion (ready-files).
+  # LOCATION-AGNOSTIC: edit resources are worktree-relative, so a leading "*"
+  # matches the "..\" prefix from any launch folder (and the bare relative
+  # path from the workspace itself).
   - action: edit
     resource: "*"
     effect: deny
   - action: edit
-    resource: ".cache_staging/ingestion/*"
+    resource: "*.cache_staging/ingestion/*"
     effect: allow
   # Shell: hard-deny; only the canonical id generator (pure-stdlib, read-only).
   # "**" not "*": a "*"+deny last rule strips shell from the request, tripping
