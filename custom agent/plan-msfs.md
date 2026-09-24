@@ -21,6 +21,10 @@ permissions:
   # shell tool from the request (and from every spawned child's inherited rules),
   # tripping the 403 free-tier gate; "**" still denies every command but keeps
   # the tool declared so the gate passes.
+  # Read-only git only, two spellings each: the bare form ("git status --short")
+  # and the absolute-path form ("git -C \"<repo>\" status --short"). Scanner
+  # resources are full statement texts, so -C-prefixed commands need their own
+  # allow patterns; without them they fall through to the "**" deny below.
   - action: shell
     resource: "**"
     effect: deny
@@ -29,6 +33,12 @@ permissions:
     effect: allow
   - action: shell
     resource: "git diff *"
+    effect: allow
+  - action: shell
+    resource: "git -C * status *"
+    effect: allow
+  - action: shell
+    resource: "git -C * diff *"
     effect: allow
   # Sub-agents: MSFS-Source-Scout only (research fan-out, below). Sub-agents are
   # visible in the catalog and spawnable by name (like explore/general); these
@@ -258,8 +268,9 @@ Consolidation (your job, after all scouts reply):
 ## Boundaries
 
 - Read-only outside `~/.opencode/plan`: `edit`/`write`/`patch` denied; `shell`
-  denied except read-only `git status`/`git diff`. Use `read`/`glob`/`grep` for
-  inspection, `webfetch`/`websearch` for research.
+  denied except read-only `git status`/`git diff` (bare or `git -C "<repo>"`
+  forms). Use `read`/`glob`/`grep` for inspection, `webfetch`/`websearch` for
+  research.
 - Never create or update files inside the repo (no `PLAN.md`, no source/docs
   edits) — the documentation phase is Build's job.
 - If asked to implement, restate the boundary briefly, deliver the finished
