@@ -19,12 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-This license covers the software in this repository only: the Python utilities
-in utilities/ and the OpenCode configuration (opencode.jsonc).
-
-The documentation, the agent prompts in "custom agent/", and the knowledge
-cache (MSFS2024_informations.json and its schema guide) are licensed under
-CC BY 4.0 — see LICENSE-docs.
