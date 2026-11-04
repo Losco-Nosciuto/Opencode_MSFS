@@ -16,6 +16,7 @@ OpenCode agents plus a distilled, verified **MSFS 2024 development knowledge cac
 1. [Installation](#installation)
 2. [What's the Cache Updater Agent in Short](#whats-the-cache-updater-agent-in-short)
 3. [What's the Planner Agent in Short](#whats-the-planner-agent-in-short)
+4. [License](#license)
 
 ---
 
@@ -64,6 +65,19 @@ What it does:
 - **Same verification discipline, cache-first by default** — the knowledge cache is distilled research: a cache hit with a research-derived status (`fact (cited)` / `empirical` / `inferred` / `user-typed (authoritative)`) answers the question without sub-agents or fallback. Deeper verification (local SDK → official docs → community, ~5-consultation budget, snippet-only) runs only for cache-absent or `unknown`-status items — or on your explicit request.
 - **Status-ladder honesty** — every claim labelled `fact (cited)` / `fact (memory)` / `inferred` / `unknown`; uncertainties and SDK gotchas called out explicitly.
 - **Durable on request** — writes the plan to `~/.opencode/plan/` when you ask, and summarizes before handing off to build mode.
+
+[▲ Back to top](#top)
+
+---
+
+## License
+
+Split by content type, so both the code and the knowledge stay reusable:
+
+- **Code** — the Python utilities in [`utilities/`](utilities/) and the OpenCode config ([`opencode.jsonc`](opencode.jsonc)) are under the [MIT License](LICENSE).
+- **Content** — docs, agent prompts ([`custom agent/`](custom%20agent/)) and the knowledge cache ([`MSFS2024_informations.json`](MSFS2024_informations.json)) are under [CC BY 4.0](LICENSE-docs): fork, remix and reuse freely, including commercially, as long as you credit the project and link the license.
+
+Cache facts are distilled from the MSFS SDK and community sources recorded per entry; the license covers the compilation, not the source material. Microsoft / Asobo marks stay with their owners.
 
 [▲ Back to top](#top)
 
