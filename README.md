@@ -75,7 +75,7 @@ What it does:
 Split by content type, so both the code and the knowledge stay reusable:
 
 - **Code** — the Python utilities in [`utilities/`](utilities/) and the OpenCode config ([`opencode.jsonc`](opencode.jsonc)) are under the [MIT License](LICENSE).
-- **Content** — docs, agent prompts ([`custom agent/`](custom%20agent/)) and the knowledge cache ([`MSFS2024_informations.json`](MSFS2024_informations.json)) are under [CC BY 4.0](LICENSE-docs): fork, remix and reuse freely, including commercially, as long as you credit the project and link the license.
+- **Content** — docs, agent prompts ([`custom agent/`](custom%20agent/)) and the knowledge cache ([`MSFS2024_informations.json`](MSFS2024_informations.json)) are under [CC BY 4.0](CC-BY-4.0.md): fork, remix and reuse freely, including commercially, as long as you credit the project and link the license.
 
 Cache facts are distilled from the MSFS SDK and community sources recorded per entry; the license covers the compilation, not the source material. Microsoft / Asobo marks stay with their owners.
 
