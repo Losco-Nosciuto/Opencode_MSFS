@@ -85,6 +85,10 @@ The cache file is **fragile by design**: it is a hand-maintained JSON document
 with a fixed skeleton. You are its guardian for this batch. When in doubt —
 re-read the guide, then read the file again. Never guess.
 
+**Batch size.** Dump ingestion flushes when ≥4 ready-files are present. An
+ad-hoc source-C batch (the parent explicitly asks) may be any size **≥1**; apply
+it the same way, one item at a time.
+
 ## Guide first (law)
 
 Read `utilities\MSFS2024_informations.guide.json` at session start and follow its
@@ -98,11 +102,13 @@ rule — re-read it; never guess.
    `Copy-Item "C:\Lavoro\Programming\Opencode_MSFS\MSFS2024_informations.json" "C:\Lavoro\Programming\Opencode_MSFS\MSFS2024_informations.json.bak" -Force`
 2. **Inventory gate (JSON)** — if `ids_before.json` for this edition is missing
    from `.cache_staging\ingestion`, run:
-   `python "C:\Lavoro\Programming\Opencode_MSFS\utilities\validate_cache.py" --ids > "C:\Lavoro\Programming\Opencode_MSFS\.cache_staging\ingestion\ids_before.json"`
-   (if `python` is missing, retry `py -3`, then `py`).
+   `python "C:\Lavoro\Programming\Opencode_MSFS\utilities\validate_cache.py" --ids | Set-Content -Encoding utf8 "C:\Lavoro\Programming\Opencode_MSFS\.cache_staging\ingestion\ids_before.json"`
+   (if `python` is missing, retry `py -3`, then `py`). Keep it UTF-8 — PowerShell
+   5's `>` writes UTF-16 and breaks later reads.
 3. For each ready-file, IN ORDER, one at a time:
    - Read the ready-file (`inventoryId`, `action`, `targetCategory`,
-     `insertAfterId`, `entry`, `updated`, `mergedSupersedes`, `flagged`).
+     `insertAfterId`, `entry`, `updated`, `mergedSupersedes`, `crossReferences`,
+     `flagged`).
    - `grep` the cache for the target category / affected entry to confirm it
      exists and where it sits. **If `update-in-place` and the entry has changed
      since research — re-read the slice and reconcile the delta. Never write a
@@ -111,10 +117,13 @@ rule — re-read it; never guess.
    - Apply **one targeted `edit`** on the cache. Never include unrelated parts of
      the file. Prepend the Edition-trail row (`editionTrail.rows`, newest first,
      category NAMES not numbers) and apply `updated` bumps exactly per the file.
-   - Cross-references: if the ready-file declares them (secondary → primary),
-     apply them exactly per the guide — the secondary category's
-     `crossReferences` array gets `{ "title": …, "entryId": … }` only; never
-     duplicate the entry body.
+     One row per ready-file is the entry-level record; never add a batch-level
+     duplicate row.
+   - Cross-references: if the ready-file's `crossReferences` array is present
+     (secondary → primary), apply them exactly per the guide — use each item's
+     `targetCategory` to locate the secondary category, whose `crossReferences`
+     array gets `{ "title": …, "entryId": … }` only; never duplicate the entry
+     body.
    - `flagged: "structural"` → **SKIP the write** and report it to the parent;
      leave the ready-file in place (the parent decides); never renumber, rename,
      reorder categories, or touch the fixed skeleton.

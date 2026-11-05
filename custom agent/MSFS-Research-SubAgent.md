@@ -91,6 +91,10 @@ in doubt — re-read the guide, never guess.
 Rules: ~5 consultations per item, hard cap; quote snippets only (2–3 lines); every
 claim carries a real status (`fact (cited)` / `fact (memory)` / `empirical` /
 `inferred` / `unknown`); never fabricate a source, channel, date, or doc.
+Batch independent lookups in the **same turn** (SDK file + docs page + web
+search) — one turn, multiple sources; never re-read the same file twice. You may
+be dispatched in parallel with sibling researchers, one per entry: keep your
+output file self-contained and never touch another entry.
 
 ## Resolution by inventory action
 
@@ -127,6 +131,9 @@ Write `<outputFile>` (always `.cache_staging\ingestion\research_ready_<inv-id>.j
   "entry": { "…complete entry per guide template…" },
   "updated": { "date": "YYYY-MM-DD", "note": "…" },
   "mergedSupersedes": ["…old ids…"],
+  "crossReferences": [
+    { "targetCategory": 1, "title": "…secondary-category entry title…", "entryId": "…home entry id…" }
+  ],
   "flagged": null | "structural" | "conflict"
 }
 ```
@@ -134,6 +141,9 @@ Write `<outputFile>` (always `.cache_staging\ingestion\research_ready_<inv-id>.j
 - `flagged: "structural"` when applying it would require renumbering/renaming a
   category or any structural change — the parent owns those, always
   user-confirmed via the question tool; never attempt them yourself.
+- `crossReferences` is optional: list the secondary categories that should point
+  at this entry (`{ targetCategory, title, entryId }`) so the writer can apply
+  them without the parent touching the cache.
 - End your reply with one summary line:
   `research_ready <inv-id> → <status> (category <N>)`.
 
