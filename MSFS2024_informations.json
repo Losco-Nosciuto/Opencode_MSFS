@@ -107,6 +107,10 @@
         {
           "title": "Scenery animation scope — scenery objects CAN animate: Standard `<Animation type=\"Standard\" typeParam=\"AutoPlay\">` plays on render on plain scenery objects (lighthouse mirror, bone/armature glTF); sim-reactive animation (wind → windsock, aircraft → jetway) is the Scenery SimObj path (category=StaticObject, DistanceToNotAnimate)",
           "entryId": "b2e0c233-2e22-50f3-a59e-998a9af58963"
+        },
+        {
+          "title": "Scenery character SimObject - non-playable human placed as a Scenery SimObj under SimObjects/Landmarks with model.cfg category=StaticObject instead of a Living Thing or Living World airport-life spawn",
+          "entryId": "38d8c6f1-f113-5181-b8c0-467f364d4192"
         }
       ]
     },
@@ -577,6 +581,134 @@
             "msfs2024"
           ],
           "_notes": "Source-C research 2026-09-23 (user: 'create a new animal with spawn points from scratch, post-export, walking randomly around the spawn points like old 2020 animals'). Verified against local SDK flighting docs + the shipped Bears sample files; DevSupport/community only for the default-living-world-vs-custom distinction. Bears = the official from-scratch template end-to-end (project XML -> sim.cfg -> model XML -> animations.xml -> Scenery Editor placement). Wander AI of a placed animal is undocumented -> linked Open Question. No cross-references added: animal SimObjects fit Category 2 as the home (non-aircraft/ground-world SimObjects); Category 3 remains aircraft-only."
+        },
+        {
+          "id": "38d8c6f1-f113-5181-b8c0-467f364d4192",
+          "title": "Scenery character SimObject - non-playable human placed as a Scenery SimObj under SimObjects/Landmarks with model.cfg category=StaticObject instead of a Living Thing or Living World airport-life spawn",
+          "kind": "entry",
+          "claim": "Source-C research (2026-11-05): a scenery-side character — a human standing or working inside a scenery package, NOT the 2024 playable character — is built as a **Scenery SimObject**, the same container as a windsock or a jetway, not as a Living Thing. Two containers exist for a human model and only one avoids Living World:\n\n- **Scenery SimObj (recommended, no Living World):** package under `PackageSources\\SimObjects\\Landmarks\\<Name>\\`. The sub-folder name **must** be `Landmarks` — \"that is the folder that the simulation will look for when generating SimObjects for use in scenery\" (simobj-objects:199). It holds `sim.cfg` beside the sub-folders, `model\\` (`.gltf` + `.bin` + `.xml` + `model.cfg`), `texture\\`, and an `animations\\` folder for the animation `.bin` files (scenery-model-xml-and-cfg-setup:41-56).\n- **Living Thing SimObject (Living World route):** `SimObjects\\Humans\\[...]`, consumed by airport services / Living World airport life (living-things:1-27; the airport-services AIType list includes `Human`, `IdleWorker`, `AirportAmbient`). This is what the sim itself uses for marshallers and tarmac workers, but it is density/spawn-driven, not a hand-placed scenery prop.\n\n`model.cfg` for the scenery route (scenery-model-xml-and-cfg-setup:58-97):\n```\n[models]\nnormal=MyCharacter.xml\nmodel=\ntexture=\n[General]\ncategory=StaticObject\nDistanceToNotAnimate=2000\n```\n`sim.cfg` also accepts `category` and `DistanceToNotAnimate` in its `[General]` section — the latter is the \"distance (in meters) to turn off animation and model behavior systems\", with per-category hints AircraftPilot 100 m, FlyingAnimals 250 m, all others 1000 m (sim.cfg:50-52).\n\nThe model XML is **hand-written** for a scenery SimObj: \"Unlike for static objects, you cannot use the multi-exporter (3DS Max or Blender) to generate your XML\" (scenery-model-xml-and-cfg-setup:105-109). Animations are declared there as `<Animation name=\"Arrival\" guid=\"{...}\" type=\"Standard\"/>` with no `typeParam` — nothing autoplays, the AnimGraph drives the clips.\n\nPlacement: Scenery Editor → **SimObj Objects** list, place the instance, Assign Instance ID. Do **not** turn on Scenery Editor *object instancing*: \"For an object to be instanced, it cannot be animated nor have multiple nodes\" (scenery-objects:99) — an animated character must be a normal instance.\n\nCaveats:\n\n- `DistanceToNotAnimate` stops animations *and* model behaviors beyond that radius; when the camera returns the animation skips to the frame it should have been on and `ANIMATION DELTA TIME` reports the total interruption instead of the frame delta (sim.cfg:52). A time-of-day state machine therefore only advances while the object is within range.\n- `category=StaticObject` is only the wrapper that makes a SimObject placeable as scenery — it is not the human/airport-life category. `Human`, `CharacterSim` and `ProceduralCharacter` are separate `sim.cfg` categories (CATEGORY SimVar list) belonging to the living-thing / avatar side.\n- If sim-managed spawning *is* wanted (density, parking spots, scripted behaviour), the airport-services route is documented: AIType `IdleWorker`, a script file that entirely determines behaviour, then `<SimMission.PlayBlendTreeStateAction>` for animations and `<SimMission.ActivateWaypointsAction>` for walking (airport-services:113). That is Living World airport life and is multiplied by the in-sim \"Worker Density\" option.",
+          "status": "`fact (cited)` (local SDK 1.7.3 docs: Living Things, scenery SimObj setup, sim.cfg [General], SimObj Objects placement, Scenery Editor instancing rule, airport-services IdleWorker) + `inferred` (that a skinned human armature is fine as `category=StaticObject` — the docs describe the scenery SimObj generically, with no character-specific page)",
+          "statusValues": [
+            "fact (cited)",
+            "inferred"
+          ],
+          "confidence": null,
+          "sources": [
+            "local SDK docs — `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\content-configuration\\models\\scenery-model-xml-and-cfg-setup\\index.md:41-56` (Scenery SimObj files: glTF/bin/xml/cfg in model, textures, animations folder, sim.cfg beside the folders), `:58-97` (model.cfg [models] normal= + [General] category=StaticObject, DistanceToNotAnimate=2000, Landmarks path), `:105-109` (multi-exporter cannot generate the XML)",
+            "local SDK docs — `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\devmode\\editors\\scenery-editor\\objects\\simobj-objects\\index.md:199` ('The actual folder where you place the files must be called Landmarks as that is the folder that the simulation will look for when generating SimObjects for use in scenery')",
+            "local SDK docs — `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\devmode\\editors\\scenery-editor\\objects\\scenery-objects\\index.md:99` (instancing requires: cannot be animated nor have multiple nodes)",
+            "local SDK docs — `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\content-configuration\\cfg-files\\sim.cfg\\index.md:50-52` ([General] category; DistanceToNotAnimate semantics + per-category values)",
+            "local SDK docs — `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\content-configuration\\modular-simobjects\\simobjects\\living-things\\index.md:1-27` (Humans / Animals / Flying Animals; `SimObjects/Humans/` and `SimObjects/Animals/` folder scheme)",
+            "local SDK docs — `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\content-configuration\\environment\\living-world\\airport-services\\airport-services\\index.md:113` (IdleWorker behaviour entirely script-driven; PlayBlendTreeStateAction + ActivateWaypointsAction)",
+            "local SDK docs — `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\programming-apis\\simvars\\miscellaneous-variables\\index.md:15` (CATEGORY list incl. Human, CharacterSim, ProceduralCharacter, StaticObject)"
+          ],
+          "user": null,
+          "added": "2026-11-05",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "b2e0c233-2e22-50f3-a59e-998a9af58963",
+              "note": "scenery objects vs SimObjects — why the character needs the Scenery SimObj wrapper at all"
+            },
+            {
+              "entryId": "a788efd9-90b1-5261-ae87-f96d800c50f2",
+              "note": "the animation side of the same asset: AnimGraph 3-state time/weather switching"
+            },
+            {
+              "entryId": "dcdda7d6-ccca-5f40-80f2-d800d3822e64",
+              "note": "the other Living-Thing-vs-SimObj decision (animals) — same Living World distinction, opposite container choice"
+            },
+            {
+              "entryId": "b2352151-91d2-5325-8e98-95b4c743e185",
+              "note": "split mesh + animation glTF merged per LOD via <MergeModel> — how the character's clips get in"
+            },
+            {
+              "entryId": "5c37f0c6-4abc-5164-bb98-2af77ecfcfef",
+              "note": "SimObject package folder layout"
+            }
+          ],
+          "tags": [
+            "simobject",
+            "scenery simobj",
+            "landmarks",
+            "character",
+            "human",
+            "staticobject",
+            "living world",
+            "scenery editor",
+            "distance to not animate",
+            "msfs2024"
+          ],
+          "_notes": "Source-C research 2026-11-05. Containers verified in the local docs; the 'character' angle is derived (no character-specific scenery page exists) → status carries `inferred` for the skinned-armature-in-StaticObject step. Open remaining doubt: whether the Scenery Editor SimObj list exposes an arbitrary Landmarks SimObject immediately after build (documented, but not re-tested in-sim here)."
+        },
+        {
+          "id": "a788efd9-90b1-5261-ae87-f96d800c50f2",
+          "title": "Three-state character animation switched by local time and weather - AnimGraph DefaultState plus Condition/ExitTime Transitions, Arrival to Main loop to Exit, loop flag set per BlendTreeState",
+          "kind": "entry",
+          "claim": "Source-C research (2026-11-05): a three-beat character performance — Arrival (one-shot), Main (looping), Exit (one-shot) — switched on clock time and weather is a single `<AnimGraph>` with three `<BlendTreeState>` elements and automatic `<Transition>`s. A transition with both a `<Condition>` and an `ExitTime` fires only when the condition is true **and** the current clip has reached that ratio — which is exactly \"switch at 12:00, but let the running Main cycle finish first\". All mechanics below are from Model Animation Definitions (local SDK 1.7.3).\n\n**1. Declare the clips** (no `typeParam` — nothing autoplays, the graph drives them):\n```\n<Animation name=\"Arrival\" guid=\"{...}\" type=\"Standard\"/>\n<Animation name=\"Main\"    guid=\"{...}\" type=\"Standard\"/>\n<Animation name=\"Exit\"    guid=\"{...}\" type=\"Standard\"/>\n```\nLooping is **per state, not per clip**: \"you can have two `<BlendTreeState>` elements for the same animation, with one looping while the other does not\" (animation-xml-properties:150). One exported glTF carrying all three clips is therefore enough. Inside a state each clip needs `loop` and `speed` (:235-238); `weight` only matters when `doBlend=\"FALSE\"` (random pick), `threshold` only when `doBlend=\"TRUE\"` (continuous blend), and `FireEventOnEnd` only for script completion.\n\n**2. Graph skeleton** (08:00 = 28800 s, 12:00 = 43200 s of local time):\n```\n<AnimGraph>\n  <DefaultState name=\"Arrival\"/>\n  <BlendTreeState name=\"Arrival\"><Animations><Animation guid=\"{...}\" loop=\"False\" speed=\"1\"/></Animations></BlendTreeState>\n  <BlendTreeState name=\"Main\"><Animations><Animation guid=\"{...}\" loop=\"True\" speed=\"1\"/></Animations></BlendTreeState>\n  <BlendTreeState name=\"Exit\"><Animations><Animation guid=\"{...}\" loop=\"False\" speed=\"1\"/></Animations></BlendTreeState>\n  <Transition start=\"Arrival\" end=\"Main\" duration=\"0.5\" ExitTime=\"1.0\"><Condition>(E:LOCAL TIME, SECONDS) 28800 >=</Condition></Transition>\n  <Transition start=\"Main\" end=\"Exit\" duration=\"0.5\" ExitTime=\"1.0\"><Condition>(E:LOCAL TIME, SECONDS) 43200 >=</Condition></Transition>\n  <Transition start=\"Exit\" end=\"Arrival\" duration=\"0.5\" ExitTime=\"1.0\"><Condition>(E:LOCAL TIME, SECONDS) 28800 <</Condition></Transition>\n</AnimGraph>\n```\n\n**3. Transition semantics — the whole trick.** Four documented modes (animation-xml-properties:254-278): no `<Condition>` and no `ExitTime` = **manual** (only fires when code/script requests the target state while the transition's `start` is current); `<Condition>` only = **automatic**, evaluated **every frame** while the start state is current; `ExitTime` only = automatic when the start clip reaches that ratio (1.0 = end of the current play, 2.5 = after two and a half loops); `Condition` + `ExitTime` = automatic only when both are satisfied. `duration` is the cross-fade length in seconds — that is the blend between states. \"Automatic\" transitions cannot be requested from code/script (:266), so use them only for changes that must always happen.\n\n**4. Time base.** `E:LOCAL TIME` is **seconds since local midnight** (environment-variables:19), so 08:00 = 28800 and 12:00 = 43200. `E:TIME OF DAY` is only a four-value enum — 0 dawn, 1 day, 2 dusk, 3 night (environment-variables:26) — far too coarse for an 08:00/12:00 schedule; the shipped template comments in the ground-vehicle ModelBehaviorDefs instead say 1 = Day, 2 = Dusk/Dawn, 3 = Night, so do not hardcode it untested. `E:ZULU TIME` is offset by the time zone; `E:LOCAL TIME` is the one to use for \"at 8 o'clock\".\n\n**5. Weather.** `A:AMBIENT PRECIP STATE` is a **mask**: 2 = None, 4 = Rain, 8 = Snow (miscellaneous-variables:95), and it \"will always be calculated from the user aircraft position, regardless of where the camera is, or what aircraft is selected\" — right for scenery the player is near, wrong for weather elsewhere. Drive discrete weather variants with extra states and `<Condition>`s (e.g. a `MainRain` state on `(A:AMBIENT PRECIP STATE, mask) 4 ==`), not with thresholds: `doBlend=\"TRUE\"` + `<Value>` + per-clip `threshold` is the *continuous* scalar blend, as in the official windsock (`<Value>(A:AMBIENT WIND VELOCITY, KNOTS)</Value>`, scenery-model-xml-and-cfg-setup:158-171).\n\n**6. Forcing a state from script.** `<SimMission.PlayBlendTreeStateAction>` searches for a transition from the current state to the requested one and triggers it — \"if no such transition exists, the action will do nothing\" (:275); `FireEventOnEnd=\"TRUE\"` lets the action wait for the state's clips to finish when it is not `<Immediate>` (:239). This is the WorldScript/mission route (same mechanism as the hangar-door proximity pattern).\n\n**7. Blender side.** Export the three clips in one animation-only glTF (skinned, bones exported) and merge it per LOD with `<MergeModel>` — see the split mesh/animations entry. The loop flag is *not* baked into the clip; it is the `loop` attribute on the `<Animation>` element inside each state.",
+          "status": "`fact (cited)` (Model Animation Definitions: AnimGraph/DefaultState/BlendTreeState/Animation/Transition/Condition/Event, the four transition modes and ExitTime ratios, FireEventOnEnd; environment-variables LOCAL TIME and TIME OF DAY; AMBIENT PRECIP STATE mask; official windsock AnimGraph example) + `inferred` (the assembled 08:00/12:00 daily-cycle recipe, and that Condition/ExitTime transitions evaluate on a `category=StaticObject` Scenery SimObj — see the linked open question)",
+          "statusValues": [
+            "fact (cited)",
+            "inferred"
+          ],
+          "confidence": null,
+          "sources": [
+            "local SDK docs — `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\content-configuration\\models\\animation-xml-properties\\index.md:132-150` (AnimGraph = DefaultState + 2+ BlendTreeState + Transitions; loop per state, not per clip)",
+            "local SDK docs — same file `:176-241` (BlendTreeState doBlend; <Value> RPN; Animation loop/speed/weight/threshold/FireEventOnEnd)",
+            "local SDK docs — same file `:248-308` (Transition: manual vs automatic, Condition evaluated every frame, ExitTime ratio incl. 2.5 = two and a half loops, duration; Condition is RPN)",
+            "local SDK docs — same file `:346-367` (<Events>/<Event> time = frame number, name)",
+            "local SDK docs — `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\programming-apis\\environment-variables\\index.md:19` (LOCAL TIME = seconds since local midnight), `:26` (TIME OF DAY enum 0 dawn / 1 day / 2 dusk / 3 night)",
+            "local SDK docs — `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\programming-apis\\simvars\\miscellaneous-variables\\index.md:95` (AMBIENT PRECIP STATE mask 2 None / 4 Rain / 8 Snow; computed from the user aircraft position)",
+            "local SDK docs — `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\content-configuration\\models\\scenery-model-xml-and-cfg-setup\\index.md:141-180` (official scenery AnimGraph example: single threshold-driven BlendTreeState on AMBIENT WIND VELOCITY)"
+          ],
+          "user": null,
+          "added": "2026-11-05",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "38d8c6f1-f113-5181-b8c0-467f364d4192",
+              "note": "the asset itself: non-playable scenery character as a Scenery SimObj"
+            },
+            {
+              "entryId": "40ee0d17-5246-5cd7-ab7c-de9cf89f727c",
+              "note": "same AnimGraph machinery, other selection rule (doBlend=FALSE weighted random) — the transition table lives there too"
+            },
+            {
+              "entryId": "b2e0c233-2e22-50f3-a59e-998a9af58963",
+              "note": "scenery objects vs SimObj wrapper for sim-reactive animation"
+            },
+            {
+              "entryId": "f4f0310c-1c8f-5465-ab77-d17ad5b085c9",
+              "note": "which variables a scenery SimObject RPN may read (E: global yes, aircraft A: no)"
+            },
+            {
+              "entryId": "b17fb0a4-cb15-5454-9bdb-2d22b5be3cd4",
+              "note": "fallback when ModelBehavior Update misbehaves on a Landmark SimObject: WorldScript writes the L: var the XML reads"
+            },
+            {
+              "entryId": "b2352151-91d2-5325-8e98-95b4c743e185",
+              "note": "animation-only glTF merged per LOD"
+            }
+          ],
+          "tags": [
+            "animgraph",
+            "blendtreestate",
+            "transition",
+            "condition",
+            "exittime",
+            "time of day",
+            "local time",
+            "weather",
+            "ambient precip state",
+            "character animation",
+            "simobject",
+            "msfs2024"
+          ],
+          "_notes": "Source-C research 2026-11-05. Recipe assembled by the updater from the documented transition modes; the exact durations/ExitTime=1.0 choice is design, not doc text. Two verification gaps logged: (a) Condition/ExitTime transitions on a StaticObject scenery SimObj (linked open question), (b) TIME OF DAY enum contradiction between the 2024 SimVars page (0 dawn/1 day/2 dusk/3 night) and older shipped template comments (1 Day/2 Dusk-Dawn/3 Night)."
         }
       ],
       "crossReferences": []
@@ -2094,6 +2226,46 @@
             "open question"
           ],
           "_notes": "Born 2026-09-23 from the custom-animal deep-dive (source C). The [WAYPOINT] section in the Bears sim.cfg suggests built-in ground-AI pathing exists, but its trigger/radius semantics are undocumented — keep open until a DevSupport/community source (or in-sim test) confirms the wander behavior of a solo placed animal."
+        },
+        {
+          "id": "acce152b-74c2-5cf8-99fb-e4a11083d396",
+          "title": "AnimGraph Transition evaluation on a Scenery SimObject - do Condition/ExitTime transitions run on category=StaticObject scenery SimObjects and does a one-shot state restart on re-entry",
+          "kind": "openQuestion",
+          "claim": "Open question (raised 2026-11-05 while building the three-state time/weather character animation): the docs define `<Transition>` with `<Condition>` (RPN evaluated every frame while the start state is current) and `ExitTime` (ratio of the current clip, 1.0 = end, 2.5 = two and a half loops) generically, and state that the AnimGraph system \"is mostly used by Living Thing SimObjects\" (animation-xml-properties:146). The only official SCENERY AnimGraph example — the windsock — has a single `<BlendTreeState>` and no `<Transition>` at all (scenery-model-xml-and-cfg-setup:158-171). So it is unverified whether, on a `category=StaticObject` Scenery SimObj:\n\n- Condition/ExitTime transitions are evaluated at all, or only the state's `<Value>` blend runs;\n- a one-shot (non-looping) state re-entered later (e.g. Exit then Arrival the next morning) restarts from frame 0 or stays on its last frame;\n- transitions keep advancing while the object is beyond `DistanceToNotAnimate` (where animations and model behaviors are stopped and the animation skips on return).\n\nVerification path: place a 3-clip Scenery SimObj (Landmarks, `category=StaticObject`) with the Arrival/Main/Exit graph of the owning entry, run `E:LOCAL TIME` forward across 08:00 and 12:00 in DevMode, and confirm the state changes appear in the SimObject Editor Animations tab / Behaviors debug. If transitions do not fire, the documented fallback is a script-driven manual transition (`<SimMission.PlayBlendTreeStateAction>`, which needs an existing Transition from the current to the requested state).",
+          "status": null,
+          "statusValues": [],
+          "confidence": null,
+          "sources": [],
+          "user": null,
+          "added": "2026-11-05",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "a788efd9-90b1-5261-ae87-f96d800c50f2",
+              "note": "the owning entry: three-state Arrival/Main/Exit AnimGraph driven by local time and weather"
+            },
+            {
+              "entryId": "38d8c6f1-f113-5181-b8c0-467f364d4192",
+              "note": "the container being tested — non-playable character as a Scenery SimObj (category=StaticObject)"
+            },
+            {
+              "entryId": "40ee0d17-5246-5cd7-ab7c-de9cf89f727c",
+              "note": "AnimGraph machinery documented on the SimObject path, plus the separate open question about first-clip selection"
+            }
+          ],
+          "tags": [
+            "animgraph",
+            "transition",
+            "condition",
+            "exittime",
+            "scenery simobj",
+            "staticobject",
+            "verification needed",
+            "msfs2024"
+          ],
+          "_notes": "Not yet tested in-sim. Do not build production content on the assumption that transitions fire on a StaticObject Scenery SimObj until confirmed."
         }
       ],
       "crossReferences": []
@@ -2189,6 +2361,10 @@
     "title": "Edition trail",
     "intro": "One row per edition, newest first. Recorded by the **MSFS Cache Updater** agent; rows are never removed. (Section numbers cited in rows before 2026-09-21 refer to the pre-reorg layout.)",
     "rows": [
+      {
+        "date": "2026-11-05",
+        "summary": "Research edition (source C): added three entries from the local SDK 1.7.3 docs. Category 2: 'Scenery character SimObject' (38d8c6f1) — a non-playable human as a Scenery SimObj under SimObjects/Landmarks, model.cfg category=StaticObject + DistanceToNotAnimate, hand-written model XML, no instancing on animated objects; and 'Three-state character animation' (a788efd9) — Arrival/Main/Exit AnimGraph with DefaultState + Condition/ExitTime Transitions, loop flag per BlendTreeState, E:LOCAL TIME (seconds since local midnight) and A:AMBIENT PRECIP STATE mask (2 none / 4 rain / 8 snow). Category 17: open question acce152b on whether Condition/ExitTime transitions run on category=StaticObject scenery SimObjects (not tested in-sim; dependent claims are inferred). Cross-reference added from Category 1 (Scenery Objects). Flagged conflict: E:TIME OF DAY enum — 2024 SimVars page says 0 dawn / 1 day / 2 dusk / 3 night, older shipped template comments say 1 Day / 2 Dusk-Dawn / 3 Night. No ids lost; ids gate clean."
+      },
       {
         "date": "2026-11-05",
         "summary": "Neutralization edition: removed the temporary suite/product name from Category 5 entry 1c2e86e0 ('Bake texture→vertex color for LOD testing'). The entry now describes the tool as shipping in 'the author's upcoming add-on suite' and explicitly marks the suite name as not final; the product-name tag became 'addon suite'. No factual claims changed — authorship, Blender 4.5 support, the UV-match rule and the historical sale plan are all preserved."
