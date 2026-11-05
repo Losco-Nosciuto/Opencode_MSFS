@@ -1195,6 +1195,10 @@
         {
           "title": "3D model materials — no displacement/POM input; parallax = fake interiors, FakeTerrain = terrain shading",
           "entryId": "8b9a8e05-a2eb-5912-a8f9-c47f707ae6b8"
+        },
+        {
+          "title": "2020→2024 package conversion that works: open in 2024 DevMode, confirm convert dialogs, Build All — only model lights must be re-exported from Blender",
+          "entryId": "6fe648d5-d9d6-5a50-b1a9-578f68323f5e"
         }
       ]
     },
@@ -1205,10 +1209,10 @@
       "entries": [
         {
           "id": "1c2e86e0-5749-5b0e-9dc8-1a80ffd6306b",
-          "title": "Bake texture→vertex color for LOD testing — UVs must match (decimate-friendly); one-click Shader Editor bake; author-revived tool → Losco Tools on Blender 4.5",
+          "title": "Bake texture→vertex color for LOD testing — UVs must match (decimate-friendly); one-click Shader Editor bake; author-revived tool → Blender 4.5",
           "kind": "entry",
-          "claim": "Third-party Blender addon (by the cache maintainer) for **baking textures into vertex colors** — channel announcement (ri-creativity, 31/01/2025 — losconosciuto + salvuz + 614nlv): the plugin had been dormant for months, was **revived to run on Blender 3.x** (verified working on 3.6; broken since 2.8 — \"non andava più dalla 2.8\"; author: \"tecnicamente questo funziona con 3.x\"). Usage: a tab in the **Shader Editor** — pick the image, press Bake, done (\"scegli l'immagine e premi bake, fine\").\n\n**UV requirement (key rule):** the target mesh's UVs must coincide with the source (\"Ovviamente la UV deve coincidere\") — a hand-built LOD needs the **same unwrap** (else garbage: \"o lo unwrappi uguale, o fuffa\"); **decimated LODs work great** because decimation preserves the UV layout.\n\n**Purpose:** explicitly *not* for generating LODs — \"questo non serve a FARE gli LOD… serve a testarli\" — it bakes the look into vertex colors so LODs can be **tested without textures** (viewport / out-of-sim checking). Community reception: 614nlv \"will surely use it when I get back on LODs\", joking it could sell \"just under the Simplygon price\"; the author leaned toward selling it at the time. Platform rationale (official docs — Scenery LODs): low-poly LODs can be built with **no texture at all, using vertex colors** for the distant impression — the exact policy this tool serves (see the LOD workflow entry for the SU5-era vertex-colored last LOD).\n\n**Authoritative update (maintainer, 2026-09-21):** the tool belongs to the cache maintainer; it has been **updated for Blender 4.5 and ships as part of the upcoming Losco Tools addon suite** (the sale-focused plan is superseded by the suite).",
-          "status": "`empirical` (channel 31/01/2025 — tool details, UV-match rule, LOD-testing purpose) + `user-typed (authoritative)` (maintainer: tool is theirs, updated for Blender 4.5, part of the Losco Tools suite).",
+          "claim": "Third-party Blender addon (by the cache maintainer) for **baking textures into vertex colors** — channel announcement (ri-creativity, 31/01/2025 — losconosciuto + salvuz + 614nlv): the plugin had been dormant for months, was **revived to run on Blender 3.x** (verified working on 3.6; broken since 2.8 — \"non andava più dalla 2.8\"; author: \"tecnicamente questo funziona con 3.x\"). Usage: a tab in the **Shader Editor** — pick the image, press Bake, done (\"scegli l'immagine e premi bake, fine\").\n\n**UV requirement (key rule):** the target mesh's UVs must coincide with the source (\"Ovviamente la UV deve coincidere\") — a hand-built LOD needs the **same unwrap** (else garbage: \"o lo unwrappi uguale, o fuffa\"); **decimated LODs work great** because decimation preserves the UV layout.\n\n**Purpose:** explicitly *not* for generating LODs — \"questo non serve a FARE gli LOD… serve a testarli\" — it bakes the look into vertex colors so LODs can be **tested without textures** (viewport / out-of-sim checking). Community reception: 614nlv \"will surely use it when I get back on LODs\", joking it could sell \"just under the Simplygon price\"; the author leaned toward selling it at the time. Platform rationale (official docs — Scenery LODs): low-poly LODs can be built with **no texture at all, using vertex colors** for the distant impression — the exact policy this tool serves (see the LOD workflow entry for the SU5-era vertex-colored last LOD).\n\n**Authoritative update (maintainer, 2026-09-21):** the tool belongs to the cache maintainer; it has been **updated for Blender 4.5 and ships as part of the author's upcoming add-on suite** (the sale-focused plan is superseded by the suite; the suite name is not final).",
+          "status": "`empirical` (channel 31/01/2025 — tool details, UV-match rule, LOD-testing purpose) + `user-typed (authoritative)` (maintainer: tool is theirs, updated for Blender 4.5, part of the author's upcoming add-on suite).",
           "statusValues": [
             "empirical",
             "user-typed (authoritative)"
@@ -1217,11 +1221,14 @@
           "sources": [
             "channel — H.O.T. Multigaming #ri-creativity 3d_modeling_texturing, losconosciuto (+ salvuz, 614nlv), 31/01/2025 (dormant plugin revived for 3.x/3.6; Shader Editor tab, pick-image-bake; UV must coincide, decimate-friendly; for testing LODs, not generating; sell-idea)",
             "official docs — docs.flightsimulator.com/msfs2024 Scenery LODs (low-poly LODs can drop textures and use vertex colors) — fetched 2026-09-21, also cited in the optimization-guidelines entry",
-            "user-typed (authoritative), 2026-09-21 — maintainer: own tool, updated for Blender 4.5, part of the upcoming Losco Tools addon suite"
+            "user-typed (authoritative), 2026-09-21 — maintainer: own tool, updated for Blender 4.5, part of the author's upcoming add-on suite"
           ],
           "user": "losconosciuto (maintainer), salvuz, 614nlv",
           "added": "2026-09-21",
-          "updated": null,
+          "updated": {
+            "date": "2026-11-05",
+            "note": "Neutralized the temporary suite/product name: the entry now refers to 'the author's upcoming add-on suite (name not final)'. No facts changed."
+          },
           "resolved": null,
           "supersedes": [],
           "related": [
@@ -1245,11 +1252,11 @@
             "decimate",
             "shader editor",
             "blender addon",
-            "losco tools",
+            "addon suite",
             "tool",
             "msfs2024"
           ],
-          "_notes": "First entry in category 5 (Blender Third Parties) — reserved placeholder removed. Tool identity: the author (losconosciuto) is the cache maintainer — authorship + Blender 4.5 + Losco Tools suite inclusion stated by the maintainer in conversation on 2026-09-21 (user-typed authoritative). The UV-match rule is mechanically consistent with UV-space baking (memory-level). 'Sell' plans in the channel are historical — superseded by the suite per the maintainer. Related entries hold the docs/SDK vertex-color mechanics."
+          "_notes": "First entry in category 5 (Blender Third Parties) — reserved placeholder removed. Tool identity: the author (losconosciuto) is the cache maintainer — authorship + Blender 4.5 + inclusion in the author's upcoming add-on suite stated by the maintainer in conversation on 2026-09-21 (user-typed authoritative). The UV-match rule is mechanically consistent with UV-space baking (memory-level). 'Sell' plans in the channel are historical — superseded by the suite per the maintainer. Related entries hold the docs/SDK vertex-color mechanics."
         }
       ],
       "crossReferences": [
@@ -1680,7 +1687,7 @@
           "id": "223275a8-3213-5302-b3db-2ec156b18e8c",
           "title": "2020→2024 project conversion — 2024 compiler hang at `Generating Package Information` (no error) / editor CTD; practice: port from 2020, don't convert",
           "kind": "entry",
-          "claim": "Channel report (ri-creativity, 25/11/2024 — single-poster anecdote, personal scenery): converting an old 2020 airport project (Blackbushe) into the 2024 toolchain made the compiler **hang at `Generating Package Information`** with **no error output** — clean, rebuild and manual delete+rebuild all failed on the then-latest SDK. Second poster (mamu82): converting another old scenery did not crash the compiler, but the project **CTD'd once loaded in the 2024 DevMode editor**. Both concluded it was not worth converting old scenery.\n\n- Workaround / prevailing community practice (multiple, independent): **don't convert — keep developing in the 2020 SDK and port/test against 2024**. FSDeveloper best-practice thread (Jun 2025): GaryGB — \"It is more practical to develop in 2020 then 'port' to 2024\" (workflow: load the original 2020 package into the 2024 Community folder for run-time comparison; copy the whole 2020 project, open its XML in the 2024 Scenery Editor, run a 2024 build and inspect the compiler Console log); WildLynxPilot — pure-2020 sceneries that \"never saw the 2024 SDK\" run fine in 2024 (serialized in a 2020-mode, no LOD popping); Nordscape — visuals differ between the sims (materials, light intensity), ending with two separate per-sim versions is pragmatic.\n- Official-side framing: many 2020 packages need no conversion and run in 2024 unchanged (Asobo: \"All projects should be compatible with 2024\"); DevSupport advice for moving a 2020 project is to copy the project folder and open/convert it in the 2024 DevMode (topics 11708, 15388). Asobo shipped no dedicated DevMode \"Project Converter\" — the 2024 SDK's conversion helpers are 3ds Max-side scripts (`SceneConversion2024\\MSFS2024_SceneConversion.ms:29` → `convertMSFS2020ObjectsToMSFS2024Object`); the `Generating Package Information` string is absent from SDK sources.\n- Related DevMode failure class: scenery-editing CTDs in the 2024 DevMode are separately reported (devsupport topic 14090).\n\nHonesty note (user-confirmed: \"this was mostly my personal experience\"): the exact hang message has no other community footprint — treat the compiler-hang symptom as a lone anecdote; the port-not-convert practice is the well-corroborated part.",
+          "claim": "Channel report (ri-creativity, 25/11/2024 — single-poster anecdote, personal scenery): converting an old 2020 airport project (Blackbushe) into the 2024 toolchain made the compiler **hang at `Generating Package Information`** with **no error output** — clean, rebuild and manual delete+rebuild all failed on the then-latest SDK. Second poster (mamu82): converting another old scenery did not crash the compiler, but the project **CTD'd once loaded in the 2024 DevMode editor**. Both concluded it was not worth converting old scenery.\n\n- Workaround / prevailing community practice (multiple, independent): **don't convert — keep developing in the 2020 SDK and port/test against 2024**. FSDeveloper best-practice thread (Jun 2025): GaryGB — \"It is more practical to develop in 2020 then 'port' to 2024\" (workflow: load the original 2020 package into the 2024 Community folder for run-time comparison; copy the whole 2020 project, open its XML in the 2024 Scenery Editor, run a 2024 build and inspect the compiler Console log); WildLynxPilot — pure-2020 sceneries that \"never saw the 2024 SDK\" run fine in 2024 (serialized in a 2020-mode, no LOD popping); Nordscape — visuals differ between the sims (materials, light intensity), ending with two separate per-sim versions is pragmatic.\n- Official-side framing: many 2020 packages need no conversion and run in 2024 unchanged (Asobo: \"All projects should be compatible with 2024\"); DevSupport advice for moving a 2020 project is to copy the project folder and open/convert it in the 2024 DevMode (topics 11708, 15388). Asobo shipped no dedicated DevMode \"Project Converter\" — the 2024 SDK's conversion helpers are 3ds Max-side scripts (`SceneConversion2024\\MSFS2024_SceneConversion.ms:29` → `convertMSFS2020ObjectsToMSFS2024Object`) and Blender-side operators (`msfs2024.convert_scene_to_2024` / `msfs2024.convert_blender_lights` — see the sibling success-path entry 6fe648d5); the `Generating Package Information` string is absent from SDK sources.\n- Related DevMode failure class: scenery-editing CTDs in the 2024 DevMode are separately reported (devsupport topic 14090).\n\nHonesty note (user-confirmed: \"this was mostly my personal experience\"): the exact hang message has no other community footprint — treat the compiler-hang symptom as a lone anecdote; the port-not-convert practice is the well-corroborated part.",
           "status": "`empirical` (channel anecdote 25/11/2024 for the hang/CTD; independent FSDeveloper corroboration Jun 2025 + DevSupport threads for the port-not-convert practice).",
           "statusValues": [
             "empirical"
@@ -1695,7 +1702,10 @@
           ],
           "user": "losconosciuto, mamu82",
           "added": "2026-09-21",
-          "updated": null,
+          "updated": {
+            "date": "2026-09-24",
+            "note": "Conversion helpers now include the Blender-side operators (scene + lights); linked to the sibling conversion-works entry."
+          },
           "resolved": null,
           "supersedes": [],
           "related": [
@@ -1717,6 +1727,54 @@
             "msfs2024"
           ],
           "_notes": "Maintainer flagged the channel reports as mostly personal experience — the hang gotcha is a single-scenery anecdote; re-verify if a second instance appears. DevSupport pages fetch-blocked for the agent — thread contents cited from search snippets only. FSDeveloper corroboration covers the broader port-don't-convert practice, not the exact hang message."
+        },
+        {
+          "id": "6fe648d5-d9d6-5a50-b1a9-578f68323f5e",
+          "title": "2020→2024 package conversion that works: open in 2024 DevMode, confirm convert dialogs, Build All — only model lights must be re-exported from Blender",
+          "kind": "entry",
+          "claim": "Channel exchange (Discord): John asked for tips converting an FS2020 package to FS2024 (apart from backing up the original); mamu82's recipe — \"Open the project in 2024, confirm the dialogs where you will be asked to convert and press build all. It will work, (except the lights of the models, those are required to be exported again from blender)\".\n\nDevMode side (verified): running the 2024 SDK on a 2020 project first runs conversion prompts — \"it wants to update a whole bunch of GUID numbers. This is a must as it includes standard visible and non-visible objects (such as animations)\" (FSDeveloper 460261); DevSupport's standard route is to copy the project folder and open/convert it in the 2024 DevMode (topics 15388 / 11708). There is no dedicated DevMode \"Project Converter\" tool — the 2020→2024 conversion happens on open/build (the scene-level conversion lives in the DCC plugins).\n\nBlender side (verified, SDK 1.7.3): the 2024 addon ships `msfs2024.convert_scene_to_2024` — MSFS2024 menu (object mode) → \"Convert Scene to MSFS2024\", guarded by a confirm dialog (\"WARNING: This will convert all scene to be compatible with MSFS2024.\") — which runs `update_msfs2024_materials_graphs()` + `convert_lights_to_msfs2024()`; a dedicated \"Convert Lights\" operator (`msfs2024.convert_blender_lights`) converts only the scene lights. Official Convert doc: \"the conversion primarily affects *lights* and *materials*\" — Addendum: FlightSim 2020 Material → MSFS2024_Material, FlightSimFastLight → MSFS2024FastLight, FlightSimAdvancedLight → MSFS2024AdvancedLight, FlightSimSkyPortal → MSFS2024SkyPortal, plus box/cylinder/sphere gizmos and ProjectedDecal. Non-reversible — \"we strongly recommend that you make backups of all your Scenes\"; in Blender the 2020 and 2024 plugins must never both be enabled.\n\nThe lights exception (mamu82's caveat, verified): the scene conversion ported in-scene 2020 light objects, but glTFs already exported with the 2020 exporter keep the old light definitions — the 2024 pipeline needs the model re-exported from Blender so the glTF carries the new 2024 light extensions: MSFS2024LightType `streetLight` (fast/conical, day/night cycle + flash/strobe, \"fast lights\"), `advancedLight` (point/sphere/disk, beacons/headlights, not day/night-linked), `skyPortalLight` (aircraft only). Common params: Kelvin (Use Kelvin) / RGB, intensity in candela, Lens Flare / Flare Only; lights should be present on all LODs or they \"pop\" in when LODs change. Never mix: \"you can't use MSFS 2024 materials with MSFS 2020 lights\".\n\nContext: coexists with the sibling entry (compiler hang / editor CTD anecdotes + port-not-convert practice) — mamu82 himself reported an editor CTD there (25/11/2024); here he reports the direct conversion path works. Success-path counterweight, not a contradiction.",
+          "status": "`fact (cited)` (SDK 1.7.3 docs + addon sources: scene-convert operators, conversion objects, 2024 light types) + `empirical` (mamu82 channel recipe; DevMode GUID-update prompts corroborated by FSDeveloper 460261)",
+          "statusValues": [
+            "fact (cited)",
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [
+            "Discord (user-supplied snippet) — John 08:28 / mamu82 08:52: 2020→2024 conversion recipe (open in 2024, confirm convert dialogs, Build All; lights must be re-exported from Blender)",
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\models-and-textures\\plugins\\convert-a-msfs2020-scene-to-msfs2024\\index.md` (Convert Scene To MSFS2024; \"conversion primarily affects lights and materials\"; Addendum: Conversion Objects)",
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\models-and-textures\\plugins\\lights\\index.md` (street / advanced / sky portal lights; Kelvin/RGB, intensity in candela, lens flare; lights on all LODs)",
+            "local SDK `C:\\MSFS 2024 SDK\\Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\ui\\view3d_menu.py:6-30,32-54,56-70` + `blender\\utils\\msfs_scene_utils.py:107-111` + `blender\\msfs_lights.py:15-19` + `io\\com\\extensions\\light\\asobo_advanced_light.py`, `asobo_skyportal_light.py`",
+            "fsdeveloper.com forum thread 460261 \"FS2020 scenery compatibility with FS2024\" (2024 SDK on a 2020 project → GUID-number updates, \"a must\")",
+            "devsupport.flightsimulator.com topics 15388 / 11708 (copy project folder, open/convert in 2024 DevMode) — cited from snippets; full pages fetch-blocked"
+          ],
+          "user": "mamu82",
+          "added": "2026-09-24",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "223275a8-3213-5302-b3db-2ec156b18e8c",
+              "note": "sibling: hang/CTD failure anecdotes + port-not-convert practice — the success path documented here coexists with them"
+            },
+            {
+              "entryId": "e09c06fa-a6ce-5a03-a330-bc026ab86cd5",
+              "note": "documented 2020→2024 package/format differences (.air removal, asset groups)"
+            }
+          ],
+          "tags": [
+            "conversion",
+            "2020-to-2024",
+            "devmode",
+            "build-all",
+            "lights",
+            "blender",
+            "re-export",
+            "gltf",
+            "workflow",
+            "msfs2024"
+          ],
+          "_notes": "'Dialogs where you will be asked to convert' = the DevMode GUID/auto-convert prompts on open (FSDeveloper 460261) + the Blender scene-convert confirm dialog; both verified. mamu82 is the same user who reported an editor CTD in the sibling entry (25/11/2024) — his own positive experience recorded here; anecdotes coexist. Whether DevMode's project-open conversion also rewrites light data of already-built packages is undocumented — the practical answer is the Blender re-export."
         },
         {
           "id": "8b9a8e05-a2eb-5912-a8f9-c47f707ae6b8",
@@ -2132,6 +2190,14 @@
     "intro": "One row per edition, newest first. Recorded by the **MSFS Cache Updater** agent; rows are never removed. (Section numbers cited in rows before 2026-09-21 refer to the pre-reorg layout.)",
     "rows": [
       {
+        "date": "2026-11-05",
+        "summary": "Neutralization edition: removed the temporary suite/product name from Category 5 entry 1c2e86e0 ('Bake texture→vertex color for LOD testing'). The entry now describes the tool as shipping in 'the author's upcoming add-on suite' and explicitly marks the suite name as not final; the product-name tag became 'addon suite'. No factual claims changed — authorship, Blender 4.5 support, the UV-match rule and the historical sale plan are all preserved."
+      },
+      {
+        "date": "2026-09-24",
+        "summary": "Research edition (source B — Discord snippet, John 08:28 → mamu82 08:52, 2020→2024 package conversion recipe): added the verified success-path entry '2020→2024 package conversion that works: open in 2024 DevMode, confirm convert dialogs, Build All — only model lights must be re-exported from Blender' to DevMode - Various (related to the hang/CTD anecdote entry and the format-differences entry): DevMode GUID/auto-convert prompts on open, no dedicated DevMode Project Converter tool, Blender-side operators msfs2024.convert_scene_to_2024 / msfs2024.convert_blender_lights (SDK 1.7.3 addon sources), conversion primarily affects lights and materials, 2024 light types street/advanced/sky portal, 2020 lights cannot mix with 2024 materials, non-reversible (backup warning). Amended the sibling conversion entry (claim now names the Blender-side operators; updated stamp 2026-09-24). Cross-reference added from Blender Pipeline for Modeling and Animations. New entry id 6fe648d5; ids gate clean — nothing lost, new id exactly once."
+      },
+      {
         "date": "2026-09-24",
         "summary": "Follow-up research amendment to Category 9 entry d32b62db ('CGL aerial scenery for MSFS 2024 — QGIS XYZ tiles to Bing quadkey PNGs...') — user asked (a) what projection to generate tiles in and (b) how to preserve georeferencing when editing the stitched GeoTIFF in Photoshop. Claim extended with §7: tile generation MUST be EPSG:3857 only — the CGL quadtree is defined on the Bing spherical Web-Mercator grid (2^z × 2^z, origin top-left, lat clip ±85.05°), so 4326/UTM/local-CRS sources must be reprojected before tiling or quadkeys land misaligned; the Piemonte ombreggiature WMS serves 3857 natively; ground resolution = 156543.03392/2^z × cos(lat) (z20 ≈ 0.1036 m/px at Domodossola ~46.1° N). §8: Photoshop/GIMP/Affinity all strip GeoTIFF tags (paint.net preserves them — rhumbaflappy's CGL loop uses it); the fix is a .tfw world-file sidecar (QGIS Translate advanced param tfw=yes, or gdal_translate -co TFW=YES -co PROFILE=BASELINE; 6-line format with top-left PIXEL CENTER per GDAL WLD driver), keep the pixel grid untouched in PS (no crop/resize), keep alpha on TIFF save (CGL blends in-game aerial via alpha), crop in QGIS before PS, validate alpha survives tiling. Entry updated (updated note + 5 new sources + 3 tags); no ids changed."
       },
@@ -2193,7 +2259,7 @@
       },
       {
         "date": "2026-09-21",
-        "summary": "Added category 5 (Blender Third Parties) FIRST entry — \"Bake texture→vertex color for LOD testing\" (`empirical` + `user-typed (authoritative)`; source B inv-12 + maintainer-stated facts: tool is the maintainer's own, updated for Blender 4.5, ships in the upcoming Losco Tools suite). Channel 31/01/2025 details: revived to 3.x (broken since 2.8), Shader Editor pick-image-bake, UVs must coincide (decimate-friendly), for testing not generating LODs; docs corroboration already in cache (Scenery LODs vertex-color LODs). Category 5 reserved placeholder removed (reserved -> null); related to LOD policy / optimization guidelines / tinting entries."
+        "summary": "Added category 5 (Blender Third Parties) FIRST entry — \"Bake texture→vertex color for LOD testing\" (`empirical` + `user-typed (authoritative)`; source B inv-12 + maintainer-stated facts: tool is the maintainer's own, updated for Blender 4.5, ships in the author's upcoming add-on suite — name not final). Channel 31/01/2025 details: revived to 3.x (broken since 2.8), Shader Editor pick-image-bake, UVs must coincide (decimate-friendly), for testing not generating LODs; docs corroboration already in cache (Scenery LODs vertex-color LODs). Category 5 reserved placeholder removed (reserved -> null); related to LOD policy / optimization guidelines / tinting entries."
       },
       {
         "date": "2026-09-21",
