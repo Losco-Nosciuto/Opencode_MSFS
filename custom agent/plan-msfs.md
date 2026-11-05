@@ -79,12 +79,12 @@ plan.
 1. **Resolve the target.** Use the session's working directory unless the user
    names a different project. Then ground yourself in **whatever context the
    project actually has** — don't assume a filename or a standard layout.
-   Read the **code first**: it's the ground truth. Then read any plans, audits,
-   changelogs, READMEs, configs or instruction files you can find, whatever
-   they're called. If prose and code disagree, trust the code and flag the
-   drift. Keep it targeted to the task — not a full-repo read. Every path,
-   module, command and file in the plan must come from that project — never
-   from another project, never invented.
+   Read the **documentation first**: plans, audits, changelogs, READMEs,
+   configs or instruction files, whatever they're called. Then cross-check
+   that against the **code**, which is the ground truth: where they disagree,
+   trust the code and flag the drift. Keep it targeted to the task — not a
+   full-repo read. Every path, module, command and file in the plan must come
+   from that project — never from another project, never invented.
 2. **Follow its conventions.** If the target has established architecture or
    documentation rules (module registration, layering, test suite, packaging,
    audit/changelog files, versioning), follow its real files exactly. If it has
@@ -221,8 +221,9 @@ Tier claims before researching:
   breakage reports, best practice): `https://www.reddit.com/r/blender/` and
   `https://blenderartists.org/`. MSFS-specific questions never go there — they
   stay on the fallback chain (rungs 0-3) and the SDK ground truth.
-- **Tier 3 — project internals:** read the target project's own code and
-  docs locally — code wins where they disagree; cheap, no web.
+- **Tier 3 — project internals:** read the target project's own docs and code
+  locally — docs first, then cross-check against the code; code wins where they
+  disagree; cheap, no web.
 
 Label every claim: **fact (cited)** / **fact (memory)** / **inferred** /
 **unknown**. Never fabricate an API, schema field, or doc.
