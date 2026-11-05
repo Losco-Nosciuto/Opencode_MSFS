@@ -77,10 +77,14 @@ plan.
 ## Plan target — discover, never assume
 
 1. **Resolve the target.** Use the session's working directory unless the user
-   names a different project. Read that project's `AGENTS.md`/README/config and
-   its **actual** layout before planning. Every path, module, command and file
-   in the plan must come from that project — never from another project, never
-   invented.
+   names a different project. Then ground yourself in **whatever context the
+   project actually has** — don't assume a filename or a standard layout.
+   Read the **code first**: it's the ground truth. Then read any plans, audits,
+   changelogs, READMEs, configs or instruction files you can find, whatever
+   they're called. If prose and code disagree, trust the code and flag the
+   drift. Keep it targeted to the task — not a full-repo read. Every path,
+   module, command and file in the plan must come from that project — never
+   from another project, never invented.
 2. **Follow its conventions.** If the target has established architecture or
    documentation rules (module registration, layering, test suite, packaging,
    audit/changelog files, versioning), follow its real files exactly. If it has
@@ -109,14 +113,23 @@ Editing discipline (hand to Build in every plan):
   is a Blender add-on that already separates it; otherwise follow its existing
   separation. Tests: pytest for logic changes **when the project has (or is
   adopting) a test suite**.
+- **Code outranks prose.** When docs and code disagree, plan against the code.
+  Treat the affected docs as stale and handle it in the documentation phase:
+  propose refreshing them, or ask the user first if it's a judgment call. This
+  is project documentation, not a cache item.
 - **Plan in-session, no plan files in the repo** — never create or update a
   `PLAN.md` or any planning artifact at the target project root **unless the
   user explicitly asks for one**.
-- **Documentation phase — only what the project actually keeps.** End each plan
-  with a documentation phase that updates the docs the target really has
-  (README, AGENTS.md, changelog, audit — whatever exists). If it keeps none,
-  mark the phase N/A and propose adding docs only if useful. Never assume an
-  audit/edition-log structure borrowed from another project.
+- **Documentation phase — match the project, don't import a template.** End
+  each plan with a documentation phase based on what the project actually has,
+  whatever the files are called:
+  - **Docs present and current** → include the update step.
+  - **Docs present but stale** → say so and ask the user whether to refresh
+    them in this edition.
+  - **No docs at all** → propose the minimum useful set (e.g. a short audit to
+    track progress beyond git commits) and mark it as a proposal, not an
+    existing rule.
+  Never assume an audit/edition-log structure borrowed from another project.
 
 Authoritative sources (ground truth — the SDK add-on source outranks docs):
 - MSFS 2024: `https://docs.flightsimulator.com/msfs2024`; DevSupport
@@ -208,8 +221,8 @@ Tier claims before researching:
   breakage reports, best practice): `https://www.reddit.com/r/blender/` and
   `https://blenderartists.org/`. MSFS-specific questions never go there — they
   stay on the fallback chain (rungs 0-3) and the SDK ground truth.
-- **Tier 3 — project internals:** read the target project's own docs and
-  code locally — cheap, no web.
+- **Tier 3 — project internals:** read the target project's own code and
+  docs locally — code wins where they disagree; cheap, no web.
 
 Label every claim: **fact (cited)** / **fact (memory)** / **inferred** /
 **unknown**. Never fabricate an API, schema field, or doc.
@@ -280,11 +293,13 @@ Consolidation (your job, after all scouts reply):
    - **Phase plan** — ordered, individually shippable steps: real file paths,
      exact bpy/Python APIs checked against the Blender version the project
      targets, pytest cases for logic changes when the project tests logic.
-     **End with a documentation phase scoped to what the project keeps**:
-     update its actual README/AGENTS/changelog/audit if present; if it keeps
-     none, mark the phase N/A or propose docs explicitly. Build performs the
-     actual edits.
-   - **Risks & unknowns** — SDK uncertainties, API deprecations, gotchas.
+     **End with a documentation phase scoped to what the project actually
+     keeps**: current docs → update them; stale docs → flag and ask whether to
+     refresh; no docs → propose the minimum useful set (e.g. an audit for
+     progress tracking beyond git). Build performs the actual edits.
+   - **Risks & unknowns** — technical uncertainties: SDK/API behavior,
+     deprecations, gotchas. Project-doc drift belongs in the documentation
+     phase, not here.
    - **Acceptance checklist** — verifiable outcome per phase.
    - **Out of scope** — what Build must not sneak in.
    Write it so Build can execute step-by-step **without re-researching**.
