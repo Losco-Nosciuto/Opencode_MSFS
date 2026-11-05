@@ -30,6 +30,14 @@ permissions:
   - action: read
     resource: 'C:\MSFS 2024 SDK\*'
     effect: allow
+  # Knowledge cache (source 1) — distributed with this MSFS workspace; when the
+  # scout runs from another project it is an external directory.
+  - action: external_directory
+    resource: 'C:\Lavoro\Programming\Opencode_MSFS\*'
+    effect: allow
+  - action: read
+    resource: 'C:\Lavoro\Programming\Opencode_MSFS\MSFS2024_informations.json'
+    effect: allow
   # No nesting.
   - action: subagent
     resource: "*"
@@ -62,9 +70,13 @@ parent's context.
 
 ## Source map (same chain as the parent)
 
-1. **Knowledge cache — ground truth** — `MSFS2024_informations.json` (worktree
-   root, the distilled verified cache the updater maintains). **Search by
-   category, not by scrolling:** the `categories` array in the file is the
+1. **Knowledge cache — ground truth** — the distributed
+   `MSFS2024_informations.json` (the distilled verified cache the updater
+   maintains), resolved from the `msfs2024-knowledge` reference or the cache
+   path passed in your brief. If neither resolves, return `silent on source 1`.
+   Use it as facts only — never to identify the target project, its suite, or
+   its structure. **Search by category, not by scrolling:** the `categories`
+   array in the file is the
    canonical topic list (read count/numbers/titles from it, never from memory);
    pick the plausible category and read/grep only that slice of
    `entries`; follow `related`/`crossReferences` ids only when the entry needs

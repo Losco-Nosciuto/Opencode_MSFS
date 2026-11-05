@@ -57,11 +57,12 @@ What it does:
 
 ## What's the Planner Agent in Short
 
-**The [plan-msfs agent](custom%20agent/plan-msfs.md)** is a read-only planning partner for MSFS 2024 + Blender add-on development. It was originally built for the LoscoTools project, but it proved reliable in production and has been expanded to ship to whoever needs it — for planning Blender add-ons and MSFS / MSFS 2024 development-related tasks: risk-tiered research and build-ready plans, never implementation.
+**The [plan-msfs agent](custom%20agent/plan-msfs.md)** is a read-only, **project-agnostic** planning partner for MSFS / MSFS 2024 development and Blender add-on development. It was originally built for the LoscoTools project, but ships standalone: it plans for whatever project you open it in, reading that project's own layout and conventions instead of assuming any particular one — risk-tiered research and build-ready plans, never implementation.
 
 What it does:
 
 - **Plans, never implements** — read-only except `~/.opencode/plan`; produces a structured plan (goal, constraints, research summary, architecture, phased steps) that a build agent can execute step-by-step without re-researching.
+- **Project-agnostic by design** — the target is the project the session is opened in; its own files and conventions drive the plan. The knowledge cache supplies domain facts, never project identity or structure.
 - **Same verification discipline, cache-first by default** — the knowledge cache is distilled research: a cache hit with a research-derived status (`fact (cited)` / `empirical` / `inferred` / `user-typed (authoritative)`) answers the question without sub-agents or fallback. Deeper verification (local SDK → official docs → community, ~5-consultation budget, snippet-only) runs only for cache-absent or `unknown`-status items — or on your explicit request.
 - **Status-ladder honesty** — every claim labelled `fact (cited)` / `fact (memory)` / `inferred` / `unknown`; uncertainties and SDK gotchas called out explicitly.
 - **Durable on request** — writes the plan to `~/.opencode/plan/` when you ask, and summarizes before handing off to build mode.
