@@ -108,6 +108,17 @@ permissions:
   - action: shell
     resource: 'py "{{REPO}}\utilities\validate_cache.py"*'
     effect: allow
+  # Read-only viewer: chunks long JSON strings so a ready-file / cache entry can
+  # be reproduced verbatim (read/grep truncate lines after 2,000 chars).
+  - action: shell
+    resource: 'python "{{REPO}}\utilities\show_ready.py"*'
+    effect: allow
+  - action: shell
+    resource: 'py -3 "{{REPO}}\utilities\show_ready.py"*'
+    effect: allow
+  - action: shell
+    resource: 'py "{{REPO}}\utilities\show_ready.py"*'
+    effect: allow
   - action: shell
     resource: 'python "{{REPO}}\utilities\get_entry_id.py"*'
     effect: allow
@@ -472,6 +483,15 @@ For a source-C request (research and add, no user-typed claim):
      (ad-hoc flush; the ≥4 threshold is for dump ingestion only). The writer
      backs up, applies, prepends edition rows, applies cross-references,
      validates and renames the ready-files to `flushed_*`.
+     **Handoff = paths, never commands:** pass the ready-file paths, the batch
+     size and the edition bump. Do not quote shell commands, `--ids`,
+     `Set-Content`, pipes or scripts in the prompt — the writer's own protocol is
+     canonical, and a handoff that restates commands goes stale.
+   - **Long text:** if a ready-file value is truncated by the read tool (lines
+     over 2,000 chars), run
+     `python "{{REPO}}\utilities\show_ready.py" "<ready-file>"`
+     and join the `[JOIN …]` pieces exactly. Never reconstruct a truncated claim
+     from its prefix, from the cache, or from memory — skip the item and flag it.
    - **1 entry:** apply it yourself with the normal chunk protocol, or use the
      writer with a batch of one — your call.
 4. **Parent close** — delete `flushed_*`/chunks, run the final `--ids` diff and

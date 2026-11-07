@@ -8,7 +8,7 @@ OpenCode agents plus a distilled, verified **MSFS 2024 development knowledge cac
 - The six agents under [`custom agent/`](custom%20agent/): the cache maintainer [`msfs-cache-updater.md`](custom%20agent/msfs-cache-updater.md), the planner [`plan-msfs.md`](custom%20agent/plan-msfs.md), and four sub-agents — dump triage [`triage-dump.md`](custom%20agent/triage-dump.md), research [`MSFS-Research-SubAgent.md`](custom%20agent/MSFS-Research-SubAgent.md), cache writer [`MSFS-Cache-Writer-Subagent.md`](custom%20agent/MSFS-Cache-Writer-Subagent.md), and the parallel source-scout [`MSFS-Source-Scout.md`](custom%20agent/MSFS-Source-Scout.md)
 - The installer: [`utilities/install_agents.py`](utilities/install_agents.py)
 - The DeClogger for Discord Chats (import and filter whole discord channels, **2024-only by default** — pre-`01/08/2024` removed): [`utilities/declog_chat.py`](utilities/declog_chat.py); manual 2020-recovery full-history variant: [`utilities/declogger_FS2020_manualonly.py`](utilities/declogger_FS2020_manualonly.py)
-- The cache integrity gate + id helper: [`utilities/validate_cache.py`](utilities/validate_cache.py), [`utilities/get_entry_id.py`](utilities/get_entry_id.py)
+- The cache integrity gate + id helper: [`utilities/validate_cache.py`](utilities/validate_cache.py), [`utilities/get_entry_id.py`](utilities/get_entry_id.py), and the ready-file viewer [`utilities/show_ready.py`](utilities/show_ready.py)
 ---
 
 ## Table of Contents

@@ -12,6 +12,8 @@ Notable changes to the MSFS 2024 OpenCode Workspace. Newest first.
 - **Status snippet removed.** The `Get-Content`/`ConvertFrom-Json`/`Get-ChildItem` status one-liner was also unallowlisted; ready/flushed counts now come from `glob` plus one inventory `read`.
 - **Stale backup guard.** `MSFS-Cache-Writer-Subagent` refreshes `.bak` when it is missing **or older than the cache**, instead of only when absent. A stale safety copy would silently discard the previous edition on restore.
 - **`validate_cache.py` default file** resolves to the repo's `MSFS2024_informations.json` rather than the current working directory, so the canonical command works when the session is opened in another project.
+- **Long values are readable again.** `read`/`grep` truncate every line after 2,000 characters and one-line JSON strings arrive cut — the writer was about to reconstruct claims "from the verified prefix". New `utilities/show_ready.py` prints any JSON file with long values split into numbered pieces (`JOIN n pieces`, already JSON-escaped) that concatenate byte-for-byte; both cache agents get the rule "never reconstruct a truncated string", and the research sub-agent now caps `claim` at ~1,200 characters (a longer claim is two facts).
+- **Stale handoffs can no longer reintroduce retired commands.** The writer prompt states that its own canonical commands win over any command text quoted in the parent's handoff, and the parent is told to pass paths only — never `--ids`, `Set-Content`, pipes or scripts. Resumed sessions keep the prompt they were created with: a session started before an agent update must be restarted (new session), not resumed.
 
 ### Knowledge cache
 

@@ -112,6 +112,13 @@ output file self-contained and never touch another entry.
 Every entry carries the guide's full field set: `id`, `title`, `kind`, `claim`,
 `status`, `statusValues`, `confidence`, `sources`, `user`, `added`, `updated`,
 `resolved`, `supersedes`, `related`, `tags`, `_notes`.
+
+**Line-length limit (hard):** the ready-file is one-line-per-field JSON, and the
+writer's `read`/`grep` truncate every line after 2,000 characters. Keep every
+string field well under that — `claim` ≤ ~1,200 characters, `_notes` ≤ ~800,
+`sources` as short citation strings. A longer claim is two facts: split it into
+two entries (one fact, one entry) instead of writing an unreadable line.
+
 The `id` is the deterministic UUIDv5 of the verbatim title over the canonical
 namespace — compute it with:
 `python "{{REPO}}\utilities\get_entry_id.py" "<title>"`

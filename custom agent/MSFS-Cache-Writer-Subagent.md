@@ -53,6 +53,17 @@ permissions:
   - action: shell
     resource: 'py "{{REPO}}\utilities\validate_cache.py"*'
     effect: allow
+  # Read-only viewer for ready-files: long JSON strings arrive chunked so they
+  # can be reproduced verbatim (read/grep truncate lines after 2,000 chars).
+  - action: shell
+    resource: 'python "{{REPO}}\utilities\show_ready.py"*'
+    effect: allow
+  - action: shell
+    resource: 'py -3 "{{REPO}}\utilities\show_ready.py"*'
+    effect: allow
+  - action: shell
+    resource: 'py "{{REPO}}\utilities\show_ready.py"*'
+    effect: allow
   - action: shell
     resource: 'python "{{REPO}}\utilities\get_entry_id.py"*'
     effect: allow
@@ -109,6 +120,10 @@ path to get around a denial, never ask the user to run commands in your place.
 - If a canonical command is denied, re-issue it **once** exactly as written; if
   it is still denied, STOP and report the exact string as a permission bug.
 - File state comes from `glob`/`read`/`grep`, never from PowerShell.
+- **This file wins over the handoff.** If the parent's prompt quotes a different
+  command (`--ids`, `Set-Content`, a pipe, `cd`, a script, …), ignore that text
+  and use the command printed here: a resumed or older parent can carry retired
+  commands, and the canonical form is the one in this file.
 
 ## Batch protocol
 
@@ -125,6 +140,16 @@ path to get around a denial, never ask the user to run commands in your place.
    - Read the ready-file (`inventoryId`, `action`, `targetCategory`,
      `insertAfterId`, `entry`, `updated`, `mergedSupersedes`, `crossReferences`,
      `flagged`).
+   - **Long text — never reconstruct a truncated string.** `read` and `grep`
+     shorten every line after 2,000 characters, and one-line JSON strings arrive
+     cut. If any value is truncated, run
+     `python "{{REPO}}\utilities\show_ready.py" "<ready-file>"`
+     and concatenate the pieces of the `[JOIN n pieces …]` block **exactly**: the
+     text after `|`, in order, no spaces, no newlines added. The pieces are
+     already JSON-escaped, so the joined body goes between the quotes as-is. If
+     the full value still cannot be obtained, **skip the item and flag it** — do
+     not fill the gap from the visible prefix, from the cache, or from memory.
+     The same applies to a long cache entry you must reproduce in an edit.
    - `grep` the cache for the target category / affected entry to confirm it
      exists and where it sits. **If `update-in-place` and the entry has changed
      since research — re-read the slice and reconcile the delta. Never write a

@@ -95,11 +95,36 @@ existing entry.
 python validate_cache.py                     → validate MSFS2024_informations.json
 python validate_cache.py --file cache.json   → another file
 python validate_cache.py --ids               → print every entry id, one per line
+python validate_cache.py --ids-write ids.txt → write every id to ids.txt (UTF-8)
+python validate_cache.py --ids-diff a b      → OK / NEW / MISSING / DUPLICATE
 ```
 
-The cache updater uses `--ids` before/after an edition as its **inventory gate**
-(pre-existing ids must survive, new ids appear exactly once), then runs the full
-check before closing the edition. Exit code 0 = OK, 1 = validation failed.
+The cache updater uses `--ids-write` before an edition and `--ids-diff` after it
+as its **inventory gate** (pre-existing ids must survive, new ids appear exactly
+once), then runs the full check before closing the edition. Exit code 0 = OK,
+1 = validation failed.
+
+## `show_ready.py`
+
+Read-only viewer for `research_ready_<inv>.json` files (and any JSON cache
+file). `read` and `grep` shorten every line after 2,000 characters, and each
+long field is a single-line JSON string — so a long `claim` arrives truncated
+and must never be reconstructed from its prefix. This tool prints every long
+value as numbered pieces:
+
+```text
+python show_ready.py .cache_staging\ingestion\research_ready_inv-3.json
+```
+
+```text
+entry.claim  [JOIN 17 pieces: concatenate the text after '|' exactly; already JSON-escaped]
+  0000|Asobo's official MSFS 2024 Blender tooling ...
+  0001|... continued without any added separator ...
+```
+
+Concatenating the text after `|` in order reproduces the original string
+byte-for-byte; the pieces are already JSON-escaped, so the joined body goes
+between the quotes as-is. Nothing is written.
 
 ## `get_entry_id.py`
 
