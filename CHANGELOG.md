@@ -18,6 +18,15 @@ Notable changes to the MSFS 2024 OpenCode Workspace. Newest first.
 ### Knowledge cache
 
 - **Pending 2026-11-05 edition committed** (animation, weather and SimConnect entries) as a clean base before the next flush.
+- **Ad-hoc batch of 2 applied** (LOD bounding-sphere + LOD screen-size math, category 15): 65 entries, `validate_cache.py` OK, ids diff clean. Applied across two writer runs because the step budget ran out mid-batch — see the agents entry below.
+
+### Agents and installer
+
+- **Step budgets raised:** `MSFS-Cache-Writer-Subagent` 40 → 80, `msfs-cache-updater` 60 → 80. A 2-item batch spent ~30 steps on orientation (guide, both ready-files, repeated paged reads of `editionTrail`) and died at the limit twice.
+- **Orientation budget and anchor discipline** in both agents: read the guide once, each ready-file once, one cache slice; never read another agent file; never page the whole `editionTrail`; copy `oldString` from a read result stripping exactly the `NNNN: ` prefix; one failed edit → re-read, two failures on the same anchor → skip and report.
+- **Close-out ownership:** only the writer renames `research_ready_*` (the parent has no `Rename-Item` rule, verified with a probe); the parent deletes `flushed_*` only, after `OK` and a clean ids diff, and **never** `research_ready_*`. A failed writer is not re-spawned blindly — the cache is grepped for the batch ids first.
+- **No phantom edition bump:** `editionTrail.number` is the meta section's fixed index (N+1); routine insertions only prepend a `rows` entry. The handoff now says "edition date", not "edition bump".
+- **Restore is a targeted edit**, never a whole-file `Copy-Item` from `.bak` (which would discard the rest of the batch). A denied command is permanent: no synonym retries (`python -c`, `powershell -Command`, `Get-Content`, pipes, `;` chains). `git` stays out of both allowlists.
 
 ## 2026-11-05
 

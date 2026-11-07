@@ -1407,6 +1407,10 @@
         {
           "title": "ModelBehaviors animate only the emissive material factor at runtime - texture, UV and albedo parameters have no live binding",
           "entryId": "ef24eb5c-39fa-543a-88f6-887ef89cc730"
+        },
+        {
+          "title": "MSFS 2024 LOD plugin bounding sphere: AABB centre with half-diagonal radius",
+          "entryId": "a483c3e3-31a3-514b-a165-45cb6006872f"
         }
       ]
     },
@@ -2196,6 +2200,96 @@
             "terrain shading"
           ],
           "_notes": "DevSupport is fetch-blocked for the agent — thread absence is snippet-only evidence, may be incomplete. Community quirks rest on 2-3 threads (460630 OP follow-up still pending — workarounds untested). Blender-vs-Max alpha behavior is reported as an observed contradiction. Unresolved unknowns: LOD behavior, detail/bump maps on FakeTerrain, decals-over-material in 2024, instancing, and terrain-displacement inheritance (ties into the displacement entries). Re-verify the wet-effect claim after any SU release."
+        },
+        {
+          "id": "649bc812-eb82-556d-b113-6b0a3387c816",
+          "title": "MSFS LOD screen size: MSFS 2024 FOV-aware formula vs MSFS 2020 FOV-blind formula",
+          "kind": "entry",
+          "claim": "The LOD `minSize` test compares a model's projected VERTICAL screen size, in percent, of its bounding sphere against the XML threshold. MSFS 2024-native packages and MSFS 2020-compiled packages get that percentage from two different formulas, and only the 2024 one is vertical-FOV aware.\\n\\nMSFS 2024 native (documented definition + SDK plumbing, exact algebra inferred):\\n\\n    screen_pct = min( 100 * r * lodFactor / (max(d, 0.001) * tan(fov_y / 2)), 1000 )\\n\\n- `r` = bounding-sphere radius, `d` = camera-to-sphere-centre distance, `fov_y` = the LIVE vertical FOV of the camera (recomputed as the view changes, not a constant), `lodFactor` = the render-preset multiplier applied on top (the Blender LOD viewer presets LOW/MEDIUM/HIGH/ULTRA).\\n- No clamp at the sphere surface: at `d = r` the value is `100 / tan(fov_y/2)` \\u2014 about 275 % at a 40 deg vertical FOV \\u2014 and 1000 % is only reached at `d <= r / (10 * tan(fov_y/2))` (about 0.27 r at 40 deg), i.e. deep inside the sphere. Asobo states the model directly: \\\"this screen size is the percentage of the viewport occupied by the the projected sphere on the said viewport (on the vertical axis) - there's no reason for it to always be 1000\\\". Consequence: an object you are standing inside can read well below 1000 % and swap LODs around you.\\n\\nMSFS 2020 \\u2014 and the 2020 backwards-compatibility path, i.e. 2020-compiled packages loaded in 2024 (official: \\\"Packages built with MSFS 2020 and loaded into the simulation will still follow the legacy LOD rules\\\"):\\n\\n    screen_pct = min( 1000 * r / d, 1000 )\\n\\n- Clamped at the surface: from the bounding-sphere surface inwards the value is pinned at 1000 % (\\\"as long as you are in the boundingsphere in 2020 you are at Screensize 1000\\\"), confirmed by Asobo on a 2020 package in 2024: \\\"Obviously I am within the bounding sphere of this building and, in MSFS 2020, the screen size would be 1000\\\".\\n- FOV-blind: the 1000 constant is algebraically `100 / tan(0.1)`, so it implicitly assumes `tan(fov_y/2) = 0.1`, a ~11.42 deg vertical FOV. Against a real viewport it therefore over-reports by `10 * tan(fov_y/2)` (= `tan(fov_y/2) / 0.1`): ~2.0x at 22.6 deg vertical FOV, ~3.6x at 40 deg, ~5.8x at 60 deg.\\n\\nEvidence and limits of it:\\n\\n- Official definition (docs, LOD Selection System): `minSize` is the \\\"minimum vertical screen size (in %)\\\" of the bounding sphere, the ratio is bounding-sphere size against VERTICAL screen size, and the engine computes it \\\"with using various approximations which can make it slightly larger than you may expect for the actual model being rendered\\\".\\n- The 2024 path genuinely consumes a live FOV (SDK 1.7.3 addon): `lod_camera.py:99-110` derives `fov_y = 2.0 * math.atan(1.0 / m[1][1])` from `region_3d.window_matrix` (perspective path; orthographic falls back to a fake 1 deg), a 0.2 s timer pushes it into the `Fov Y` input of the viewer's geometry-node constants group (`lod_camera.py:45-52`, `lod_viewer_node_groups.py:14,50-57`), and the viewer seeds that input once at creation from `get_context_fov_y(context)` (`lod_viewer.py:252-257`).\\n- History: Asobo acknowledged the 2020 compat path as broken (\\\"there is definitely a bug in our backwards compatibility scheme\\\"), had a fix \\\"integrated into a future SU3 Beta build\\\" on 15 Jul 2025, and by 3 Nov 2025 the reporter summed up \\\"Latest SU works very well with LODs\\\". 2024-native behaviour differing from 2020 is EXPECTED, not a bug \\u2014 the legacy rule is selected at package level, not asset level.\\n\\nPractical consequence for both-sims authors: a `minSize` tuned on 2020 (surface-clamped, FOV-blind) swaps too late for 2024-native, and one tuned on 2024 swaps too early in 2020 \\u2014 a single XML cannot satisfy both. Recompute per-sim threshold (and per FOV preset) rather than copying numbers across, and remember the vertex-count curve can override the XML value upward.",
+          "status": "`fact (cited)` (official docs definition of minSize as vertical bounding-sphere screen size + the note that 2020 packages keep the legacy LOD rules, Asobo DevSupport posts confirming the 2020 surface clamp, its absence in 2024-native, and the SU3 fix, SDK 1.7.3 addon proving the 2024 path feeds a live viewport FOV into the LOD screen-size node graph) + `inferred` (the exact algebraic forms and constants \\u2014 the node group ships as a compressed .blend, so the formulas are reconstructed from the documented vertical-sphere ratio, the live-Fov input and the 2020 boundary value 1000)",
+          "statusValues": [
+            "fact (cited)",
+            "inferred"
+          ],
+          "confidence": null,
+          "sources": [
+            "official docs \\u2014 https://docs.flightsimulator.com/msfs2024/retail/models-and-textures/modeling/lods/lod-selection-system/ (minSize = \\\"minimum vertical screen size (in %)\\\" of the bounding sphere, ratio against the vertical screen size, \\\"various approximations which can make it slightly larger than you may expect\\\", IMPORTANT: page applies only to packages built with MSFS 2024 \\u2014 2020 packages \\\"will still follow the legacy LOD rules\\\")",
+            "DevSupport 13580 \\\"Bounding Sphere Issue / LODs / Screen Size\\\" \\u2014 EPellissier (Asobo), post 44210, 15 Jul 2025: \\\"Obviously I am within the bounding sphere of this building and, in MSFS 2020, the screen size would be 1000 - so there is definitely a bug in our backwards compatibility scheme\\\"",
+            "DevSupport 13580 \\u2014 EPellissier, quoted in post 44156, 13 Jul 2025: \\\"this screen size is the percentage of the viewport occupied by the the projected sphere on the said viewport (on the vertical axis) - there's no reason for it to always be 1000\\\", and post 44205: \\\"Yes - there was no good reason to do this in 2020\\\"",
+            "DevSupport 13580 \\u2014 EPellissier 15 Jul 2025 (post 44215) fix \\\"integrated into a future SU3 Beta build\\\", d41k4n 13 Aug 2025 SU3 beta 1.5.24.0 still diverging on 2020 packages, pyreegue 3 Nov 2025: \\\"Latest SU works very well with LODs\\\"",
+            "local SDK 1.7.3 \\u2014 `C:\\\\MSFS 2024 SDK\\\\Tools\\\\Blender\\\\addons\\\\lod_tools_msfs_2024\\\\lod_camera.py:97-110` (fov_y = 2*atan(1/window_matrix[1][1]), ortho fake 1 deg) and `:45-52` (0.2 s timer pushes the live FOV into the GN constants group), `lod_viewer_node_groups.py:14,50-57` (\\\"Fov Y\\\" input), `lod_viewer.py:252-257` (seed from get_context_fov_y)"
+          ],
+          "user": null,
+          "added": "2026-11-07",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "841214c7-92dd-5e12-b404-e0e13c09a430",
+              "note": "LOD workflow & policy \\u2014 screen-size vertex budgets, max 7 LODs, the same screen-size ratio this entry defines the formula for"
+            }
+          ],
+          "tags": [
+            "lod",
+            "screen size",
+            "minsize",
+            "fov",
+            "bounding sphere",
+            "backwards compatibility",
+            "msfs2020",
+            "devmode",
+            "debug lods"
+          ],
+          "_notes": "Version gate: local SDK is 1.7.3, online latest is 1.8.2 (SDK Release Notes page) \\u2014 local is OLDER, so the doc citation is the live retail page and the addon source is cited at 1.7.3 (behaviour may have changed in 1.8.x, not re-checked). The exact formula constants could not be read: the node group lives in `datafiles/assets/nodes/lod_viewer-3_3_0.blend` (binary/compressed), so both algebraic forms are reconstructions \\u2014 verify by comparing a Debug-LODs screen-size readout in the sim against the formula at a known d, r and FOV. TWO SUB-CLAIMS STILL UNVERIFIED: (a) the 1000 % CEILING on the 2024-native path \\u2014 no source states it, it is an inference needed to keep the fraction finite near d=0 (Asobo only denies the SURFACE clamp); (b) the exact 2020 form `1000 * r / d` \\u2014 Asobo confirms the boundary value 1000 from the surface inwards and the 1/d falloff is consistent with the 2024 formula, but no 2020-era doc/thread was read to confirm the constant. The brief's in-sim reading of 277.76 % inside the sphere could NOT be confirmed: post 44210 carries the claim but the figure itself is only in a screenshot, so it is omitted from the claim. MSFS 2020 docs LOD page 404'd on the guessed URL and was not chased."
+        },
+        {
+          "id": "a483c3e3-31a3-514b-a165-45cb6006872f",
+          "title": "MSFS 2024 LOD plugin bounding sphere: AABB centre with half-diagonal radius",
+          "kind": "entry",
+          "claim": "Asobo's official MSFS 2024 Blender LOD tooling (`Tools\\\\Blender\\\\addons\\\\lod_tools_msfs_2024`, shipped in the SDK) builds the bounding sphere its LOD viewer uses from an axis-aligned bounding box of world-space evaluated mesh vertices - it is NOT a minimal enclosing sphere.\\n\\n- Point set: `_mesh_points` takes `obj.evaluated_get(depsgraph).to_mesh(...)`, reads `mesh.vertices.foreach_get(\\\"co\\\", ...)` and transforms by `eval_obj.matrix_world` (`bounding_volume.py:27-41`); collection instances are folded in by looping `obj_utils.get_object_instances(obj, depsgraph)` (`bounding_volume.py:75-79`); `get_msfs_bounding_sphere` defaults to `mode=VolumeGetMode.MESH` (`bounding_volume.py:50`) and the LOD viewer passes `VolumeGetMode.MESH` explicitly (`lod_viewer.py:161-165`).\\n- Formula (`bounding_volume.py:84-90`): `mins = all_points.min(axis=0)`, `maxs = all_points.max(axis=0)`, `center = (mins + maxs) * 0.5`, `radius = float(np.linalg.norm(maxs - mins) * 0.5)` - centre = AABB centre, radius = HALF THE AABB DIAGONAL, not the max vertex distance from the centre. The docstring warns the alternative `VolumeGetMode.BOUNDING_BOX` path \\\"doesnt work correctly if origin is far from mesh\\\" (`bounding_volume.py:56`).\\n- Consumer: the pair is written into a sphere object - `matrix_world = Matrix.LocRotScale(bsphere_center, Quaternion(), (r, r, r))` (`lod_viewer.py:174-178`) - parented to the LOD viewer (`lod_viewer.py:112`) and injected into the viewer geometry-nodes modifier as the `Bounding Sphere` input (`lod_viewer.py:62-64`; input name defined at `datafiles/asset_library.py:14`), beside the per-LOD `LODn Screen Size` inputs (`lod_viewer.py:99-106`, names at `datafiles/asset_library.py:25-33`).\\n- Matches the sim's convention: the engine computes LODs from the model's bounding sphere and defines `minSize` as the minimum vertical screen size (%) of that sphere; the screen-space ratio is the ratio between the bounding sphere size and the vertical screen size (`Documentation\\\\public\\\\retail\\\\models-and-textures\\\\modeling\\\\lods\\\\lod-selection-system\\\\index.md:32,40,69`). The engine then deliberately approximates the projected size - \\\"various approximations which can make it slightly larger than you may expect\\\" (`index.md:73`); an empty glTF attachment base gets an arbitrary 1 m-radius sphere (`index.md:250`).\\n\\nGeometry of the difference (derived from the cited code - `inferred`): every vertex lies inside the AABB, so `max_p ||p - center|| <= 0.5 * ||maxs - mins||`, with equality only when a vertex sits on an AABB corner along the same diagonal. A \\\"true\\\" max-distance radius is therefore always <= the half-diagonal, and the ratio half-diagonal / true-radius lies in [1, sqrt(3)]: exactly 1 for box-like meshes whose vertices fill the AABB corners (no error at all), approaching sqrt(3) for shapes whose farthest vertex lies on a single axis - e.g. a sphere of radius R gives half-diagonal sqrt(3)R against a true radius R. Because projected screen size scales with radius / distance, any screen size computed with a true radius under-reports the engine's value at the same distance, and a `minSize` threshold calibrated that way is crossed farther from the camera in the sim (higher-detail LODs retained longer) than the author measured. Calibrate against the half-diagonal convention, not a max-vertex-distance radius.",
+          "status": "`fact (cited)` (SDK source for the AABB centre/half-diagonal formula, mesh/instance point set, LOD-viewer wiring; official docs for the engine using the bounding sphere and minSize as its vertical screen size) + `inferred` (the sqrt(3) bound and the direction of the screen-size error are derived, not stated; that the viewer's geometry-nodes asset consumes the input to compute screen size cannot be read - it ships as a binary .blend asset).",
+          "statusValues": [
+            "fact (cited)",
+            "inferred"
+          ],
+          "confidence": null,
+          "sources": [
+            "local SDK `C:\\\\MSFS 2024 SDK\\\\Tools\\\\Blender\\\\addons\\\\lod_tools_msfs_2024\\\\bounding_volume.py:27-41` (evaluated mesh, foreach_get('co'), _world_points by matrix_world), `:50` (default VolumeGetMode.MESH), `:56` (BOUNDING_BOX mode caveat), `:75-79` (obj_utils.get_object_instances), `:84-90` (mins/maxs, center=(mins+maxs)*0.5, radius=norm(maxs-mins)*0.5)",
+            "local SDK `C:\\\\MSFS 2024 SDK\\\\Tools\\\\Blender\\\\addons\\\\lod_tools_msfs_2024\\\\lod_viewer.py:62-64,112,161-165,174-178,99-106` (MESH call, sphere scaled to radius, 'Bounding Sphere' modifier input, LODn Screen Size inputs) + `datafiles\\\\asset_library.py:14,25-33` (input names)",
+            "local SDK docs `C:\\\\MSFS 2024 SDK\\\\Documentation\\\\public\\\\retail\\\\models-and-textures\\\\modeling\\\\lods\\\\lod-selection-system\\\\index.md:32,40,69,73,250` (engine uses the model bounding sphere; screen-space ratio = sphere size vs vertical screen; minSize = min vertical screen size %; approximations make it slightly larger; 1 m sphere for empty glTF)",
+            "version gate \\u2014 `C:\\\\MSFS 2024 SDK\\\\version.txt` = 1.7.3 vs online https://docs.flightsimulator.com/msfs2024/retail/introduction/sdk-release-notes/ latest = 1.8.2 (checked 2026-11-07)"
+          ],
+          "user": null,
+          "added": "2026-11-07",
+          "updated": {
+            "date": "2026-11-07",
+            "note": "Initial research entry \\u2014 AABB-centre/half-diagonal bounding sphere convention of the MSFS 2024 Blender LOD tools."
+          },
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "841214c7-92dd-5e12-b404-e0e13c09a430",
+              "note": "LOD workflow & policy \\u2014 screen-size vertex budgets and the same `lod_tools_msfs_2024` add-on; this entry supplies the sphere the screen size is measured against"
+            },
+            {
+              "entryId": "ba53a7fe-c1a6-5f06-90ee-2f32fb82d797",
+              "note": "AutoLOD / Simplygon path \\u2014 the other way MSFS 2024 produces the LOD chain whose minSize values this sphere convention calibrates"
+            }
+          ],
+          "tags": [
+            "lod",
+            "bounding sphere",
+            "screen size",
+            "minsize",
+            "blender",
+            "lod viewer",
+            "devmode",
+            "gltf",
+            "math"
+          ],
+          "_notes": "Citations are from the local SDK 1.7.3 add-on source; online SDK is 1.8.2 (version gate 2026-11-07), and release notes 1.8.0/1.8.1/1.8.2 mention no bounding-sphere or LOD-sphere change (1.8.0's 'Bounding box displays more accurate' is a Scenery Editor item), so re-check on the next SDK update. Not verifiable from text: the LOD-viewer node group itself (`NodeGroupLibrary.LOD_VIEWER` = `assets/nodes/lod_viewer`, `.MSFS_2024_LOD_Viewer`) ships as a binary Blender asset, so the claim that the input drives the viewer's screen-size evaluation rests on the wiring (Camera + Bounding Sphere + LODn Screen Size inputs) plus the docs, not on readable node math - hence `inferred` for that link. 1.8.1 release notes announce the Blender LOD tools as new ('real-time LOD preview and screen size authoring directly in the Blender viewport'), which may mean the 1.7.3 add-on copy predates/slightly lags the announced version."
         }
       ],
       "crossReferences": []
@@ -2608,8 +2702,8 @@
     "intro": "One row per edition, newest first. Recorded by the **MSFS Cache Updater** agent; rows are never removed. (Section numbers cited in rows before 2026-09-21 refer to the pre-reorg layout.)",
     "rows": [
       {
-        "date": "2026-11-05",
-        "summary": "Research edition (source C, 2026-11-05) - five verified entries on SimObject weather readouts and numeric displays. Added to MSFS Programmability Gotchas: 'ModelBehaviors animate only the emissive material factor at runtime' (ef24eb5c) and 'MSFS 2024 SimConnect weather observation APIs are deprecated' (1da5602f). Added to Scenery SimObjects: 'Numeric displays on SimObjects use rotating digit drums' (e408359e). Added to RPN Schematics and Quirks: 'MSFS 2024 has no gust SimVar' (1f33b26f) and 'ASOBO_GT_Anim_Code output is normalised by AnimLength' (3e54ce18). Cross-references: Scenery Objects -> digit drums; Blender Pipeline -> emissive-only material animation. Version gate: local SDK 1.7.3 vs online 1.8.2 (online newer; online wording checked for the changed pages). Corrections applied during the write: the scenery-object drum failure is one 2021 uncontrolled report and does not contradict Standard/AutoPlay scenery animation; WIND_ADD_GUST_NO is a FLT ATC message id, not gust authoring; drum arithmetic kept separate for ANIM_LENGTH 100 (digit*10) vs 360 (digit*36); every negative 'no such thing' statement is documented absence, not a quoted denial. Ids gate: 58 -> 63 entries, nothing lost, each new id exactly once."
+        "date": "2026-11-07",
+        "summary": "Research edition (source C, ad-hoc batch of 2, 2026-11-07) - two verified entries on MSFS LOD screen-size math added to DevMode - Various: (1) MSFS 2024 LOD plugin bounding sphere AABB centre with half-diagonal radius (a483c3e3) - Asobo lod_tools_msfs_2024 builds the bounding sphere from an AABB of world-space evaluated mesh vertices, centre = AABB centre, radius = half the AABB diagonal; cross-reference added to Blender Pipeline. (2) MSFS LOD screen size FOV-aware formula vs MSFS 2020 FOV-blind formula (649bc812) - 2024-native screen_pct = min(100*r*lodFactor/(max(d,0.001)*tan(fov_y/2)), 1000) with live vertical FOV; 2020 legacy screen_pct = min(1000*r/d, 1000) surface-clamped and FOV-blind. Version gate local SDK 1.7.3 vs online 1.8.2. Ids gate 63 to 65 entries, 23 cross-references, 77 related."
       },
       {
         "date": "2026-11-05",

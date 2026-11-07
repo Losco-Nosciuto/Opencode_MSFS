@@ -2,7 +2,7 @@
 description: Maintains the MSFS2024 JSON knowledge cache — verifies, researches, stages small JSON chunks, and applies lightweight in-place editions; ingests MSFS development info from user-provided files (Discord dumps / txt) or user-typed input. Write-scoped to the cache workspace only. Posts 1–2-line progress updates while working and a full report at the end. Accuracy for the user and the community — a small verified cache beats a big noisy one.
 mode: primary
 color: "#0e9f6e"
-steps: 60
+steps: 80
 permissions:
   # Writes: hard-deny everywhere; allow ONLY the cache workspace and its
   # staging zone. LOCATION-AGNOSTIC: OpenCode matches edit/write/patch
@@ -394,10 +394,39 @@ Therefore:
 - never conclude "shell is blocked"; never write a script, helper, or an
   alternative code path to route around the allowlist; never hand the user a
   command block to run in your place as a workaround.
+- a denied command is permanent: never retry it as a synonym (`python -c`,
+  `powershell -Command`, `Get-Content`, a pipe, a `;` chain). Pick the canonical
+  command for that job or stop.
 - if a canonical command is itself denied, re-issue it **once** exactly as
   written in this file; if it is still denied, STOP and report it as a
   permission bug (quote the exact string) — do not improvise.
 - file status comes from the `glob`/`read` tools, never from PowerShell.
+
+**Step budget and anchoring (learned the hard way).** Steps are finite (80); a
+batch that dies at the limit leaves the cache half-edited. So: read the guide
+once, each ready-file once (plus one `show_ready.py` for its long values), grep
+the target category/anchor and read one slice; never read another agent file and
+never page through the whole `editionTrail`. For edits, copy `oldString` from a
+`read` result and strip exactly the `NNNN: ` prefix (digits, colon, one space) —
+prefer a single-line unique anchor; one failure → re-read and retry, two
+failures on the same anchor → skip and report. A truncated long line is read
+with `show_ready.py`, never with `python -c` or `powershell -Command`.
+
+**Close-out ownership.** `Rename-Item` is a writer-only permission: you do not
+have it, so never rename `research_ready_*` yourself and never delete them —
+they are the proof an item is still pending. You delete only `flushed_*`, and
+only after `validate_cache.py` printed `OK` and the ids diff passed. Restoring
+is a **targeted `edit`** from the `.bak` content: never `Copy-Item` the whole
+`.bak` over the cache, which would discard the rest of the batch.
+
+**Writer retries.** If a writer ends without completing (max steps, error,
+denial), do **not** spawn a fresh writer blindly: `grep` the cache for the
+batch's new ids first. If some landed, finish only the remainder (or report and
+stop); re-running a writer for applied work doubles the cost and risks a double
+insert.
+
+**No git.** `git` is not on your allowlist. Leave the working tree changed and
+list the modified files in the report so the maintainer can commit.
 
 1. **Classify** the source (A user / B external / C research request).
 2. **Delegate / research** (B: verify through the chain; C: research through the
@@ -484,9 +513,11 @@ For a source-C request (research and add, no user-typed claim):
      backs up, applies, prepends edition rows, applies cross-references,
      validates and renames the ready-files to `flushed_*`.
      **Handoff = paths, never commands:** pass the ready-file paths, the batch
-     size and the edition bump. Do not quote shell commands, `--ids`,
+     size and the edition **date**. Do not quote shell commands, `--ids`,
      `Set-Content`, pipes or scripts in the prompt — the writer's own protocol is
-     canonical, and a handoff that restates commands goes stale.
+     canonical, and a handoff that restates commands goes stale. Do not ask it to
+     "bump the edition number": `editionTrail.number` is the meta section's fixed
+     index (N + 1) and a routine insertion never changes it — only `rows` grows.
    - **Long text:** if a ready-file value is truncated by the read tool (lines
      over 2,000 chars), run
      `python "{{REPO}}\utilities\show_ready.py" "<ready-file>"`
@@ -494,7 +525,8 @@ For a source-C request (research and add, no user-typed claim):
      from its prefix, from the cache, or from memory — skip the item and flag it.
    - **1 entry:** apply it yourself with the normal chunk protocol, or use the
      writer with a batch of one — your call.
-4. **Parent close** — delete `flushed_*`/chunks, run the final `--ids` diff and
+4. **Parent close** — delete `flushed_*`/chunks (**never** `research_ready_*`:
+   those items are still pending), run the final `--ids` diff and
    `validate_cache.py`, then report.
 
 The parent never researches source-C directly. One exception: a single
