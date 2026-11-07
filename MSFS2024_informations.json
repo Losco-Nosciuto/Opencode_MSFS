@@ -111,6 +111,10 @@
         {
           "title": "Scenery character SimObject - non-playable human placed as a Scenery SimObj under SimObjects/Landmarks with model.cfg category=StaticObject instead of a Living Thing or Living World airport-life spawn",
           "entryId": "38d8c6f1-f113-5181-b8c0-467f364d4192"
+        },
+        {
+          "title": "Numeric displays on SimObjects use rotating digit drums - the same animated model exported as a plain scenery object does not animate",
+          "entryId": "e408359e-7cd9-595b-a490-66105a5a28ce"
         }
       ]
     },
@@ -732,6 +736,51 @@
             "msfs2024"
           ],
           "_notes": "Source-C research 2026-11-05; verification pass the same day against the online docs (1.8.2) + DevSupport/FSDeveloper. (a) TIME OF DAY conflict RESOLVED: docs and shipped MacroDefs.xml:58 agree on 0 dawn / 1 day / 2 dusk / 3 night; the GroundVehicles comment is legacy FS9/FSX three-value text. (b) Condition/ExitTime transitions on a `category=StaticObject` SimObj are now empirically supported by one 2025 FSDeveloper report (L: var) — not officially confirmed; still tracked by open question acce152b. (c) One-shot state restart on re-entry remains undocumented — do not rely on it without an in-sim test. Recipe durations remain design, not doc text."
+        },
+        {
+          "id": "e408359e-7cd9-595b-a490-66105a5a28ce",
+          "title": "Numeric displays on SimObjects use rotating digit drums - the same animated model exported as a plain scenery object does not animate",
+          "kind": "entry",
+          "claim": "Community-proven way to put readable numbers on a SimObject: a rotating digit drum (mechanical odometer). A developer built a working digital clock SimObject from 6 stacked cylinders, one digit on each face, each cylinder turned by a simple `<Animation type=\"Sim\">` whose parameter is RPN - not by 7-segment nodes and not by a texture. In-thread code pattern: `(E:ZULU TIME, hours) 10 / flr 120 *` (120 frames for a 3-face pyramid in that build; the general rule is 360 degrees / number of faces).\n\nMechanics for a ten-face drum: author the clip as a full 360-degree rotation (with intermediate keys, see below), keep `ANIM_LENGTH` at its default 100 and feed `digit * 10` - the output/AnimLength fraction selects 36 degrees per digit. With a 360-length clip the same digit needs `digit * 36`. Digit extraction is plain RPN: units `v 10 mod 10 *`, tens `v 10 / flr 10 mod 10 *`, hundreds `v 100 / flr 10 mod 10 *`, so the drum also rolls continuously between values instead of snapping.\n\nTwo caveats decide whether it works:\n\n- The same model exported as a plain scenery object did not animate for that developer; repackaging it as a SimObject fixed it (19 Oct 2021, a single self-diagnosed report, not a controlled test). This does not contradict the documented scenery-animation path: plain scenery objects run `type=\"Standard\" typeParam=\"AutoPlay\"` clips, while a data-driven drum needs `type=\"Sim\"` plus `<Parameter><Code>`, which is the SimObject path.\n- A 0-to-360 rotation must carry intermediate keyframes: two identical end poses interpolate as no rotation (quaternion short path). The thread reports the symptom directly (drum not turning), so bake keys at 0/120/240/360 or denser.",
+          "status": "`empirical` (working clock SimObject, 2021) + `fact (cited)` (ASOBO_GT_Anim_Code emits `Type=\"Sim\" TypeParam=\"AutoPlay\"` with `Parameter/Code`; AnimLength scaling; the shipped Landmarks SimObject uses the same machinery) + `inferred` (quaternion short-path; 36-degree digit mapping).",
+          "statusValues": [
+            "empirical",
+            "fact (cited)",
+            "inferred"
+          ],
+          "confidence": null,
+          "sources": [
+            "FSDeveloper - https://www.fsdeveloper.com/forum/threads/analog-clock.449765/ (6 cylinders, digit per face, `<Animation type=\"Sim\">`; the same model as a scenery object did not animate, SimObject repackaging fixed it, 19 Oct 2021)",
+            "local SDK `C:\\MSFS 2024 SDK\\ModelBehaviorDefs\\Asobo\\Generic\\Subtemplates\\Animations_Subtemplates.xml:109-143` (ASOBO_GT_Anim_Code emits `<Animation Type=\"Sim\" TypeParam=\"AutoPlay\"><Parameter><Code>`)",
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\content-configuration\\models\\animation-xml-properties\\index.md:415-417` (output/AnimLength clamped 0..1, multiplied by clip length)",
+            "local SDK sample `C:\\MSFS 2024 SDK\\Samples\\DevmodeProjects\\SimObjects\\Landmarks\\Windsock\\PackageSources\\SimObjects\\Landmarks\\MyCompany_Windsock\\sim.cfg:6-8` and `model\\Windsock.xml:46-52` (shipped Landmarks SimObject using the same animation system)"
+          ],
+          "user": null,
+          "added": "2026-11-05",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "b2e0c233-2e22-50f3-a59e-998a9af58963",
+              "note": "scenery objects run Standard AutoPlay clips; a data-driven drum needs the SimObject path"
+            },
+            {
+              "entryId": "5795f656-5908-5987-93f8-c1715bbc80c7",
+              "note": "which environment A: vars are usable inside a scenery SimObject animation"
+            }
+          ],
+          "tags": [
+            "simobject",
+            "display",
+            "odometer",
+            "digit drum",
+            "animation",
+            "scenery",
+            "rpn",
+            "msfs2024"
+          ],
+          "_notes": "All simulation evidence is 2020/2021 community work, not re-tested in 2024. The scenery-object failure is one user's diagnosis. The 36-degree figure is arithmetic from a 360-degree clip over ten faces; the thread's own clock used 120 frames for a 3-face pyramid."
         }
       ],
       "crossReferences": []
@@ -1354,6 +1403,10 @@
         {
           "title": "2020→2024 package conversion that works: open in 2024 DevMode, confirm convert dialogs, Build All — only model lights must be re-exported from Blender",
           "entryId": "6fe648d5-d9d6-5a50-b1a9-578f68323f5e"
+        },
+        {
+          "title": "ModelBehaviors animate only the emissive material factor at runtime - texture, UV and albedo parameters have no live binding",
+          "entryId": "ef24eb5c-39fa-543a-88f6-887ef89cc730"
         }
       ]
     },
@@ -1682,6 +1735,86 @@
           "related": [],
           "tags": [],
           "_notes": null
+        },
+        {
+          "id": "1f33b26f-d3d6-5230-b624-a855a7c37dd8",
+          "title": "MSFS 2024 has no gust SimVar - gusts are weather-authoring only and AMBIENT WIND VELOCITY carries gust variability plus the vertical component",
+          "kind": "entry",
+          "claim": "There is no gust SimVar in MSFS 2024. The ambient/weather block exposes wind only as `AMBIENT WIND VELOCITY` (knots), `AMBIENT WIND DIRECTION` (degrees, true north), `AMBIENT WIND X` / `Y` / `Z` (m/s, Y = vertical) and `STRUCT AMBIENT WIND` (ft/s) - no gust, max-gust or gust-factor variable. Every one of these carries the docs note that it is calculated from the user aircraft position regardless of camera or selected aircraft.\n\nGusts exist only on the authoring side: `<GustWave>` with `GustWaveDuration` / `GustWaveInterval` / `GustWaveSpeed` / `GustWaveAngle` under a `<WindLayer>` in `.wpr` weather files. `WIND_ADD_GUST_NO` in the FLT reference is an ATC message id, not a weather-assignment token - do not read it as gust authoring.\n\nWhat a weather-station SimObject can do instead:\n\n- Sustained wind: `sqrt(X^2 + Z^2) * 1.943844` (m/s to knots). The raw `AMBIENT WIND VELOCITY` includes the vertical component, so it over-reads in thermals and gusty conditions.\n- Gust: derive it. The instantaneous wind value already fluctuates with gust and variable-wind layers (community evidence: wind-driven visibility flickers in gusty conditions), so a peak-hold with decay over a rolling window gives a usable gust readout. This is a derivation, not a METAR gust.\n- Exact METAR gusts: only from a weather/METAR query, not from a SimVar; the 2024 SimConnect weather calls are deprecated (see the SimConnect weather entry).",
+          "status": "`fact (cited)` (wind SimVars + units + GustWave authoring) + `inferred` ('no gust SimVar' is documented absence from an exhaustive SimVars scan, not a quoted denial) + `empirical` (instantaneous velocity fluctuates with gusts; the vertical component inflates it).",
+          "statusValues": [
+            "fact (cited)",
+            "inferred",
+            "empirical"
+          ],
+          "confidence": null,
+          "sources": [
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\programming-apis\\simvars\\miscellaneous-variables\\index.md:97,99,100,101-103,108,109,110` (ambient block: units and the user-aircraft-position note)",
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\content-configuration\\mission-xml-files\\weather-xml-wpr-file-properties\\index.md:349-416` (GustWave under WindLayer)",
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\content-configuration\\flt-files\\flt-additional-information\\index.md:158-160,273` (WIND_ADD_GUST_NO is an ATC message id)",
+            "FSDeveloper - https://www.fsdeveloper.com/forum/threads/visibility-of-object-depending-on-wind.455774/ (gusts make the instantaneous direction/velocity fluctuate; threshold workaround)",
+            "FSDeveloper - https://www.fsdeveloper.com/forum/threads/ambient-wind-direction.454385 (AMBIENT WIND Y inflates the velocity; sqrt(X^2+Z^2) workaround)",
+            "online SimVars index 1.8.2 - no gust entry (checked 2026-11-05)"
+          ],
+          "user": null,
+          "added": "2026-11-05",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "f4f0310c-1c8f-5465-ab77-d17ad5b085c9",
+              "note": "scenery SimObjects read environment/own-object vars - AMBIENT WIND * and AMBIENT TEMPERATURE are the usable ones"
+            },
+            {
+              "entryId": "1da5602f-ef34-5d45-bdcd-ceaf604c1279",
+              "note": "SimConnect weather observation APIs are deprecated - the only METAR route"
+            }
+          ],
+          "tags": [
+            "simvar",
+            "wind",
+            "gust",
+            "weather",
+            "rpn",
+            "simobject",
+            "msfs2024"
+          ],
+          "_notes": "The gust derivation (peak-hold of the instantaneous value) is a design proposal, not a sim-tested recipe. No DevMode trace against a configured gust value was found."
+        },
+        {
+          "id": "3e54ce18-2136-5167-8d81-45de1dce2a64",
+          "title": "ASOBO_GT_Anim_Code output is normalised by AnimLength - the code returns 0..Length, clamped to 0..1 and multiplied by the clip length",
+          "kind": "entry",
+          "claim": "In 2024 a Sim animation's `<Parameter>` output is normalised, not used as a frame number: 'the output divided by the `<AnimLength>` should be a value between 0 and 1, which is then multiplied with the length of the model animation to get the correct animation position', and out-of-range values are clamped. The `<Animation length>` attribute exists only for Sim animations and only for backwards compatibility.\n\nShipped template behaviour: `ASOBO_GT_Anim_Code` requires `ANIM_NAME` and `ANIM_CODE` and emits `<Animation Name Length=\"#ANIM_LENGTH#\" Type=\"Sim\" TypeParam=\"AutoPlay\"><Parameter><Code>...</Code><Lag>...</Lag><Wrap>...</Wrap><Delta>...</Delta><BlendWeight>...</BlendWeight></Parameter>`. Defaults: `ANIM_LENGTH=100`, `ANIM_WRAP=FALSE`, `ANIM_DELTA=FALSE`, `ANIM_BLENDWEIGHT=1.0`; `ANIM_LAG` is 0 unless `LEFT_SINGLE_CODE` or `EVENTID` is set, which force 400. `INVERT_ANIM` becomes `ANIM_LENGTH - code`, and `REPEAT_ANIM` multiplies and wraps: `code * REPEAT_ANIM % ANIM_LENGTH`.\n\nPractical mapping: the code returns 0..ANIM_LENGTH and the exported clip must span the whole mechanical range. With the default `ANIM_LENGTH=100` over a 360-degree ten-face drum, one digit is `digit * 10` (36 degrees); with `ANIM_LENGTH=360` the same digit is `digit * 36`. The shipped wind-direction template uses 360 with a code that returns degrees and `ANIM_WRAP=1`.\n\n`<PartInfo>` is legacy: 'should not be used, nor is it required, for custom SimObjects made for MSFS 2024' - use `<Animation><Parameter>` instead.",
+          "status": "`fact (cited)` (2024 docs wording + shipped template defaults) + `inferred` (the 36-degree digit mapping is arithmetic, not documented).",
+          "statusValues": [
+            "fact (cited)",
+            "inferred"
+          ],
+          "confidence": null,
+          "sources": [
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\content-configuration\\models\\animation-xml-properties\\index.md:415-417` (AnimLength scaling + clamp), `:43` (length attribute backwards compatibility), `:389-393` (PartInfo legacy), `:433` (Parameter children)",
+            "local SDK `C:\\MSFS 2024 SDK\\ModelBehaviorDefs\\Asobo\\Generic\\Subtemplates\\Animations_Subtemplates.xml:109-143` (emitted Animation element; defaults at `:127-130`; INVERT/REPEAT at `:74-103`)",
+            "local SDK `C:\\MSFS 2024 SDK\\ModelBehaviorDefs\\Asobo\\Generic\\Animations.xml:57-68` (ASOBO_GT_Anim_Code required params)",
+            "local SDK `C:\\MSFS 2024 SDK\\ModelBehaviorDefs\\Asobo\\Misc\\SimObjects.xml:19-30` (ANIM_LENGTH 360 + ANIM_WRAP 1 + code returning degrees)",
+            "online docs 1.8.2 - the same three key sentences, no drift (checked 2026-11-05)"
+          ],
+          "user": null,
+          "added": "2026-11-05",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [],
+          "tags": [
+            "rpn",
+            "animation",
+            "modelbehaviors",
+            "animlength",
+            "simobject",
+            "msfs2024"
+          ],
+          "_notes": "The drum arithmetic depends on the clip length chosen: digit*10 only holds when ANIM_LENGTH=100; a 360-length clip needs digit*36. Do not mix the two in one model."
         }
       ],
       "crossReferences": [
@@ -2372,6 +2505,93 @@
           "related": [],
           "tags": [],
           "_notes": null
+        },
+        {
+          "id": "ef24eb5c-39fa-543a-88f6-887ef89cc730",
+          "title": "ModelBehaviors animate only the emissive material factor at runtime - texture, UV and albedo parameters have no live binding",
+          "kind": "entry",
+          "claim": "ModelBehaviors can animate exactly one material parameter at runtime: `<EmissiveFactor>`. Its `<Code>` / `<Sim>` result is multiplied with the emissive texture (0 turns it off), and `OverrideBaseEmissive` is honoured only at behavior version 1 (ignored above). The allowed `<Component>` children are `PartID, CameraTitle, FX, AnimationTriggers, Visibility, EmissiveFactor, Update, Animation, MouseRect, UseInputEvent` - there is no albedo, texture-swap or UV element.\n\nMaterial animation that MSFS does support is a different mechanism: Albedo/Base Colour, Emissive colour, Offset U/V, Tiling U/V, Rotation, Roughness and Metallic can be keyframed in Blender NLA tracks or 3ds Max Animation Groups and exported as baked glTF animation - the exporter's ASOBO_property_animation channels cover `baseColorFactor`, `emissiveFactor`, `metallicFactor`, `roughnessFactor`, `UVOffsetU/V`, `UVTilingU/V`, `UVRotation` (plus wiper and dirt states). That is author-time animation: there is no documented or shipped way to bind any of those channels to a SimVar or a `<Code>` expression at runtime.\n\nConsequences: emissive brightness can be driven live (backlight, day/night dimming, blink) but it is a scalar multiplier - it cannot select a glyph. A SimObject that must show changing numbers has to move or hide geometry (digit drums, 7-segment segments, split-flap, nixie digits), or draw the texture externally (WASM/NanoVG, an aircraft-interior technique). A digit-atlas texture that scrolls to a new cell cannot be driven at runtime.\n\nNegative check: `ModelBehaviorDefs` contains exactly four `<Material>` blocks, all with `<EmissiveFactor>`, and zero `UVOffset`, `AlbedoTexture` or `Tiling` nodes; no glTF or material schema exposes a text/glyph renderer.",
+          "status": "`fact (cited)` (SDK templates + official docs: single Material child, emissive multiply semantics, keyframe-only animated parameters) + `inferred` (no binding exists for texture/UV/albedo - documented absence; the digit consequence).",
+          "statusValues": [
+            "fact (cited)",
+            "inferred"
+          ],
+          "confidence": null,
+          "sources": [
+            "local SDK `C:\\MSFS 2024 SDK\\ModelBehaviorDefs\\Asobo\\Generic\\Emissive.xml:15-44` (ASOBO_GT_Material_Emissive_Sim) and `:53-96` (Code variant)",
+            "local SDK `C:\\MSFS 2024 SDK\\ModelBehaviorDefs\\Asobo_EX1\\Base\\Component\\Material.xml:106-145` (only EmissiveFactor; override semantics)",
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public\\flighting\\content-configuration\\models\\modelbehaviors\\general-template-xml-properties\\index.md:134-143` (allowed Component children) and `:391-396` (emissive multiplied with the emissive texture)",
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\models-and-textures\\textures\\materials\\animated-materials\\index.md:114-122` (animated parameters are Blender NLA / 3ds Max Animation Groups keyframes)",
+            "local SDK `C:\\MSFS 2024 SDK\\Tools\\Blender\\addons\\io_scene_gltf2_msfs_2024\\io\\com\\extensions\\asobo_property_animation.py:50-84` (baked channel list)",
+            "online docs 1.8.2 - the same wording on the ModelBehaviors and Animated Materials pages (re-checked 2026-11-05)"
+          ],
+          "user": null,
+          "added": "2026-11-05",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "b2e0c233-2e22-50f3-a59e-998a9af58963",
+              "note": "scenery objects vs the SimObject wrapper for sim-reactive animation"
+            },
+            {
+              "entryId": "b17fb0a4-cb15-5454-9bdb-2d22b5be3cd4",
+              "note": "avoid Update on Landmarks; drive everything from animation code parameters instead"
+            }
+          ],
+          "tags": [
+            "material",
+            "emissive",
+            "uv",
+            "animated materials",
+            "modelbehaviors",
+            "display",
+            "simobject",
+            "msfs2024"
+          ],
+          "_notes": "The negative is a documented absence, not a quoted denial: no behavior XSD ships, so 'no other Material child exists' rests on the exhaustive tree scan plus the docs' allowed-children list."
+        },
+        {
+          "id": "1da5602f-ef34-5d45-bdcd-ceaf604c1279",
+          "title": "MSFS 2024 SimConnect weather observation APIs are deprecated - METAR remains reachable only through Coherent JS GET_METAR listeners",
+          "kind": "entry",
+          "claim": "In the MSFS 2024 SimConnect API reference every weather function is marked Deprecated: WeatherCreateStation, WeatherRequestCloudState, WeatherRequestInterpolatedObservation, WeatherRequestObservationAtStation, WeatherRequestObservationAtNearestStation, WeatherSetMode* and WeatherSetObservation. `SimConnect_WeatherRequestMetar` no longer appears at all (legacy FSX/2020 call), and the weather exceptions are labelled 'legacy exception, and no longer used in the simulation'.\n\nThe payload type survives in the header: `SIMCONNECT_RECV_WEATHER_OBSERVATION` still carries `szMetar` with `MAX_METAR_LENGTH 2000` (`SimConnect.h:603-607`), even though the online Structs And Enums index no longer lists it - a doc/header gap, not a removal.\n\nThe live route is the Coherent/JS side: `GET_METAR_BY_IDENT` and `GET_METAR_BY_LATLON` are exposed under `JS_LISTENER_FACILITY` (page marked Work In Progress, parameters undocumented), with `JS_LISTENER_METAR` (UpdateMetar / UpdateTaf) alongside. WASM exposes no weather-station API - the only weather functions in `WASM\\include\\MSFS` are the MSFS_MapView weather-radar setters.\n\nConsequence for a scenery SimObject: it cannot rely on SimConnect weather queries in 2024. A per-station METAR readout would have to come from an HTML/JS context (or a WASM-to-JS bridge), and nothing found confirms it can target the station's lat/lon rather than the user aircraft.",
+          "status": "`fact (cited)` (API reference deprecation flags, legacy exception wording, header struct, JS listener names) + `inferred` (a scenery SimObject cannot use SimConnect weather) + `unknown` (whether the JS GET_METAR calls work for an arbitrary station from a SimObject context).",
+          "statusValues": [
+            "fact (cited)",
+            "inferred",
+            "unknown"
+          ],
+          "confidence": null,
+          "sources": [
+            "official docs - https://docs.flightsimulator.com/msfs2024/flighting/programming-apis/simconnect/simconnect-api-reference/ (all weather functions marked Deprecated; no WeatherRequestMetar)",
+            "official docs - https://docs.flightsimulator.com/msfs2024/retail/programming-apis/simconnect/api-reference/structures-and-enumerations/simconnect_exception (WEATHER_UNABLE_TO_GET_OBSERVATION = legacy, no longer used)",
+            "local SDK `C:\\MSFS 2024 SDK\\SimConnect SDK\\include\\SimConnect.h:43,603-607,1041-1053` (SIMCONNECT_RECV_WEATHER_OBSERVATION + szMetar + MAX_METAR_LENGTH 2000; the three observation request functions still declared)",
+            "local SDK docs `C:\\MSFS 2024 SDK\\Documentation\\public\\retail\\programming-apis\\javascript\\coherent-listeners\\js_listener_facility\\index.md:16-17` (GET_METAR_BY_IDENT / GET_METAR_BY_LATLON, Work In Progress) and `...\\js_listener_metar\\index.md` (UpdateMetar / UpdateTaf)",
+            "local SDK `C:\\MSFS 2024 SDK\\WASM\\include\\MSFS` (only MSFS_MapView.h weather-radar functions; no weather-station API)"
+          ],
+          "user": null,
+          "added": "2026-11-05",
+          "updated": null,
+          "resolved": null,
+          "supersedes": [],
+          "related": [
+            {
+              "entryId": "1f33b26f-d3d6-5230-b624-a855a7c37dd8",
+              "note": "no gust SimVar - the derived-gust route and the METAR alternative"
+            }
+          ],
+          "tags": [
+            "simconnect",
+            "weather",
+            "metar",
+            "deprecated",
+            "wasm",
+            "coherent",
+            "msfs2024"
+          ],
+          "_notes": "The API reference is JS-rendered; the deprecation flags were read from the rendered tables. Whether a SimObject-attached WASM module can bridge to a Coherent listener is untested."
         }
       ],
       "crossReferences": [
@@ -2387,6 +2607,10 @@
     "title": "Edition trail",
     "intro": "One row per edition, newest first. Recorded by the **MSFS Cache Updater** agent; rows are never removed. (Section numbers cited in rows before 2026-09-21 refer to the pre-reorg layout.)",
     "rows": [
+      {
+        "date": "2026-11-05",
+        "summary": "Research edition (source C, 2026-11-05) - five verified entries on SimObject weather readouts and numeric displays. Added to MSFS Programmability Gotchas: 'ModelBehaviors animate only the emissive material factor at runtime' (ef24eb5c) and 'MSFS 2024 SimConnect weather observation APIs are deprecated' (1da5602f). Added to Scenery SimObjects: 'Numeric displays on SimObjects use rotating digit drums' (e408359e). Added to RPN Schematics and Quirks: 'MSFS 2024 has no gust SimVar' (1f33b26f) and 'ASOBO_GT_Anim_Code output is normalised by AnimLength' (3e54ce18). Cross-references: Scenery Objects -> digit drums; Blender Pipeline -> emissive-only material animation. Version gate: local SDK 1.7.3 vs online 1.8.2 (online newer; online wording checked for the changed pages). Corrections applied during the write: the scenery-object drum failure is one 2021 uncontrolled report and does not contradict Standard/AutoPlay scenery animation; WIND_ADD_GUST_NO is a FLT ATC message id, not gust authoring; drum arithmetic kept separate for ANIM_LENGTH 100 (digit*10) vs 360 (digit*36); every negative 'no such thing' statement is documented absence, not a quoted denial. Ids gate: 58 -> 63 entries, nothing lost, each new id exactly once."
+      },
       {
         "date": "2026-11-05",
         "summary": "Verification edition — online/community check. Version gate: local SDK 1.7.3 vs online 1.8.2 → online is newer and was used for this pass (local Documentation/Samples may want updating). No new entries, no deletions, no renumbering. (1) E:TIME OF DAY conflict RESOLVED in a788efd9: the online SimVars page and the shipped `E_TimeOfDay` macro (ModelBehaviorDefs\\Asobo_EX1\\Base\\Helper\\MacroDefs.xml:58) both give 0 dawn / 1 day / 2 dusk / 3 night; the `1 = Day ; 2 = Dusk/Dawn ; 3 = Night` comment in Asobo\\Misc\\GroundVehicles.xml:360 is legacy FS9/FSX three-value text (its code only tests `!= 1`). (2) 38d8c6f1 corrected: Human/Animal SimObjects ARE placeable as scenery — StaticObject is chosen to stop the object's simulation, not to make it placeable — and DistanceToNotAnimate is catch-up, not freeze; Asobo calls it 'flagged as obsolete' and ties evaluation to the object still being loaded and the animated node present in the current LOD (DevSupport 14200, 2025-06-23). Added the SU2 skinned-character T-pose defect and its fix (DevSupport 13941) and the distance animation frame-rate quality limit (FSDeveloper 458339); status gains `empirical`. (3) Open question acce152b updated but LEFT OPEN: Condition transitions are empirically reported working on a `category=StaticObject` SimObject with `L:` vars (FSDeveloper 459651, 2025-02-04) and failing with an aircraft `A:` var (FSDeveloper 451392, 2021); whether a one-shot state restarts at frame 0 on re-entry remains undocumented. (4) a788efd9 also gained the 2021 Landmarks scenery precedent (mamu: `(E:LOCAL TIME, Seconds) 28800 >` and `(A:AMBIENT PRECIP STATE, mask) 3.0 >`), the ANIM_WRAP gotcha (DevSupport 14326) and the Avatar-mode update bug (DevSupport 16902). Ids gate unchanged: 58 entries, 21 cross-references, 0 unresolved."
