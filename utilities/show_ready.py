@@ -95,6 +95,13 @@ def main(argv: list[str] | None = None) -> int:
     if args.chunk < 40:
         print("error: --chunk must be >= 40", file=sys.stderr)
         return 2
+    if args.chunk > 1800:
+        print(
+            "error: --chunk must be <= 1800 — larger pieces are truncated again by "
+            "the read tool's 2,000-character line limit",
+            file=sys.stderr,
+        )
+        return 2
 
     try:
         data = json.loads(path.read_text(encoding="utf-8-sig"))
