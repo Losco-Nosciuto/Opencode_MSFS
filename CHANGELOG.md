@@ -2,6 +2,21 @@
 
 Notable changes to the MSFS 2024 OpenCode Workspace. Newest first.
 
+## 2026-11-07
+
+### Agents and installer
+
+- **Location-agnostic agent sources.** `custom agent/*.md` now carry two placeholders, `{{REPO}}` and `{{SDK}}`, instead of machine-specific paths. `utilities/install_agents.py` resolves them at install time, so the public repo ships no personal filesystem layout and there is no manual find/replace step (the old INSTALL.md "ONE path replace" is gone). The installer reports how many placeholders it resolved and warns if any survive.
+- **Shell allowlist discipline (both cache agents).** `Permission denied: shell` means *that exact command string* is not allowlisted — not that shell is unavailable and not that the workspace is read-only. Canonical commands must be issued verbatim (no `cd`, `;`, `&&`, `|`, `python -c`, `Get-Content`); a denial is re-tried once and then reported as a permission bug. Scripts or alternative code paths written to route around a denial are explicitly forbidden — this is the failure mode that produced a 300-line "applier" script instead of a cache write.
+- **IDs gate fixed.** The documented gate ran `validate_cache.py --ids | Set-Content …`; the shell scanner splits compound commands and `Set-Content` was never allowlisted, so the gate failed by construction. Replaced by `validate_cache.py --ids-write <path>` and `--ids-diff <before> <after>`, both covered by the existing `python "…/validate_cache.py"*` rule. `--ids-diff` prints `NEW`/`MISSING`/`DUPLICATE` and fails on loss or duplication.
+- **Status snippet removed.** The `Get-Content`/`ConvertFrom-Json`/`Get-ChildItem` status one-liner was also unallowlisted; ready/flushed counts now come from `glob` plus one inventory `read`.
+- **Stale backup guard.** `MSFS-Cache-Writer-Subagent` refreshes `.bak` when it is missing **or older than the cache**, instead of only when absent. A stale safety copy would silently discard the previous edition on restore.
+- **`validate_cache.py` default file** resolves to the repo's `MSFS2024_informations.json` rather than the current working directory, so the canonical command works when the session is opened in another project.
+
+### Knowledge cache
+
+- **Pending 2026-11-05 edition committed** (animation, weather and SimConnect entries) as a clean base before the next flush.
+
 ## 2026-11-05
 
 ### plan-msfs

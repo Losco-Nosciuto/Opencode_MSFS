@@ -71,9 +71,9 @@ it as a normal full-history source-B file:
 python declogger_FS2020_manualonly.py export.txt -o full_history.txt → complete 2020+2024 text
 ```
 
-**Golden rule — raw dumps are never touched:** both tools only *write* their
-output file. The downloaded dumps in
-`C:\Lavoro\DiscordChatExporter\Unfiltered_MSFS_Chats\` are the only permanent
+**Golden rule - raw dumps are never touched:** both tools only *write* their
+output file. The downloaded dumps in your Discord-export folder (for example
+`<dump-folder>\`) are the only permanent
 copy of the pre-2024 history and must never be deleted or overwritten. (Known
 quirk carried over from the original: on files whose *name* contains emoji,
 the final console summary line crashes — the output file is already written

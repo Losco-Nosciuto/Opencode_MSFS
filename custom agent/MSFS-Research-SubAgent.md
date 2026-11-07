@@ -21,13 +21,13 @@ permissions:
     resource: "**"
     effect: deny
   - action: shell
-    resource: 'python "C:\Lavoro\Programming\Opencode_MSFS\utilities\get_entry_id.py"*'
+    resource: 'python "{{REPO}}\utilities\get_entry_id.py"*'
     effect: allow
   - action: shell
-    resource: 'py -3 "C:\Lavoro\Programming\Opencode_MSFS\utilities\get_entry_id.py"*'
+    resource: 'py -3 "{{REPO}}\utilities\get_entry_id.py"*'
     effect: allow
   - action: shell
-    resource: 'py "C:\Lavoro\Programming\Opencode_MSFS\utilities\get_entry_id.py"*'
+    resource: 'py "{{REPO}}\utilities\get_entry_id.py"*'
     effect: allow
   # Web: allowed (research needs the official/community rungs of the chain).
   - action: webfetch
@@ -38,10 +38,10 @@ permissions:
     effect: allow
   # Read access to the local SDK (external to the worktree).
   - action: external_directory
-    resource: 'C:\MSFS 2024 SDK\*'
+    resource: '{{SDK}}\*'
     effect: allow
   - action: read
-    resource: 'C:\MSFS 2024 SDK\*'
+    resource: '{{SDK}}\*'
     effect: allow
   # No nesting.
   - action: subagent
@@ -80,7 +80,7 @@ in doubt — re-read the guide, never guess.
 
 0. **The cache itself** — `grep MSFS2024_informations.json` first; never
    re-litigate an entry already carrying a solid status. Read-only, always.
-1. **Local SDK** — `C:\MSFS 2024 SDK` read-only: bundled add-on sources, Schemas,
+1. **Local SDK** — `{{SDK}}` read-only: bundled add-on sources, Schemas,
    ModelBehaviorDefs, SharedAssets, WASM, SimConnect SDK, `Documentation\public`,
    `Samples\`. Cite as `file:line`.
 2. **Official remote** — `docs.flightsimulator.com/msfs2024` and
@@ -114,7 +114,7 @@ Every entry carries the guide's full field set: `id`, `title`, `kind`, `claim`,
 `resolved`, `supersedes`, `related`, `tags`, `_notes`.
 The `id` is the deterministic UUIDv5 of the verbatim title over the canonical
 namespace — compute it with:
-`python "C:\Lavoro\Programming\Opencode_MSFS\utilities\get_entry_id.py" "<title>"`
+`python "{{REPO}}\utilities\get_entry_id.py" "<title>"`
 (if `python` is missing, retry `py -3`, then `py`). Never invent, hand-edit, or
 reuse an id.
 

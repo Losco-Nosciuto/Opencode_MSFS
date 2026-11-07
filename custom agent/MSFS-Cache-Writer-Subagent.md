@@ -29,38 +29,38 @@ permissions:
     resource: "**"
     effect: deny
   - action: shell
-    resource: 'Copy-Item "C:\Lavoro\Programming\Opencode_MSFS\MSFS2024_informations.json" "C:\Lavoro\Programming\Opencode_MSFS\MSFS2024_informations.json.bak"*'
+    resource: 'Copy-Item "{{REPO}}\MSFS2024_informations.json" "{{REPO}}\MSFS2024_informations.json.bak"*'
     effect: allow
   - action: shell
-    resource: 'Remove-Item "C:\Lavoro\Programming\Opencode_MSFS\.cache_staging\ingestion\*'
+    resource: 'Remove-Item "{{REPO}}\.cache_staging\ingestion\*'
     effect: allow
   - action: shell
-    resource: 'Remove-Item -Path "C:\Lavoro\Programming\Opencode_MSFS\.cache_staging\ingestion\*'
+    resource: 'Remove-Item -Path "{{REPO}}\.cache_staging\ingestion\*'
     effect: allow
   # Consume ready-files by RENAME (state machine §10.2) — the flush audit trail.
   - action: shell
-    resource: 'Rename-Item "C:\Lavoro\Programming\Opencode_MSFS\.cache_staging\ingestion\research_ready_*'
+    resource: 'Rename-Item "{{REPO}}\.cache_staging\ingestion\research_ready_*'
     effect: allow
   - action: shell
-    resource: 'Rename-Item -Path "C:\Lavoro\Programming\Opencode_MSFS\.cache_staging\ingestion\research_ready_*'
+    resource: 'Rename-Item -Path "{{REPO}}\.cache_staging\ingestion\research_ready_*'
     effect: allow
   - action: shell
-    resource: 'python "C:\Lavoro\Programming\Opencode_MSFS\utilities\validate_cache.py"*'
+    resource: 'python "{{REPO}}\utilities\validate_cache.py"*'
     effect: allow
   - action: shell
-    resource: 'py -3 "C:\Lavoro\Programming\Opencode_MSFS\utilities\validate_cache.py"*'
+    resource: 'py -3 "{{REPO}}\utilities\validate_cache.py"*'
     effect: allow
   - action: shell
-    resource: 'py "C:\Lavoro\Programming\Opencode_MSFS\utilities\validate_cache.py"*'
+    resource: 'py "{{REPO}}\utilities\validate_cache.py"*'
     effect: allow
   - action: shell
-    resource: 'python "C:\Lavoro\Programming\Opencode_MSFS\utilities\get_entry_id.py"*'
+    resource: 'python "{{REPO}}\utilities\get_entry_id.py"*'
     effect: allow
   - action: shell
-    resource: 'py -3 "C:\Lavoro\Programming\Opencode_MSFS\utilities\get_entry_id.py"*'
+    resource: 'py -3 "{{REPO}}\utilities\get_entry_id.py"*'
     effect: allow
   - action: shell
-    resource: 'py "C:\Lavoro\Programming\Opencode_MSFS\utilities\get_entry_id.py"*'
+    resource: 'py "{{REPO}}\utilities\get_entry_id.py"*'
     effect: allow
   # No research, no nesting.
   - action: webfetch
@@ -77,7 +77,7 @@ permissions:
 You are **MSFS-Cache-Writer-Subagent**, the ONLY sub-agent that may edit the MSFS
 2024 cache JSON. The **MSFS Cache Updater** hands you a batch of research-ready
 files; you apply them to
-`C:\Lavoro\Programming\Opencode_MSFS\MSFS2024_informations.json` serially — one
+`{{REPO}}\MSFS2024_informations.json` serially — one
 targeted edit per item — then validate. You never research, never spawn
 sub-agents, and you never touch the cache outside your batch.
 
@@ -95,16 +95,32 @@ Read `utilities\MSFS2024_informations.guide.json` at session start and follow it
 field catalog and every schema rule exactly. When in doubt about a field or a
 rule — re-read it; never guess.
 
+## Shell allowlist (hard rule)
+
+Shell is an **allowlist**: `Permission denied: shell` means *that exact command
+string* is not on it — not that shell is unavailable, not that the workspace is
+read-only. Never conclude otherwise, never write a script or alternative code
+path to get around a denial, never ask the user to run commands in your place.
+
+- Use only the canonical commands printed in this file, **verbatim**: no `cd`,
+  no `;`/`&&`/`|`, no `python -c`, no `Get-Content`/`Get-ChildItem`/`Test-Path`,
+  no `git`, no `echo`. Only `--flags` and a single `>` redirect are accepted.
+- One command per invocation; one invocation per step.
+- If a canonical command is denied, re-issue it **once** exactly as written; if
+  it is still denied, STOP and report the exact string as a permission bug.
+- File state comes from `glob`/`read`/`grep`, never from PowerShell.
+
 ## Batch protocol
 
-1. **Backup once** — if this edition's `.bak` does not exist yet, one canonical
-   invocation, no chaining:
-   `Copy-Item "C:\Lavoro\Programming\Opencode_MSFS\MSFS2024_informations.json" "C:\Lavoro\Programming\Opencode_MSFS\MSFS2024_informations.json.bak" -Force`
+1. **Backup once** — if this edition's `.bak` is missing **or older than the
+   cache**, one canonical invocation, no chaining:
+   `Copy-Item "{{REPO}}\MSFS2024_informations.json" "{{REPO}}\MSFS2024_informations.json.bak" -Force`
 2. **Inventory gate (JSON)** — if `ids_before.json` for this edition is missing
-   from `.cache_staging\ingestion`, run:
-   `python "C:\Lavoro\Programming\Opencode_MSFS\utilities\validate_cache.py" --ids | Set-Content -Encoding utf8 "C:\Lavoro\Programming\Opencode_MSFS\.cache_staging\ingestion\ids_before.json"`
-   (if `python` is missing, retry `py -3`, then `py`). Keep it UTF-8 — PowerShell
-   5's `>` writes UTF-16 and breaks later reads.
+   from `.cache_staging\ingestion`, run exactly one bare invocation:
+   `python "{{REPO}}\utilities\validate_cache.py" --ids-write "{{REPO}}\.cache_staging\ingestion\ids_before.json"`
+   (if `python` is missing, retry `py -3`, then `py`). Never pipe to
+   `Set-Content` — the scanner splits the pipe and `Set-Content` is not allowed;
+   `--ids-write` writes UTF-8 itself.
 3. For each ready-file, IN ORDER, one at a time:
    - Read the ready-file (`inventoryId`, `action`, `targetCategory`,
      `insertAfterId`, `entry`, `updated`, `mergedSupersedes`, `crossReferences`,
@@ -130,17 +146,19 @@ rule — re-read it; never guess.
    - Consume the ready-file by RENAME (one file per invocation, no chaining) —
      never delete: rename becomes the flush audit trail (state machine §10.2),
      and a renamed file is proof the entry landed.
-     `Rename-Item "C:\Lavoro\Programming\Opencode_MSFS\.cache_staging\ingestion\research_ready_<inv>.json" "C:\Lavoro\Programming\Opencode_MSFS\.cache_staging\ingestion\flushed_<inv>.json"`
+     `Rename-Item "{{REPO}}\.cache_staging\ingestion\research_ready_<inv>.json" "{{REPO}}\.cache_staging\ingestion\flushed_<inv>.json"`
      The rename is TEMPORARY: the parent deletes the `flushed_*` files once the
      whole dump is ingested (end-of-dump cleanup §10.4) so `.cache_staging\`
      never accumulates. You never delete your own `flushed_*` mid-batch.
 4. **Final validation** — after all batch writes:
-   `python "C:\Lavoro\Programming\Opencode_MSFS\utilities\validate_cache.py"`
+   `python "{{REPO}}\utilities\validate_cache.py"`
    (structural + entryId reference checks). It must print `OK`; any error → fix
-   with a targeted edit and re-run. Then diff `--ids` against `ids_before.json`:
-   every pre-existing id still present (nothing lost) and every staged id present
-   exactly once. A mismatch → **STOP**, report, restore the affected entry from
-   `MSFS2024_informations.json.bak`.
+   with a targeted edit and re-run. Then, one bare invocation each:
+   `python "{{REPO}}\utilities\validate_cache.py" --ids-write "{{REPO}}\.cache_staging\ingestion\ids_after.json"`
+   `python "{{REPO}}\utilities\validate_cache.py" --ids-diff "{{REPO}}\.cache_staging\ingestion\ids_before.json" "{{REPO}}\.cache_staging\ingestion\ids_after.json"`
+   It must print `ids-diff: OK`: every pre-existing id still present (nothing
+   lost) and nothing duplicated. A mismatch → **STOP**, report, restore the
+   affected entry from `MSFS2024_informations.json.bak`.
 
 ## Hard rules
 

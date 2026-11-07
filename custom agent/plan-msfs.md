@@ -12,21 +12,21 @@ permissions:
     effect: allow
   # Local SDK = rung-1 research input (pre-approved reads; edit stays denied there).
   - action: external_directory
-    resource: 'C:\MSFS 2024 SDK\*'
+    resource: '{{SDK}}\*'
     effect: allow
   - action: read
-    resource: 'C:\MSFS 2024 SDK\*'
+    resource: '{{SDK}}\*'
     effect: allow
   # Knowledge cache (rung-0 research input) — distributed with this MSFS
   # workspace; when the agent runs from another project it is external.
   - action: external_directory
-    resource: 'C:\Lavoro\Programming\Opencode_MSFS\*'
+    resource: '{{REPO}}\*'
     effect: allow
   - action: read
-    resource: 'C:\Lavoro\Programming\Opencode_MSFS\MSFS2024_informations.json'
+    resource: '{{REPO}}\MSFS2024_informations.json'
     effect: allow
   - action: read
-    resource: 'C:\Lavoro\Programming\Opencode_MSFS\utilities\MSFS2024_informations.guide.json'
+    resource: '{{REPO}}\utilities\MSFS2024_informations.guide.json'
     effect: allow
   # Shell: hard-deny. "**" not "*": a "*"+deny last rule makes OpenCode strip the
   # shell tool from the request (and from every spawned child's inherited rules),
@@ -135,7 +135,7 @@ Authoritative sources (ground truth — the SDK add-on source outranks docs):
 - MSFS 2024: `https://docs.flightsimulator.com/msfs2024`; DevSupport
   `https://devsupport.flightsimulator.com`; FSDeveloper SDK DevMode forum;
   MSFS Forums `https://forums.flightsimulator.com/c/user-support-hub/sdk/184`.
-- Local SDK `C:\MSFS 2024 SDK` — bundled Blender add-ons
+- Local SDK `{{SDK}}` — bundled Blender add-ons
   `Tools\Blender\addons\io_scene_gltf2_msfs_2024` (+ `lod_tools_msfs_2024`,
   `max_bridge_msfs_2024`, `wipermask_generator_msfs_2024`, `_addons_common`)
   are **the ground truth for exporter/plugin behavior** — read from disk
@@ -162,7 +162,7 @@ Tier claims before researching:
      verified knowledge. **Resolve it, don't assume it:** use the
      `msfs2024-knowledge` reference when OpenCode exposes one (project or
      global config); otherwise use the known path
-     `C:\Lavoro\Programming\Opencode_MSFS\MSFS2024_informations.json` if it
+     `{{REPO}}\MSFS2024_informations.json` if it
      exists. If neither is available, say the cache is unavailable and continue
      to rung 1. **The cache supplies facts, never project context** — never
      infer the target's identity, name, suite membership, structure, or files
@@ -190,13 +190,13 @@ Tier claims before researching:
      `MSFS2024_informations.md` is history-only — never quote it. Schema or
      field semantics: consult `MSFS2024_informations.guide.json` in the cache's
      `utilities\` folder (or the same folder in the distribution checkout).
-  1. **Local SDK** (`C:\MSFS 2024 SDK`): any file related to the task —
+  1. **Local SDK** (`{{SDK}}`): any file related to the task —
      SDK-bundled add-on source (`Tools\Blender\addons\…`), `Schemas`,
      `ModelBehaviorDefs`, `SharedAssets`, `WASM`, `SimConnect SDK` — plus the
      **local documentation** (`Documentation\public`, mirrors the online docs
      for the same version) and **real-package samples** (`Samples\`:
      `DevmodeProjects`, `ModelBehavior`, `VisualStudio`, `WWise`).
-     **Version gate (once per session):** compare `C:\MSFS 2024 SDK\version.txt`
+     **Version gate (once per session):** compare `{{SDK}}\version.txt`
      (e.g. `1.7.3`) with the newest SDK version on the online release notes
      (`docs.flightsimulator.com/msfs2024/retail/introduction/sdk-release-notes/`);
      equal or local newer → use local docs; **online newer → use online** and

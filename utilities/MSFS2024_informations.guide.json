@@ -209,7 +209,7 @@
     "confidence": "high",
     "sources": [
       "official docs — https://…",
-      "local SDK `C:\\MSFS 2024 SDK\\…\\file.py:54`"
+      "local SDK `<sdk-root>\\…\\file.py:54`"
     ],
     "user": "mamu82",
     "added": "2026-09-21",

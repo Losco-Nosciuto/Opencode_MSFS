@@ -25,18 +25,18 @@ permissions:
     effect: allow
   # Local SDK = sources 2-3 input (pre-approved reads; edit stays denied there).
   - action: external_directory
-    resource: 'C:\MSFS 2024 SDK\*'
+    resource: '{{SDK}}\*'
     effect: allow
   - action: read
-    resource: 'C:\MSFS 2024 SDK\*'
+    resource: '{{SDK}}\*'
     effect: allow
   # Knowledge cache (source 1) — distributed with this MSFS workspace; when the
   # scout runs from another project it is an external directory.
   - action: external_directory
-    resource: 'C:\Lavoro\Programming\Opencode_MSFS\*'
+    resource: '{{REPO}}\*'
     effect: allow
   - action: read
-    resource: 'C:\Lavoro\Programming\Opencode_MSFS\MSFS2024_informations.json'
+    resource: '{{REPO}}\MSFS2024_informations.json'
     effect: allow
   # No nesting.
   - action: subagent
@@ -85,10 +85,10 @@ parent's context.
    claim — report it and stop. `inferred`/`unknown` = not decided. Cite as
    `category N — <entry title>`. `MSFS2024_informations.md` is history-only —
    never quote it.
-2. **SDK sources** — `C:\MSFS 2024 SDK` read-only: SDK-bundled add-on source
+2. **SDK sources** — `{{SDK}}` read-only: SDK-bundled add-on source
    (`Tools\Blender\addons\…`), `Schemas`, `ModelBehaviorDefs`, `SharedAssets`,
    `WASM`, `SimConnect SDK`. Cite as `file:line`.
-3. **Docs + samples** — `C:\MSFS 2024 SDK\Documentation\public` (mirrors the
+3. **Docs + samples** — `{{SDK}}\Documentation\public` (mirrors the
    online docs for the SDK version — honor `versionGate`) and `Samples\`
    (`DevmodeProjects`, `ModelBehavior`, `VisualStudio`, the `WWise` audio
    sample). Inspect on demand, chunked (≤ ~300 lines), snippet-only. Cite

@@ -2,14 +2,22 @@
 # -*- coding: utf-8 -*-
 """Install the MSFS2024 OpenCode agents into the global OpenCode config.
 
-Automates the two manual steps from INSTALL.md:
+The agent files in ``custom agent/`` are location-agnostic: they carry two
+placeholders instead of hardcoded paths, so the public repo never ships a
+personal filesystem layout.
+
+    {{REPO}}  -> the path of this checkout
+    {{SDK}}   -> the MSFS 2024 SDK root (Documentation, Samples and the SDK
+                 itself must all live under it)
+
+This script installs them the way INSTALL.md documents:
 
   1. copy `custom agent/*.md` into the global agents directory
      (`~/.config/opencode/agents/`, on Windows
      `%USERPROFILE%\\.config\\opencode\\agents\\`)
-  2. re-point the hardcoded repository prefix
-     (`C:\\Lavoro\\Programming\\Opencode_MSFS`) to this checkout's real location
-  3. optionally re-point the MSFS 2024 SDK path as well
+  2. substitute `{{REPO}}` with this checkout's real location
+  3. substitute `{{SDK}}` with the SDK root (`--sdk`, interactive prompt, or
+     the documented default `C:\\MSFS 2024 SDK`)
 
 Pure stdlib — no dependencies. Everything that gets overwritten is first
 backed up next to the target as `<name>.bak-<timestamp>`. Running it twice is
@@ -28,10 +36,11 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-# The hardcoded prefix the agents are written with. This is the ONE string
-# users must re-point to their own checkout (INSTALL.md, step 3).
-REPO_PREFIX = r"C:\Lavoro\Programming\Opencode_MSFS"
-SDK_DEFAULT = r"C:\MSFS 2024 SDK"
+# Placeholders carried by the source agents. They are the ONLY location data
+# in the repo; the installer resolves them for the current machine.
+REPO_PLACEHOLDER = "{{REPO}}"
+SDK_PLACEHOLDER = "{{SDK}}"
+SDK_FALLBACK = r"C:\MSFS 2024 SDK"
 AGENT_FILES = (
     "msfs-cache-updater.md",
     "plan-msfs.md",
@@ -82,7 +91,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default=None,
         metavar="PATH",
         help=(
-            f"your MSFS 2024 SDK root; replaces '{SDK_DEFAULT}' in the agents. "
+            "your MSFS 2024 SDK root; replaces '{{SDK}}' in the agents. "
             "Documentation, Samples and the SDK itself must all be under this "
             "single root.",
         ),
@@ -119,19 +128,18 @@ def write_text(path: Path, text: str) -> None:
 
 
 def plan_for(text: str, new_prefix: str, sdk: str | None) -> tuple[str, int, int]:
-    """Return (modified_text, repo_refs_rewritten, sdk_refs_rewritten)."""
-    n_repo = text.count(REPO_PREFIX)
-    n_sdk = text.count(SDK_DEFAULT) if sdk else 0
-    new_text = text.replace(REPO_PREFIX, new_prefix)
-    if sdk:
-        new_text = new_text.replace(SDK_DEFAULT, sdk)
+    """Return (modified_text, repo_placeholders, sdk_placeholders)."""
+    n_repo = text.count(REPO_PLACEHOLDER)
+    n_sdk = text.count(SDK_PLACEHOLDER)
+    new_text = text.replace(REPO_PLACEHOLDER, new_prefix)
+    new_text = new_text.replace(SDK_PLACEHOLDER, sdk or SDK_FALLBACK)
     return new_text, n_repo, n_sdk
 
 
 def ask_sdk_path(default_exists: bool) -> str | None:
     """Interactive prompt for an SDK location. Returns a path or None to keep default."""
     print()
-    print(f"MSFS 2024 SDK not found at: {SDK_DEFAULT}")
+    print(f"MSFS 2024 SDK not found at: {SDK_FALLBACK}")
     print(
         "IMPORTANT: the SDK root must also hold its Documentation and Samples "
         "folders (the agents read all three; local docs are preferred over the "
@@ -161,6 +169,12 @@ def install_file(
     text = read_text(src)
     new_text, n_repo, n_sdk = plan_for(text, new_prefix, sdk)
     dst = dst_dir / src.name
+
+    leftover = [p for p in (REPO_PLACEHOLDER, SDK_PLACEHOLDER) if p in new_text]
+    if leftover:
+        lines.append(
+            f"  {src.name:<28} WARNING unresolved placeholder(s): {', '.join(leftover)}"
+        )
 
     if dst.exists() and read_text(dst) == new_text:
         return [f"  {src.name:<28} already installed and up to date (no changes)"]
@@ -201,7 +215,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"source agents : {src_dir}")
     print(f"target dir    : {dst_dir}")
-    print(f"repo prefix   : {REPO_PREFIX} -> {new_prefix}")
+    print(f"repo prefix   : {REPO_PLACEHOLDER} -> {new_prefix}")
 
     missing = [name for name in AGENT_FILES if not (src_dir / name).is_file()]
     if missing:
@@ -216,13 +230,13 @@ def main(argv: list[str] | None = None) -> int:
     # Decide SDK handling (flag > prompt > keep default).
     sdk = args.sdk
     if not sdk and not args.yes:
-        if not Path(SDK_DEFAULT).exists():
+        if not Path(SDK_FALLBACK).exists():
             sdk = ask_sdk_path(default_exists=False)
         elif not args.dry_run:
-            print(f"note: SDK found at default location {SDK_DEFAULT} — leaving it as-is")
+            print(f"note: SDK found at default location {SDK_FALLBACK} — leaving it as-is")
 
     # Warn (non-fatal) when the effective SDK root lacks local docs/samples.
-    effective_sdk = sdk or SDK_DEFAULT
+    effective_sdk = sdk or SDK_FALLBACK
     for sub in ("Documentation", "Samples"):
         if not (Path(effective_sdk) / sub).is_dir():
             print(

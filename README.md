@@ -22,16 +22,16 @@ OpenCode agents plus a distilled, verified **MSFS 2024 development knowledge cac
 
 ## Installation
 
-**Prerequisites:** [OpenCode](https://opencode.ai/it/download) V2, and the [MSFS 2024 SDK](https://docs.flightsimulator.com/msfs2024) at `C:\MSFS 2024 SDK` — the root must also hold its `Documentation` and `Samples` folders (same root: agents read SDK sources + local docs + real samples, preferring local docs over online when the versions match).
+**Prerequisites:** [OpenCode](https://opencode.ai/it/download) V2, and the [MSFS 2024 SDK](https://docs.flightsimulator.com/msfs2024) (default install location `C:\MSFS 2024 SDK`; pass `--sdk <path>` if yours differs) — the root must also hold its `Documentation` and `Samples` folders (same root: agents read SDK sources + local docs + real samples, preferring local docs over online when the versions match).
 
-**Quick path (recommended):** run the [installer](utilities/install_agents.py) — it copies the agents into your global OpenCode config, re-points all hardcoded paths to this checkout (and your SDK), and backs up anything it overwrites:
+**Quick path (recommended):** run the [installer](utilities/install_agents.py) — it copies the agents into your global OpenCode config, resolves the `{{REPO}}` and `{{SDK}}` placeholders to this checkout and your SDK, and backs up anything it overwrites:
 
 ```sh
 python utilities/install_agents.py --dry-run   # preview, writes nothing
 python utilities/install_agents.py             # or --yes to skip prompts
 ```
 
-**Manual path:** copy [`custom agent/*.md`](custom%20agent/) into `~/.config/opencode/agents/`, then replace the single path prefix `C:\Lavoro\Programming\Opencode_MSFS` with your checkout path. The full step-by-step guide is in [`INSTALL.md`](INSTALL.md).
+**Manual path:** copy [`custom agent/*.md`](custom%20agent/) into `~/.config/opencode/agents/`, then replace the two placeholders `{{REPO}}` (your checkout path) and `{{SDK}}` (your SDK root). The repo itself contains no machine-specific paths. The full step-by-step guide is in [`INSTALL.md`](INSTALL.md).
 
 **Knowledge reference:** this repo's [`opencode.jsonc`](opencode.jsonc) wires the [`msfs2024-knowledge`](MSFS2024_informations.json) reference automatically via a relative path — no further setup needed after cloning.
 

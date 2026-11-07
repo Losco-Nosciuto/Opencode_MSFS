@@ -22,6 +22,8 @@ Checks (each failure is reported as `ERROR:` and exits 1):
 Usage:
     python utilities/validate_cache.py [--file MSFS2024_informations.json]
     python utilities/validate_cache.py --ids   # print every entry id, one per line
+    python utilities/validate_cache.py --ids-write .cache_staging/ingestion/ids_before.json
+    python utilities/validate_cache.py --ids-diff <before> <after>
 """
 
 from __future__ import annotations
@@ -32,7 +34,7 @@ import sys
 import uuid
 from pathlib import Path
 
-DEFAULT_FILE = "MSFS2024_informations.json"
+DEFAULT_FILE = str(Path(__file__).resolve().parent.parent / "MSFS2024_informations.json")
 
 STATUS_VALUES = {
     "fact (cited)",
@@ -75,11 +77,61 @@ class Checker:
             self.error(f"{where}: id {raw!r} is not a UUIDv5 (version {u.version})")
 
 
+def entry_ids(categories: list) -> list[str]:
+    ids: list[str] = []
+    for cat in categories:
+        for entry in cat.get("entries", []):
+            if isinstance(entry, dict) and isinstance(entry.get("id"), str):
+                ids.append(entry["id"])
+    return ids
+
+
+def read_ids(path: Path) -> list[str]:
+    # utf-8-sig: tolerate a BOM left by older PowerShell `Set-Content` runs.
+    return [line.strip() for line in path.read_text(encoding="utf-8-sig").splitlines() if line.strip()]
+
+
+def ids_diff(before_path: Path, after_path: Path) -> int:
+    before = read_ids(before_path)
+    after = read_ids(after_path)
+    before_set, after_set = set(before), set(after)
+    missing = [i for i in before if i not in after_set]
+    duplicated = sorted({i for i in after if after.count(i) > 1})
+    new = [i for i in after if i not in before_set]
+
+    print(f"ids-diff: before={len(before)} after={len(after)} new={len(new)}")
+    for i in new:
+        print(f"  NEW       {i}")
+    for i in missing:
+        print(f"  MISSING   {i}")
+    for i in duplicated:
+        print(f"  DUPLICATE {i}")
+    if missing or duplicated:
+        print(f"ids-diff: FAILED — {len(missing)} missing, {len(duplicated)} duplicated")
+        return 1
+    print("ids-diff: OK")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Validate the MSFS2024 knowledge cache JSON.")
     p.add_argument("--file", default=DEFAULT_FILE, help="cache file (default: %(default)s)")
     p.add_argument("--ids", action="store_true", help="print every entry id, one per line, and exit")
+    p.add_argument("--ids-write", metavar="PATH",
+                   help="write every entry id (one per line, UTF-8) to PATH and exit; "
+                        "replaces `--ids | Set-Content`, which the shell allowlist forbids")
+    p.add_argument("--ids-diff", nargs=2, metavar=("BEFORE", "AFTER"),
+                   help="compare two --ids-write files: FAIL if a pre-existing id is missing "
+                        "or an id is duplicated; prints NEW/MISSING/DUPLICATE lines")
     args = p.parse_args(argv)
+
+    if args.ids_diff:
+        before_path, after_path = (Path(x) for x in args.ids_diff)
+        try:
+            return ids_diff(before_path, after_path)
+        except FileNotFoundError as e:
+            print(f"error: ids file not found: {e.filename}", file=sys.stderr)
+            return 2
 
     path = Path(args.file)
     if not path.is_file():
@@ -101,12 +153,17 @@ def main(argv: list[str] | None = None) -> int:
         print("ERROR: missing `categories` array", file=sys.stderr)
         return 1
 
-    # --ids mode: dump ids in document order, done.
-    if args.ids:
-        for cat in categories:
-            for entry in cat.get("entries", []):
-                if isinstance(entry, dict) and isinstance(entry.get("id"), str):
-                    print(entry["id"])
+    # --ids / --ids-write mode: dump ids in document order, done.
+    if args.ids or args.ids_write:
+        ids = entry_ids(categories)
+        if args.ids_write:
+            out = Path(args.ids_write)
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_text("\n".join(ids) + "\n", encoding="utf-8", newline="\n")
+            print(f"wrote {len(ids)} ids -> {out}")
+        if args.ids:
+            for i in ids:
+                print(i)
         return 0
 
     c = Checker()
